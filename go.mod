@@ -1,4 +1,4 @@
-module changeme
+module main
 
 go 1.21
 

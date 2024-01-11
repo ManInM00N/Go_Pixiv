@@ -1,53 +1,93 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'</script>
+
 <template>
-  <div class="app-container">
-    <!-- 标签切换 -->
-    <div class="tags_box">
-      <div v-for="(item,index) in messageList" :key="item.id" class="tags">
-        <div :class="{isActive:index==active}" @click="handelToogel(index)">{{item}}</div>
-      </div>
-    </div>
-    <!-- 内容部分 -->
-    <div class="con_box">
-      <div v-show="active == 0">内容一</div>
-      <div v-show="active == 1">内容二</div>
-      <div v-show="active == 2">内容三</div>
-    </div>
-  </div>
+  <el-container >
+    <el-aside
+        name="menu" id="menu"
+        class="menu"
+        style="height:100%; width: 60px"
+    >
+      <el-menu
+          style=" height: 100%"
+          :default-active="'1'"
+          :selectedKeys="[current]"
+          :theme="theme"
+          @click="handleClick"
+      >
+        <el-menu-item
+            v-for="item in items"
+            :key="item.id.toString()"
+            :id="item.id"
+            class="menu_item"
+        >
+          <el-icon size="30px" ></el-icon>
+        </el-menu-item>
+        <el-menu-item
+            :key = "items.length+1"
+            class="menu_item"
+        >
+          <el-icon size="30px"><HomeFilled /></el-icon>
+        </el-menu-item>
+      </el-menu>
+      <el-footer>
+
+      </el-footer>
+    </el-aside>
+    <el-main class="View" id = "View" name="View">
+      <DateChoose></DateChoose>
+    </el-main>
+<!--    <el-footer></el-footer>-->
+  </el-container>
+
 </template>
 <script>
+import DateChoose from "./components/DateChoose.vue";
+
 export default {
-  data() {
+  components:{
+    // Tab
+    DateChoose
+  },
+  data () {
     return {
-      messageList: ["标签一", "标签二", "标签三"],
-      active: 0,
-    };
+      current: '1',
+      theme: 'dark',
+      items:[
+        {id: 1,iconmsg :"<HomeFilled />"},
+        {id: 2,iconmsg :"<Menu />"},
+        {id: 3,iconmsg :"<Menu />"},
+      ]
+    }
   },
   methods: {
-    handelToogel(index) {
-      this.active = index;
+    handleClick (e) {
+      console.log('click ', e)
+      this.current = e.key
+    },
+    changeTheme ({ target }) {
+      this.theme = target.checked ? 'light' : 'dark'
     },
   },
 };
 </script>
-<style lang="less" scoped>
-.tags_box {
-  width: 50%;
-  margin: 20px auto;
+<style lang='less' scoped>
+.menu{
+  width: 60px;
+  height: 100%;
+}
+.menu_item{
   display: flex;
+  align-items: center;
+  //padding-left: 10px;
 }
-.tags div {
-    padding: 10px 20px;
-    cursor: pointer;
-    margin: 0 15px;
+.View{
+  width: calc(100% - 60px);
+  height: 100%;
+  display: flex;
+  position: relative;
 }
-.isActive {
-  border-bottom: 2px solid #2ed573;
+.Main{
+  display: block;
+  width: 100%;
+  height: 100%;
 }
-.con_box{
-  width: 50%;
-  margin: 20px auto;
-}
-
 </style>
