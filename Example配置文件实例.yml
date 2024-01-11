@@ -1,0 +1,16 @@
+#使用本地代理
+proxy: "http://127.0.0.1:xxx"
+#根据本地代理修改: "http://127.0.0.1:xxxxx"   xxxx为你代理使用的端口
+cookie: xxxxxxxxxxxxxx
+minlikelimit: 3500
+r-18: true
+downloadposition: Download
+
+# ms(毫秒) & > 1000(After revision)
+retry429: 10000
+
+# ms(毫秒) & > 200(After revision)
+downloadinterval: 1000
+
+# ms(毫秒) & > 200(After revision)
+retryinterval: 3000

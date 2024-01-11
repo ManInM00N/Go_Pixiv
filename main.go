@@ -6,6 +6,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
+	. "main/src/init"
 )
 
 //go:embed all:frontend/dist
@@ -84,7 +85,13 @@ func main() {
 			OpenInspectorOnStartup: false,
 		},
 	})
-
+	IsClosed = true
+	P.Wait()
+	defer func() {
+		P.Release()
+		TaskPool.Close()
+		SinglePool.Release()
+	}()
 	if err != nil {
 		println("Error:", err.Error())
 	}
