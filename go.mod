@@ -2,7 +2,6 @@ module main
 
 go 1.21
 
-
 require (
 	fyne.io/fyne/v2 v2.4.3
 	github.com/ManInM00N/go-tool v0.0.0-20240111170037-5d6b1781d885
