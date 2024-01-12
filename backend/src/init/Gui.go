@@ -8,13 +8,16 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/ManInM00N/go-tool/statics"
-	. "main/src/DAO"
+	_ "image/png"
+
+	. "main/backend/src/DAO"
 	"strconv"
 	"time"
 )
 
 var (
 	Appwindow fyne.Window
+	Logo      []byte
 )
 
 func WindowInit() {

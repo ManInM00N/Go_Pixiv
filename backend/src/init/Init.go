@@ -6,7 +6,7 @@ import (
 	"github.com/devchat-ai/gopool"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
-	. "main/src/DAO"
+	. "main/backend/src/DAO"
 	"os"
 )
 
@@ -18,7 +18,7 @@ var (
 
 func UpdateSettings() {
 	out, _ := yaml.Marshal(&Setting)
-	ioutil.WriteFile("settings.yml", out, 0644)
+	ioutil.WriteFile("src/config/settings.yml", out, 0644)
 }
 
 func init() {
@@ -27,8 +27,10 @@ func init() {
 	}
 	is = true
 	Log_init()
+	//logoInit()
+
 	Ctx, Cancel = context.WithCancel(context.Background())
-	ymlfile, _ = os.OpenFile("settings.yml", os.O_RDWR, 0644)
+	ymlfile, _ = os.OpenFile("src/config/settings.yml", os.O_RDWR, 0644)
 	defer ymlfile.Close()
 	bytevalue, _ := ioutil.ReadAll(ymlfile)
 	yaml.Unmarshal(bytevalue, &Setting)
