@@ -1,5 +1,9 @@
 <template>
-
+  <el-container>
+    <p>
+      follow
+    </p>
+  </el-container>
 </template>
 
 <script>

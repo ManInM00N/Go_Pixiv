@@ -1,31 +1,31 @@
-<template>
+
+<template >
   <el-aside
       name="menu" id="menu"
       class="asidemenu"
       style="width: 60px"
   >
     <el-menu
-        :default-active="activeIndex"
-        :selectedKeys="[current]"
+        :default-active="$route.path"
         :theme="theme"
         class="vertical-menu"
         mode="vertical"
         :router="true"
-        default-openeds="maindownload"
+
     >
       <el-container class="top-items">
         <el-menu-item
-            v-for="item in items"
+            v-for="(item,idx) in items"
             :key="item.key"
             :id="item.id"
-            :index="'/'+item.key"
+            :index="idx+''"
+            :route="item.index"
             class="menu_item"
             @select="handleMenuSelect"
-            index="/MainDownload"
         >
           <el-container class="item_body">
-            <el-icon class="Icon">
-              <component :is="item.iconmsg"/>
+            <el-icon size="30">
+              <component :is="item.iconmsg" />
             </el-icon>
           </el-container>
         </el-menu-item>
@@ -34,11 +34,13 @@
       <el-menu-item
           :key = "userself.key"
           :id = "userself.id"
-          :index="'/'+userself.key"
+          :index="userself.id.toString()"
+          :route="userself.index"
           class="menu_item"
+          style="padding-left: 10px;padding-right: 0px"
       >
         <el-container>
-          <el-image class="headImg" src="frontend/assets/images/no_profile.png" />
+          <el-avatar shape="circle " src="/src/assets/images/no_profile.png" size="default"/>
         </el-container>
       </el-menu-item>
     </el-menu>
@@ -46,7 +48,6 @@
   </el-aside>
   <el-main class="View" id = "View" name="View">
     <router-view></router-view>
-    <DateChoose/>
   </el-main>
 </template>
 
@@ -57,30 +58,26 @@ export default {
   components:{
     DateChoose,
   },
+
   data () {
     return {
-      activeIndex:"/maindownload",
-      current: '1',
+      activeIndex:"/",
       theme: 'dark',
       items:[
-        {id: 1,iconmsg :"HomeFilled",key:"maindownload"},
-        {id: 2,iconmsg :"StarFilled",key:"follow"},
-        {id: 3,iconmsg :"Histogram",key:"rank"},
-        {id: 4,iconmsg :"Search",key:"search"},
-        {id: 5,iconmsg :"Setting",key:"setting"},
+        {id: 1,iconmsg :"HomeFilled",key:"maindownload" ,index:"/maindownload"},
+        {id: 2,iconmsg :"StarFilled",key:"follow",index:"/follow"},
+        {id: 3,iconmsg :"Histogram",key:"rank",index:"/rank"},
+        {id: 4,iconmsg :"Search",key:"search",index:"/search"},
+        {id: 5,iconmsg :"Setting",key:"setting",index:"/setting"},
       ],
       userself: {
-        id:6,key: "user"
-      }
+        id:6,key: "user",index:"/user"
+      },
     }
   },
   methods: {
     handleMenuSelect(index) {
-      this.activeIndex = index;
       console.log("ee",this.activeIndex)
-    },
-    changeTheme ({ target }) {
-      this.theme = target.checked ? 'light' : 'dark'
     },
   },
 }

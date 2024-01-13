@@ -4,7 +4,6 @@
     class="Main"
   >
     <Menu_List/>
-    <router-view/>
   </el-container>
 
 </template>

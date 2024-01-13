@@ -10,33 +10,27 @@ const router=createRouter({
     routes:[
         {
             path: '/maindownload',
-            name:"maindownload",
-            component:maindownload
+            component:maindownload,
         },
         {
             path: '/follow',
-            name:"follow",
             component: follow,
         },
         {
             path: '/rank',
-            name:"rank",
             component: rank,
         },
         {
             path: '/search',
-            name:"search",
             component: search,
 
         },
         {
             path: '/setting',
-            name:"setting",
             component: setting,
         },
         {
             path: '/user',
-            name:"user",
             component: user,
         },
     ]
