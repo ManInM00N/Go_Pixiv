@@ -4,8 +4,22 @@
   content: '';
 }
 .empty{
-  padding: 0px 0px 0px 0px;
+  padding: @No_Gap;
 }
+.Main{
+  height: calc(100vh);
+  background: url(../images/bg.jpg) ;
+  margin :@No_Gap;
+  background-size:cover;
+  z-index: -1;
+}
+.No_margin{
+  margin: @No_Gap;
+}
+.Divide_Line{
+  margin: 4px  0px 4px 0px;
+}
+@No_Gap: 0px 0px 0px 0px;
 @transition-slow: .6s ease;
 @transition-normal: .4s ease;
 @transition-fast: .3s ease;

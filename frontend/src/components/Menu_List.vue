@@ -11,7 +11,6 @@
         class="vertical-menu"
         mode="vertical"
         :router="true"
-
     >
       <el-container class="top-items">
         <el-menu-item
@@ -29,7 +28,7 @@
             </el-icon>
           </el-container>
         </el-menu-item>
-      </el-container>
+      </el-container >
       <el-container class="placeholder-item" ></el-container>
       <el-menu-item
           :key = "userself.key"
@@ -46,7 +45,7 @@
     </el-menu>
 
   </el-aside>
-  <el-main class="View" id = "View" name="View">
+  <el-main class="View" id = "View" name="View" >
     <router-view></router-view>
   </el-main>
 </template>

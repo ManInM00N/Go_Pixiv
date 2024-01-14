@@ -13,13 +13,16 @@ export default {
   components:{
     Menu_List,
   },
+  data(){
+    return{
 
+    }
+
+  }
 };
 </script>
 <style lang='less' scoped>
 @import "assets/style/variable.less";
-.Main{
-  height: calc(100vh - 20px);
-}
+
 
 </style>

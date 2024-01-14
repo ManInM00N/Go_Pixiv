@@ -1,7 +1,6 @@
 <template>
   <div class="demo-date-picker">
     <div class="block">
-      <span class="demonstration">Picker with quick options</span>
       <el-date-picker
           v-model="value2"
           type="date"
