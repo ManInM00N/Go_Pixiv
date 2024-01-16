@@ -7,10 +7,11 @@ import (
 )
 
 var (
-	SinglePool gopool.GoPool
-	P          gopool.GoPool
-	TaskPool   *goruntine.GoPool
-	Ctx        context.Context
-	Cancel     context.CancelFunc
-	IsClosed   = false
+	SinglePool   gopool.GoPool
+	P            gopool.GoPool
+	TaskPool     *goruntine.GoPool
+	Ctx          context.Context
+	Cancel       context.CancelFunc
+	IsClosed     = false
+	WaitingTasks = int64(0)
 )

@@ -33,6 +33,10 @@ const router=createRouter({
             path: '/user',
             component: user,
         },
+        {
+            path: '/',
+            redirect:'/maindownload',   //
+        },
     ]
 
 })

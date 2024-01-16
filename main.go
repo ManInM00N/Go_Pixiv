@@ -22,6 +22,8 @@ func main() {
 		Title:       "Go!Pixiv",
 		Width:       1024,
 		Height:      768,
+		MinWidth:    800,
+		MinHeight:   600,
 		Fullscreen:  false,
 		StartHidden: false,
 		AssetServer: &assetserver.Options{
@@ -31,6 +33,10 @@ func main() {
 		OnStartup:        app.startup,
 		Bind: []interface{}{
 			app,
+		},
+		EnumBind: []interface{}{
+			WaitingTasks,
+			QueueTaskMsg,
 		},
 		ErrorFormatter: func(err error) any { return err.Error() },
 		Windows: &windows.Options{

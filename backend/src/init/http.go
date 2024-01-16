@@ -22,14 +22,14 @@ import (
 // TODO: 基础下载 OK   目录管理下载 OK  主要图片全部下载OK    并发下载OK
 // TODO: 指针内存问题OK
 // TODO: 图片下载完整  OK
-func Download(i *Illust, op *Option) {
+func Download(i *Illust, op *Option) bool {
 	var err error
 	total := 0
 	Request, err2 := http.NewRequest("GET", i.PreviewImageUrl, nil)
 	clientcopy := GetClient()
 	if err2 != nil {
 		DebugLog.Println("Error creating request", err2)
-		return
+		return false
 	}
 	Request.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36")
 	Request.Header.Set("referer", "https://www.pixiv.net")
@@ -118,14 +118,16 @@ func Download(i *Illust, op *Option) {
 		bufWriter := bufio.NewWriter(f)
 		_, err = io.Copy(bufWriter, Response.Body)
 		if err != nil {
+
 			DebugLog.Println(i.Pid, " Write Failed", err)
+			return false
 		}
 		f.Close()
 		bufWriter.Flush()
 		total++
 		time.Sleep(time.Millisecond * time.Duration(Setting.Downloadinterval))
 	}
-	return
+	return true
 }
 
 func CheckMode(url, id string, num int) (string, string) {
@@ -300,7 +302,10 @@ func JustDownload(pid string, mode *Option) (int, bool) {
 	if mode.ShowSingle {
 		InfoLog.Println(pid + " Start download")
 	}
-	Download(illust, mode)
+	if !Download(illust, mode) {
+		DebugLog.Println(pid, " Download failed")
+		return 0, false
+	}
 	if mode.ShowSingle {
 		InfoLog.Println(pid + " Finished download")
 	}

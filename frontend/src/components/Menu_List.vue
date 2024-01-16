@@ -12,7 +12,7 @@
         mode="vertical"
         :router="true"
     >
-      <el-container class="top-items">
+      <el-container class="top-items" >
         <el-menu-item
             v-for="(item,idx) in items"
             :key="item.key"
@@ -52,6 +52,7 @@
 
 <script>
 import DateChoose from "./DateChoose.vue";
+import {ref} from "vue";
 export default {
   name: "Menu_List",
   components:{
@@ -60,7 +61,7 @@ export default {
 
   data () {
     return {
-      activeIndex:"/",
+      activeIndex:"/maindownload",
       theme: 'dark',
       items:[
         {id: 1,iconmsg :"HomeFilled",key:"maindownload" ,index:"/maindownload"},
@@ -72,12 +73,23 @@ export default {
       userself: {
         id:6,key: "user",index:"/user"
       },
+      Input:'',
+      wait:false,
+    }
+  },
+  watch:{
+    "wait":function(data)
+    {
+      this.wait=data;
     }
   },
   methods: {
     handleMenuSelect(index) {
       console.log("ee",this.activeIndex)
     },
+    "UpdateInput":function (NewValue){
+      this.Input=NewValue
+    }
   },
 }
 </script>

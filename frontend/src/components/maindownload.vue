@@ -6,10 +6,11 @@
         <el-col :span="8">
           下载模式
           <el-select
-            v-model="value"
+            v-model="now"
             ref="mode"
             class="m-2"
             size="default"
+            @change="changetype"
             style="width:150px"
           >
             <el-option
@@ -26,10 +27,18 @@
         <el-col :span="8" v-if="this.value!=='Rank'">
         </el-col>
         <el-col :span="8" v-if="this.value!=='Rank'">
-          <el-input  ref="re" size="large" placeholder="Pid/AuthorId"></el-input>
+          <el-input
+              v-model="inputValue"
+              size="large"
+              placeholder="Pid/AuthorId"
+              clearable
+              type="number"
+              @input="updateParentValue"
+          ></el-input>
         </el-col>
         <el-col :span="8" v-if="this.value==='Rank'">
           <el-select
+              v-model="period"
               ref="period"
               class="m-2"
               size="large"
@@ -40,6 +49,7 @@
                 :key="item.value"
                 :label="item.label"
                 :value="item.value"
+                :disabled="wait"
             />
           </el-select>
         </el-col>
@@ -49,27 +59,60 @@
         <el-col :span="2"/>
         <el-col :span="6">
           <el-button
-              :disabled="true"
               style=""
-              :icon="Download"
+              id="bt"
               type="success"
               size="large"
+              @click="Download"
           >
-            Download</el-button>
+            Download
+            <el-icon size="large">
+            <Download/>
+            </el-icon>
+          </el-button>
         </el-col>
       </el-row >
+
       <el-row >
+        <el-col :span="6">
+          <el-text>
+            {{tasknow}}
+          </el-text>
+        </el-col>
+        <el-col :span="3" />
+        <el-col :span="6">
+          <el-progress
+              :stroke-width="24"
+              striped
+              striped-flow
+              :duration="10"
+              :percentage="percent"
+          >
+
+          </el-progress>
+        </el-col>
+        <el-col :span="3"/>
+        <el-col :span="6">
+          <el-text>
+            {{queuenow}}
+          </el-text>
+        </el-col>
       </el-row>
     </el-main>
   </el-container>
 </template>
 
-<script  >
-import { ref } from 'vue'
+<script>
 import DateChoose from "./DateChoose.vue";
+import {DownloadByAuthorId, DownloadByPid} from "../../wailsjs/go/main/App.js";
+import {EventsEmit, EventsOn, WindowReloadApp} from "../../wailsjs/runtime/runtime.js";
 export default {
   name: "maindownload",
   components: {DateChoose},
+  props:{
+    Input: Number,
+    wait: Boolean,
+  },
   data(){
     return{
       now: "Pid",
@@ -109,9 +152,62 @@ export default {
           label:"By Rank",
         },
       ],
-      value:"Pid"
+      inputValue: this.Input,
+      period:"daily",
+      percent: 0,
+      tasknow:"No Task in queue",
+      queuenow:"There is no tasks waiting",
     }
   },
+  watch:{
+    "UpdateTaskNow":function (newmsg) {
+      this.tasknow=newmsg;
+    },
+    "UpdateQueueNow":function (newmsg) {
+      this.queuenow=newmsg;
+    },
+    "UpdateProcess":function(newnum){
+      this.percent=newnum;
+    }
+  },
+  methods:{
+    updateParentValue() {
+      this.$emit('UpdateInput', this.inputValue);
+    },
+    changetype(data){
+      console.log(data)
+      this.value=data;
+    },
+    Download(){
+      EventsOn("UpdateTaskNow",function(newmsg){
+        this.tasknow=newmsg;
+      });
+      EventsOn("UpdateTaskNow",function(newmsg){
+        this.queuenow=newmsg;
+      });
+      EventsOn("UpdateTaskNow",function(newnum){
+        this.percent=newnum;
+      });
+      if(this.now=="Pid"){
+
+        DownloadByPid(this.inputValue);
+        this.inputValue="";
+      }else if (this.now=="Author"){
+
+
+        EventsEmit("wait",true)
+        DownloadByAuthorId(this.inputValue)
+
+
+        this.inputValue="";
+        EventsEmit("wait",false)
+      }else {
+
+      }
+
+    }
+  },
+
 }
 </script>
 

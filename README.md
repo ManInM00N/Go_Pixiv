@@ -1,4 +1,6 @@
 <h1>使用须知 Read Me First!!!</h1>
+<br>
+![License](https://img.shields.io/badge/license-MIT-yellow)
 <h1>
 ！！！不提供代理！！！
 <br>

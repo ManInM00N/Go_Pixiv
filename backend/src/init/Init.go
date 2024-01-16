@@ -18,7 +18,7 @@ var (
 
 func UpdateSettings() {
 	out, _ := yaml.Marshal(&Setting)
-	ioutil.WriteFile("src/config/settings.yml", out, 0644)
+	ioutil.WriteFile("settings.yml", out, 0644)
 }
 
 func init() {
@@ -30,7 +30,7 @@ func init() {
 	//logoInit()
 
 	Ctx, Cancel = context.WithCancel(context.Background())
-	ymlfile, _ = os.OpenFile("src/config/settings.yml", os.O_RDWR, 0644)
+	ymlfile, _ = os.OpenFile("settings.yml", os.O_RDWR, 0644)
 	defer ymlfile.Close()
 	bytevalue, _ := ioutil.ReadAll(ymlfile)
 	yaml.Unmarshal(bytevalue, &Setting)
@@ -42,7 +42,7 @@ func init() {
 	Setting.Retry429 = max(Setting.Retry429, 3000)
 	Setting.Retryinterval = max(Setting.Retryinterval, 200)
 	Setting.Downloadinterval = max(Setting.Downloadinterval, 100)
-	DebugLog.Println("Check settings:"+Setting.Proxy, "PHPSESSID="+Setting.Cookie, Setting.Downloadposition)
+	DebugLog.Println("Check settings:"+Setting.Proxy, "PHPSESSID="+Setting.Cookie, "Download Position=", Setting.Downloadposition)
 	UpdateSettings()
 
 	TaskPool = goruntine.NewGoPool(200, 1)

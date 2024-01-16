@@ -2,15 +2,14 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
+	. "main/backend/src/init"
 )
 
-// App struct
 type App struct {
 	ctx context.Context
 }
 
-// NewApp creates a new App application struct
 func NewApp() *App {
 	return &App{}
 }
@@ -21,7 +20,17 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-// Greet returns a greeting for the given name
-func (a *App) Greet(name string) string {
-	return fmt.Sprintf("Hello %s, It's show time!", name)
+func (a *App) DownloadByPid(text string) bool {
+	Download_By_Pid(text)
+
+	return true
+}
+func (a *App) ReturnString() string {
+	return NowTaskMsg
+}
+func (a *App) DownloadByAuthorId(text string) bool {
+	Download_By_Author(text, func(name string, data ...interface{}) {
+		runtime.EventsEmit(a.ctx, name, data)
+	})
+	return true
 }

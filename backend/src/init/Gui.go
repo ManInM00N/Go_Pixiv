@@ -16,10 +16,131 @@ import (
 )
 
 var (
-	Appwindow fyne.Window
-	Logo      []byte
+	Appwindow    fyne.Window
+	Logo         []byte
+	NowTaskMsg   = ""
+	QueueTaskMsg = ""
+	ProcessMax   = int64(0)
+	ProcessNow   = int64(0)
 )
 
+func Download_By_Pid(text string) {
+	text = statics.CatchNumber(text)
+	if text == "" {
+		return
+	}
+	SinglePool.AddTask(func() (interface{}, error) {
+		op := NewOption(WithMode(ByPid), WithLikeLimit(0), WithR18(true), WithShowSingle(true))
+		JustDownload(text, op)
+		return nil, nil
+	})
+}
+func Download_By_Author(text string, callEvent func(name string, data ...interface{})) {
+	text = statics.CatchNumber(text)
+	if text == "" {
+		return
+	}
+	InfoLog.Println(text + " pushed TaskQueue")
+	WaitingTasks++
+
+	TaskPool.Add(func() {
+		if IsClosed {
+			return
+		}
+		c := make(chan string, 2000)
+		all, err := GetAuthor(statics.StringToInt64(text))
+		WaitingTasks--
+		if err != nil {
+			DebugLog.Println("Error getting author", err)
+			if WaitingTasks > 0 {
+				QueueTaskMsg = "There are " + fmt.Sprintf("%d", WaitingTasks) + " waiting tasks"
+			} else {
+				QueueTaskMsg = "There is no tasks waiting"
+			}
+			callEvent("UpdateQueueNow", QueueTaskMsg)
+
+			return
+		}
+		if WaitingTasks > 0 {
+			QueueTaskMsg = "There are " + fmt.Sprintf("%d", WaitingTasks) + " waiting tasks"
+		} else {
+			QueueTaskMsg = "There is no tasks waiting"
+		}
+		NowTaskMsg = text + " are downloading:"
+		callEvent("UpdateTaskNow", NowTaskMsg)
+		callEvent("UpdateQueueNow", QueueTaskMsg)
+		ProcessMax = int64(len(all))
+		ProcessNow = 0
+		InfoLog.Println(text + "'s artworks Start download")
+		satisfy := 0
+		options := NewOption(WithMode(ByAuthor), WithR18(Setting.Agelimit), WithLikeLimit(Setting.LikeLimit))
+
+		for key, _ := range all {
+			k := key
+			if IsClosed {
+				return
+			}
+			P.AddTask(func() (interface{}, error) {
+				//time.Sleep(1 * time.Second)
+				if IsClosed {
+					return nil, nil
+				}
+
+				temp := k
+				illust, err := work(statics.StringToInt64(temp), options)
+				if err != nil {
+					//continue
+					if !ContainMyerror(err) {
+						c <- temp
+					}
+					ProcessNow++
+					return nil, nil
+				}
+				if !Download(illust, options) {
+					c <- temp
+					ProcessNow++
+					return nil, nil
+				}
+				satisfy++
+				ProcessNow++
+				//process.Refresh()
+
+				return nil, nil
+			})
+		}
+		P.Wait()
+		NowTaskMsg = "Now Recheck " + text
+		callEvent("UpdateQueueNow", QueueTaskMsg)
+		println(len(c), " ", satisfy)
+		for len(c) > 0 {
+			if IsClosed {
+				return
+			}
+			ss := <-c
+			//log.Println(ss, " Download failed Now retrying")
+			P.AddTask(func() (interface{}, error) {
+				if a, b := JustDownload(ss, options); b {
+					satisfy += a
+				}
+				return nil, nil
+			})
+		}
+		P.Wait()
+		InfoLog.Println(text+"'s artworks -> Satisfied and Successfully downloaded illusts: ", satisfy, "in all: ", len(all))
+		satisfy = 0
+		close(c)
+		NowTaskMsg = "No Task in queue"
+		ProcessNow = 0
+		callEvent("UpdateTaskNow", QueueTaskMsg)
+	})
+	if WaitingTasks > 0 {
+		QueueTaskMsg = "There are " + fmt.Sprintf("%d", WaitingTasks) + " waiting tasks"
+	} else {
+		QueueTaskMsg = "There is no tasks waiting"
+	}
+	callEvent("UpdateQueueNow", QueueTaskMsg)
+
+}
 func WindowInit() {
 	app := app.New()
 	Appwindow = app.NewWindow("GO Pixiv")
