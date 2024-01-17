@@ -19,10 +19,8 @@ func NewApp() *App {
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
-
 func (a *App) DownloadByPid(text string) bool {
 	Download_By_Pid(text)
-
 	return true
 }
 func (a *App) ReturnString() string {
@@ -30,6 +28,12 @@ func (a *App) ReturnString() string {
 }
 func (a *App) DownloadByAuthorId(text string) bool {
 	Download_By_Author(text, func(name string, data ...interface{}) {
+		runtime.EventsEmit(a.ctx, name, data)
+	})
+	return true
+}
+func (a *App) DownloadByRank(text, Type string) bool {
+	Download_By_Rank(text, Type, func(name string, data ...interface{}) {
 		runtime.EventsEmit(a.ctx, name, data)
 	})
 	return true

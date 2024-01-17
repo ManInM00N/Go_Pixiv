@@ -5,4 +5,6 @@ export function DownloadByAuthorId(arg1:string):Promise<boolean>;
 
 export function DownloadByPid(arg1:string):Promise<boolean>;
 
+export function DownloadByRank(arg1:string,arg2:string):Promise<boolean>;
+
 export function ReturnString():Promise<string>;

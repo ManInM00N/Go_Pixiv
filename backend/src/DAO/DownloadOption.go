@@ -76,10 +76,10 @@ func WithMode(mode int64) option {
 
 // Rankmode: Daily 0, Weekly 1, Monthly 2, Male 3, Female 4, Rookie 5
 // Original 6, Daily_r18 7, Weekly_r18 8, male_r18 9, Female_r18 10
-func WithRankmode(period int64) option {
+func WithRankmode(Type string) option {
 	return func(o *Option) {
-		o.Suffix += "&mode=" + Rankmode[period]
-		o.Rank = Rankmode[period]
+		o.Suffix += "&mode=" + Type
+		o.Rank = Type
 	}
 }
 

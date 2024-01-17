@@ -23,8 +23,8 @@
             @select="handleMenuSelect"
         >
           <el-container class="item_body">
-            <el-icon size="30">
-              <component :is="item.iconmsg" />
+            <el-icon size="30" class="item_icon">
+              <component :is="item.iconmsg"  style="color: #32CD99"/>
             </el-icon>
           </el-container>
         </el-menu-item>
@@ -46,7 +46,17 @@
 
   </el-aside>
   <el-main class="View" id = "View" name="View" >
-    <router-view></router-view>
+
+    <router-view v-slot="{ Component,route }">
+      <keep-alive v-if="route.meta.keepAlive ">
+        <component :is="Component" />
+      </keep-alive>
+      <component v-else :is="Component" />
+    </router-view>
+<!--    <keep-alive>-->
+<!--      <router-view v-if="$route.meta.keepAlive"></router-view>-->
+<!--    </keep-alive>-->
+<!--    <router-view v-if="!$route.meta.keepAlive"></router-view>-->
   </el-main>
 </template>
 
@@ -81,19 +91,21 @@ export default {
     "wait":function(data)
     {
       this.wait=data;
+    },
+    "UpdateInput":function (NewValue){
+      this.Input=NewValue
     }
   },
   methods: {
     handleMenuSelect(index) {
       console.log("ee",this.activeIndex)
     },
-    "UpdateInput":function (NewValue){
-      this.Input=NewValue
-    }
+
   },
 }
 </script>
 
 <style lang="less" scoped>
+@import "src/assets/style/Color.less";
 @import "src/assets/style/menu.less";
 </style>

@@ -15,8 +15,8 @@ import (
 var assets embed.FS
 
 func main() {
-	// Create an instance of the app structure
-	app := NewApp()
+	// Create an instance of the MainApp structure
+	MainApp := NewApp()
 	// Create application with options
 	err := wails.Run(&options.App{
 		Title:       "Go!Pixiv",
@@ -30,9 +30,10 @@ func main() {
 			Assets: assets,
 		},
 		BackgroundColour: &options.RGBA{R: 233, G: 233, B: 233, A: 128},
-		OnStartup:        app.startup,
+		//OnStartup:        MainApp.startup,
+		OnDomReady: MainApp.startup,
 		Bind: []interface{}{
-			app,
+			MainApp,
 		},
 		EnumBind: []interface{}{
 			WaitingTasks,

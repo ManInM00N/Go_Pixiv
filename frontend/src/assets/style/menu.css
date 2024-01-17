@@ -14,6 +14,9 @@
   display: flex;
   flex-direction: column;
 }
+.item_icon {
+  color: #32CD99;
+}
 .menu_item {
   display: flex;
   align-items: center;

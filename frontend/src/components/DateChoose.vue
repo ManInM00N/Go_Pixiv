@@ -2,23 +2,32 @@
   <div class="date-picker">
     <div class="block">
       <el-date-picker
-          v-model="value2"
+          v-model="selectedDate"
           type="date"
           placeholder="Pick a day"
           :disabled-date="disabledDate"
           size="large"
+          value-format="YYYY-MM-DD"
       />
     </div>
   </div>
 </template>
 
-<script lang="ts" setup>
+<script lang="ts" >
 import { ref} from 'vue'
 
-const value2 = ref('')
-
-const disabledDate = (time: Date) => {
-  return time.getTime() >  calculateNearestNoon();
+// const selectedDate = ref('')
+export default {
+  data() {
+    return {
+      selectedDate:''
+    }
+  },
+  methods:{
+    disabledDate(time: Date) {
+      return time.getTime() >  calculateNearestNoon();
+    }
+  }
 }
 
 // 计算距离现在最近的正午时间

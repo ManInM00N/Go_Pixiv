@@ -11,33 +11,67 @@ const router=createRouter({
         {
             path: '/maindownload',
             component:maindownload,
+            meta: {
+                keepAlive: true,
+                refresh: false,
+            },
         },
         {
             path: '/follow',
             component: follow,
+            meta: {
+                keepAlive: true,
+            },
+            beforeRouteLeave(to,from,next){
+                to.meta.keepAlive = true
+                next(0)
+            }
         },
         {
             path: '/rank',
             component: rank,
+            meta: {
+                keepAlive: true,
+            },
+            beforeRouteLeave(to,from,next){
+                to.meta.keepAlive = true
+                next(0)
+            }
         },
         {
             path: '/search',
             component: search,
 
+            meta: {
+                keepAlive: true,
+                refresh: false,
+            },
+
         },
         {
             path: '/setting',
             component: setting,
+            meta: {
+                keepAlive: true,
+                refresh: false,
+            },
         },
         {
             path: '/user',
             component: user,
+            meta: {
+                keepAlive: true,
+                refresh: false,
+            },
         },
         {
             path: '/',
-            redirect:'/maindownload',   //
+            redirect:'/maindownload',
+            meta: {
+                keepAlive: true,
+                refresh: false,
+            },
         },
     ]
-
 })
 export default router
