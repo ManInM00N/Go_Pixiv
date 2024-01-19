@@ -3,34 +3,31 @@
     <div class="block">
       <el-date-picker
           v-model="selectedDate"
+          format="YYYY-MM-DD"
+          value-format="YYYY-MM-DD"
           type="date"
           placeholder="Pick a day"
           :disabled-date="disabledDate"
           size="large"
-          value-format="YYYY-MM-DD"
+          :clearable="false"
+          @change="refresh"
       />
     </div>
   </div>
 </template>
 
-<script lang="ts" >
-import { ref} from 'vue'
-
-// const selectedDate = ref('')
-export default {
-  data() {
-    return {
-      selectedDate:''
-    }
+<script lang="ts" setup>
+import {onMounted, ref} from 'vue'
+import {padStart} from "../assets/js/Time.js"
+const props =defineProps({
+  re: {
+    type: Boolean,
+    default: false,
   },
-  methods:{
-    disabledDate(time: Date) {
-      return time.getTime() >  calculateNearestNoon();
-    }
-  }
+});
+function disabledDate(time: Date) {
+  return time.getTime() >  calculateNearestNoon();
 }
-
-// 计算距离现在最近的正午时间
 const calculateNearestNoon = () => {
   const now = new Date();
   const noon = new Date(now);
@@ -38,7 +35,23 @@ const calculateNearestNoon = () => {
   return now.getHours() >= 12 ? new Date(noon.getTime()-24*60*60*1000) : new Date(noon.getTime()- 48 * 60 * 60 * 1000);
 };
 
+const selectedDate= ref(formatDateToYYYYMMDD(calculateNearestNoon()))
+function formatDateToYYYYMMDD(date) {
+  const year = date.getFullYear();
+  const month = padStart(date.getMonth() + 1, 2, '0');
+  const day = padStart(date.getDate(), 2, '0');
+  return `${year}-${month}-${day}`;
+}
 
+const re = ref(props.re)
+function refresh(){
+  if (re.value==true){
+    location.reload()
+  }
+  console.log(re,props.re)
+  console.log(selectedDate.value)
+
+}
 </script>
 
 <style scoped lang="less">

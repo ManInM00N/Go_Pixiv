@@ -1,6 +1,12 @@
 <template>
   <el-container>
-    <el-main>
+    <el-main
+      style="
+      display: flex;
+        flex-direction: column;
+        height: 100%;
+      "
+    >
       <el-row >
         <el-col :span="16"/>
         <el-col :span="8">
@@ -39,7 +45,6 @@
         <el-col :span="8" v-if="this.now==='Rank'">
           <el-select
               v-model="period"
-              ref="period"
               class="m-2"
               size="large"
               style="width:150px"
@@ -55,7 +60,8 @@
         </el-col>
         <el-col :span="8" v-if="this.now==='Rank'">
           <date-choose
-          ref="dateSelect"
+            key="main"
+            ref="dateSelect"
           ></date-choose>
         </el-col>
         <el-col :span="2"/>
@@ -77,21 +83,18 @@
       </el-row >
       <el-row style="height: 20px"/>
       <el-row >
-        <el-col :span="6" >
-          <el-text class="Tre">
-            {{tasknow}}
-          </el-text>
-        </el-col>
-        <el-col :span="2" />
-        <el-col :span="8" class="Tre">
+        <el-col :span="1" />
+        <el-col :span="15" class="Tre">
           <el-progress
-              stroke-width="24"
+              stroke-width="28"
               striped
               striped-flow
               :duration="10"
               :percentage="percent"
+              text-inside="true"
+              style=""
           >
-
+            <span style="font-size:16px" v-if="queue.length>0">{{queue[0].value}} {{percent}}%</span>
           </el-progress>
         </el-col>
         <el-col :span="2"/>
@@ -101,33 +104,47 @@
           </el-text>
         </el-col>
       </el-row>
-      <el-row>
+      <br>
+      <el-row
+        class="Get_Remain"
+      >
         <el-col :span="1" />
-        <el-col :span="14">
-
+        <el-col
+            :span="15"
+            class="terminal-text"
+        >
+          <el-scrollbar
+              class="text Micro"
+              style="height:500px"
+          >
+            <p v-for="item in logs" >
+              {{item}}
+            </p>
+          </el-scrollbar>
         </el-col>
-        <el-col :span="2" />
+        <el-col :span="1" />
         <el-col :span="7" >
           <el-table
               :data="queue"
-              :cell-style="cellStyle"
-              class="Half_light Tre"
+              :cell-class-name="cellStyle"
+              class="Half_light Tre queueTable"
 
+              style="height:490px"
           >
-              <el-table-column label="TaskQueue" prop="value" />
+              <el-table-column  label="TaskQueue" prop="value" />
           </el-table>
-        </el-col>/
-
+        </el-col>
       </el-row>
     </el-main>
   </el-container>
 </template>
 
-<script lang="ts">
+<script lang="ts" >
 import DateChoose from "./DateChoose.vue";
 import {DownloadByAuthorId, DownloadByPid,DownloadByRank} from "../../wailsjs/go/main/App.js";
 import {EventsEmit, EventsOn} from "../../wailsjs/runtime";
 import { ref} from "vue";
+import emitter from "../assets/js/Pub.js"
 export default {
   name: "maindownload",
   components: {DateChoose},
@@ -136,21 +153,18 @@ export default {
     wait: Boolean,
   },
   setup(){
+    const logs=ref([
+
+    ]);
+    const rows= ref(10); // 可根据需要调整展示的行数
     const cellStyle = ({  rowIndex }) => {
-      if (rowIndex === 0) {
-        return {
-          border: "3px solid #CD7F32",
-        }
+    if (rowIndex === 0) {
+      return 'Xbord'
       }
     }
     const percent= ref(0);
-    const tasknow= ref("No Task in queue");
-    const queuenow=ref("There is no tasks waiting");
     const  now = ref("Pid")
     const queue=ref([
-      {value:'tasknow'},
-      {value: 'taskb'},
-      {value:'taskc'},
     ])
     const options = ref([
       {
@@ -188,32 +202,30 @@ export default {
         label:"By Rank",
       },
     ]);
+
     const inputValue= ref('');
     const period=ref("daily");
-    EventsOn("UpdateTaskNow",function(newmsg){
-      console.log(newmsg)
-      console.log(newmsg[0])
-      tasknow.value=newmsg[0];
-    });
-    EventsOn("UpdateQueueNow",function(newmsg){
-      console.log(newmsg[0])
-      queuenow.value=newmsg[0];
-    });
     EventsOn("UpdateProcess",function(newnum){
 
       console.log(newnum[0])
       percent.value=newnum[0];
     });
     EventsOn("Push",function(newmsg){
-      queue.value.push(newmsg[0]);
+      console.log(newmsg[0])
+      queue.value.push({value:newmsg[0]})
     });
-    EventsOn("Push",function(newmsg){
+    EventsOn("Pop",function(){
       queue.value.shift()
     });
+    EventsOn("UpdateTerminal",function (newmsg) {
+        logs.value.push(newmsg[0])
+        if (logs.value.length>50){
+          logs.value.pop()
+        }
+    })
     return{
+      rows,
       queue,
-      tasknow,
-      queuenow,
       percent,
       inputValue,
       period,
@@ -221,6 +233,7 @@ export default {
       options,
       modes,
       cellStyle,
+      logs,
     }
   }
   ,
@@ -234,7 +247,10 @@ export default {
     },
     Download(){
       if(this.now=="Pid"){
-
+        if (this.inputValue.length==0){
+          return
+        }
+        this.$refs.queue.value.push(this.inputValue)
         DownloadByPid(this.inputValue);
         this.inputValue="";
       }else if (this.now=="Author"){
@@ -245,11 +261,23 @@ export default {
       }else {
         this.$emit("wait",true)
         DownloadByRank(this.$refs.dateSelect.selectedDate,this.period)
+        this.$refs.dateSelect.selectedDate = null
         this.$emit("wait",false)
       }
 
     }
   },
+  mounted() {
+    emitter.on("DownloadByRank",(e)=>{
+      DownloadByRank(e.date,e.period);
+    })
+    emitter.on("DownloadByAuthor",function(e){
+      DownloadByPid(e.author);
+    })
+    emitter.on("DownloadByPid",function(e){
+      DownloadByAuthorId(e.pid);
+    })
+  }
 }
 
 </script>
@@ -257,4 +285,59 @@ export default {
 <style lang="less" scoped>
 @import "../assets/style/font.less";
 @import "../assets/style/variable.less";
+@import "../assets/style/color.less";
+.terminal-text {
+  background-color: rgba(0,0,0,0.3);
+  font-family: monospace;
+  border: none;
+  white-space: pre-wrap;
+}
+.text{
+  background: rgba(@quartz,0.1);
+}
+.queueTable {
+  -webkit-background-clip: text;
+  //opacity: 0.5;
+}
+.No_Background{
+  background: rgba(ff, ff, ff, 0.3);
+  border: 2px solid #CD7F32;
+}
+/deep/.Xbord{
+  width: 80%;
+  position: relative;
+  text-align: center;
+  font-size: 24px;
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 2px solid rgb(17, 36, 100);
+    transition: all .5s;
+    animation: clippath 3s infinite linear;
+  }
+  @keyframes clippath {
+    0%, 100% { clip-path: inset(0 0 95% 0); }
+    25% { clip-path: inset(0 95% 0 0); }
+    50% { clip-path: inset(95% 0 0 0); }
+    75% { clip-path: inset(0 0 0 95%); }
+  }
+}
+/deep/ .el-table {
+  thead {
+    color: #fff;
+    font-weight: 500;
+    background: linear-gradient(to right, rgba(#6fa3fe,0.5), rgba(#4cdafe,0.5)) !important;
+    & th {
+      background-color: transparent;
+    }
+    & tr {
+      background-color: transparent;
+    }
+  }
+}
+
 </style>

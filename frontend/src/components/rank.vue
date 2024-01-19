@@ -1,123 +1,123 @@
 <template>
-  <el-container>
-    <p>rank</p>
-    <el-button @click="Temp"/>
-  </el-container>
+  <el-main>
+    <el-row>
+      <el-col :span="1"/>
+      <el-col :span="6">
+        <el-select
+            v-model="period"
+            class="m-2"
+            size="large"
+            style="width:150px"
+        >
+          <el-option
+              v-for="(item) in options"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+          />
+        </el-select>
+      </el-col>
+      <el-col :span="6">
+        <date-choose
+            key="rank"
+            ref="dateSelect"
+            :re="true"
+        ></date-choose>
+      </el-col>
+      <el-col :span="1"/>
+      <el-col :span="8">
+        <p>rank</p>
+        <el-button @click="downloadthispage"/>
+      </el-col>
+    </el-row>
+    <el-row>
+      <el-space
+          wrap
+          size="30px"
+      >
+        <PicCard v-for="items in picitem"
+
+
+        />
+      </el-space>
+    </el-row>
+
+
+  </el-main>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import DateChoose from "./DateChoose.vue";
+import PicCard from "./PicCard.vue";
 import {DownloadByAuthorId, DownloadByPid,DownloadByRank} from "../../wailsjs/go/main/App.js";
 import {EventsEmit, EventsOn} from "../../wailsjs/runtime";
-import { ref} from "vue";
-export default {
-  name: "maindownload",
-  components: {DateChoose},
-  props:{
-    Input: Number,
-    wait: Boolean,
+import {defineComponent, onMounted, ref} from "vue";
+import emitter from "../assets/js/Pub.js";
+defineComponent({
+  PicCard, DateChoose
+})
+name: "maindownload";
+
+const picitem  =ref([
+  {
+    pid:"1234",
+    type:"",
+    src:"",
   },
-  setup(){
-    const percent= ref(0);
-    const tasknow= ref("No Task in queue");
-    const queuenow=ref("There is no tasks waiting");
-    return{
-      tasknow,
-      queuenow,
-      percent,
-    }
-  }
-  ,
-  data(){
-    return{
-      now: "Pid",
-      options:[
-        {
-          value:"daily",
-          label:"Daily",
-        },
-        {
-          value:"weekly",
-          label:"Weekly",
-        },
-        {
-          value:"monthly",
-          label:"Monthly",
-        },
-        {
-          value:"daily_r18",
-          label:"Daily_R18",
-        },
-        {
-          value:"weekly_r18",
-          label:"Weekly_R18",
-        },
-      ],
-      modes:[
-        {
-          value:"Pid",
-          label:"By Pid",
-        },
-        {
-          value:"Author",
-          label:"By AuthorId",
-        },
-        {
-          value:"Rank",
-          label:"By Rank",
-        },
-      ],
-      inputValue: this.Input,
-      period:"daily",
-
-    }
+  {
+    pid:"1234",
+    type:"",
+    src:"",
   },
-  methods:{
-    updateParentValue() {
-      this.$emit('UpdateInput', this.inputValue);
-    },
-    changetype(data){
-      console.log(data)
-      this.value=data;
-    },
-    Download(){
-      if(this.now=="Pid"){
-
-        DownloadByPid(this.inputValue);
-        this.inputValue="";
-      }else if (this.now=="Author"){
-
-        this.$emit("wait",true)
-        DownloadByAuthorId(this.inputValue)
-        this.inputValue="";
-        this.$emit("wait",false)
-      }else {
-        this.$emit("wait",true)
-        DownloadByRank(this.$refs.dateSelect.selectedDate,this.period)
-        this.$emit("wait",false)
-      }
-
-    }
+  {
+    pid:"1234",
+    type:"",
+    src:"",
   },
+  {
+    pid:"1234",
+    type:"",
+    src:"",
+  },
+  {
+    pid:"1234",
+    type:"",
+    src:"",
+  },
+])
+const period=ref("daily");
+const options = ref([
+  {
+    value:"daily",
+    label:"Daily",
+  },
+  {
+    value:"weekly",
+    label:"Weekly",
+  },
+  {
+    value:"monthly",
+    label:"Monthly",
+  },
+  {
+    value:"daily_r18",
+    label:"Daily_R18",
+  },
+  {
+    value:"weekly_r18",
+    label:"Weekly_R18",
+  },
+]);
+const dateSelect= ref(null)
+const downloadthispage = ()=>{
+  console.log(dateSelect.value.selected.value)
+  emitter.emit("DownloadByRank",{date:dateSelect.value.selected.value,period:period})
 }
 
-EventsOn("UpdateTaskNow",function(newmsg){
-  console.log(newmsg)
-  console.log(newmsg[0])
-  this.$refs.tasknow=newmsg[0];
-});
-EventsOn("UpdateQueueNow",function(newmsg){
-  console.log(newmsg[0])
-  this.$refs.queuenow=newmsg[0];
-});
-EventsOn("UpdateProcess",function(newnum){
-
-  console.log(newnum[0])
-  this.$refs.process=newnum[0];
-});
 </script>
 
 
-<style scoped>
+<style lang="less" scoped>
+
 
 </style>

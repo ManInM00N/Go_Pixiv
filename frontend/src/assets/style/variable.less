@@ -1,3 +1,4 @@
+@import "Color.less";
 .mixin-after() {
   display: block;
   position: absolute;
@@ -7,10 +8,8 @@
   padding: @No_Gap;
 }
 .Half_light{
-  &::before {
-    background: #000000;
-    opacity: 0.3;
-  }
+  height:100%;
+  width:100%;
   //opacity: 0.5;
 }
 .Main{
@@ -20,11 +19,24 @@
   background-size:cover;
   z-index: -1;
 }
+.Get_Remain{
+  flex-grow:1;
+}
 .No_margin{
   margin: @No_Gap;
 }
+.Only_Text{
+  -webkit-background-clip: text;
+}
 .Divide_Line{
-  margin: 4px  0px 4px 0px;
+  margin: 6px  0px 6px 0px;
+}
+.Set_Roller{
+  height:calc(100vh - 40px)
+}
+.No_Background{
+  background-color: rgba(ff,ff,ff,0.5);
+  border: 2px solid @golden;
 }
 @No_Gap: 0px 0px 0px 0px;
 @transition-slow: .6s ease;
