@@ -7,4 +7,8 @@ export function DownloadByPid(arg1:string):Promise<boolean>;
 
 export function DownloadByRank(arg1:string,arg2:string):Promise<boolean>;
 
+export function PopLoadPool():Promise<void>;
+
+export function PreloadRank(arg1:string,arg2:string):Promise<boolean>;
+
 export function ReturnString():Promise<string>;

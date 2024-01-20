@@ -9,7 +9,9 @@ import (
 var (
 	SinglePool   gopool.GoPool
 	P            gopool.GoPool
+	RankloadPool gopool.GoPool
 	TaskPool     *goruntine.GoPool
+	RankPool     *goruntine.GoPool
 	Ctx          context.Context
 	Cancel       context.CancelFunc
 	IsClosed     = false

@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"fmt"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -9,10 +10,34 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 	. "main/backend/src/init"
+	"net/http"
+	"os"
+	"strings"
 )
 
 //go:embed all:frontend/dist
 var assets embed.FS
+
+type FileLoader struct {
+	http.Handler
+}
+
+func NewFileLoader() *FileLoader {
+	return &FileLoader{}
+}
+
+func (h *FileLoader) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+	var err error
+	requestedFilename := strings.TrimPrefix(req.URL.Path, "/")
+	println("Requesting file:", requestedFilename)
+	fileData, err := os.ReadFile(requestedFilename)
+	if err != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte(fmt.Sprintf("Could not load file %s", requestedFilename)))
+	}
+
+	res.Write(fileData)
+}
 
 func main() {
 	// Create an instance of the MainApp structure
@@ -27,7 +52,8 @@ func main() {
 		Fullscreen:  false,
 		StartHidden: false,
 		AssetServer: &assetserver.Options{
-			Assets: assets,
+			Assets:  assets,
+			Handler: NewFileLoader(),
 		},
 		BackgroundColour: &options.RGBA{R: 233, G: 233, B: 233, A: 128},
 		OnStartup:        MainApp.startup,

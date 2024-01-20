@@ -1,7 +1,7 @@
 <template>
   <el-skeleton
       style="width: 240px"
-      :loading="true"
+      :loading="false"
       animated
       :throttle="500"
   >
@@ -24,18 +24,50 @@
       </div>
     </template>
     <template #default>
-      <el-card :body-style="{ padding: '0px', marginBottom: '1px' }">
+      <el-card :body-style="{ padding: '0px', marginBottom: '1px',width: '100%' }">
         <img
-            :src="src"
+            :src="$props.img"
             class="image"
         />
         <div style="padding: 14px">
-          <span>Delicious hamburger</span>
-          <div class="bottom card-header                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ">
-            <el-button text class="button" @click="download">
-              <el-icon><Download/></el-icon>
-            </el-button>
-          </div>
+          <el-row>
+
+            <el-text class="w-280px mb-2" truncated>
+
+              <a :href="'https://www.pixiv.net/artworks/'+$props.pid"
+                style="text-decoration: none;"
+              >
+                {{ $props.title }}
+              </a>
+
+            </el-text>
+
+          </el-row>
+          <el-row>
+            <a :href="'https://www.pixiv.net/users/'+$props.authorId">
+              <el-text class="w-280px mb-2" truncated type="primary">{{$props.author}}</el-text>
+            </a>
+          </el-row>
+          <el-row>
+            <el-col :span="20">
+              <el-text class="w-250px mb-2" truncated type="success">
+                Pages:{{$props.pages}}
+              </el-text>
+            </el-col>
+
+            <el-col :span="4">
+              <div class="bottom card-header                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ">
+                <el-button
+                    text class="button"
+                    @click="download"
+                    :disabled="false"
+                >
+                  <el-icon size="30"><Download/></el-icon>
+                </el-button>
+              </div>
+            </el-col>
+          </el-row>
+
         </div>
       </el-card>
     </template>
@@ -46,25 +78,44 @@
 import {ref} from "vue";
 import emitter from "../assets/js/Pub.js";
 const name= "PicCard"
-const pid = ref('')
-const src = ref('')
-const title = ref('')
-defineProps({
+const props = defineProps({
+  pid :{
+    type:String,
+  },
+  author:{
+    type:String,
+  },
   title: {
     type: String,
     default: "确定",
   },
-  icons: {
+  img: {
     type: String,
     default: "",
   },
+  pages:{
+    type: String,
+    default: 1,
+  },
+  authorId:{
+    type: String,
+    default:1,
+  }
 });
-const download = ()=>{
-  emitter.emit("DownloadByPid",{pid:pid})
-}
 
+const download = ()=>{
+  console.log("trying to download" ,props.pid,props.pid.value)
+  emitter.emit("DownloadByPid",{pid:props.pid})
+}
+defineExpose({
+
+})
 </script>
 
 <style lang="less" scoped>
+.image{
+  width:100%;
+  height:100%;
 
+}
 </style>

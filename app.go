@@ -20,6 +20,7 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 func (a *App) DownloadByPid(text string) bool {
+	println(text)
 	Download_By_Pid(text)
 	return true
 }
@@ -37,4 +38,16 @@ func (a *App) DownloadByRank(text, Type string) bool {
 		runtime.EventsEmit(a.ctx, name, data)
 	})
 	return true
+}
+func (a *App) PreloadRank(text, Type string) bool {
+	LoadingNow = true
+	DownloadRankMsg(text, Type, func(name string, data ...interface{}) {
+		runtime.EventsEmit(a.ctx, name, data)
+	})
+	return true
+}
+func (a *App) PopLoadPool() {
+	LoadingNow = false
+	RankPool.Wait()
+	LoadingNow = true
 }

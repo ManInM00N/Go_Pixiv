@@ -45,7 +45,12 @@
     </el-menu>
 
   </el-aside>
-  <el-main class="View" id = "View" name="View" >
+  <el-main
+      class="View"
+      id = "View"
+      name="View"
+      style="padding-right: 5px"
+  >
 
     <router-view v-slot="{ Component,route }">
       <keep-alive v-if="route.meta.keepAlive ">
@@ -60,48 +65,29 @@
   </el-main>
 </template>
 
-<script>
+<script setup>
 import DateChoose from "./DateChoose.vue";
-import {ref} from "vue";
-export default {
-  name: "Menu_List",
-  components:{
-    DateChoose,
-  },
+import {defineComponent, ref} from "vue";
 
-  data () {
-    return {
-      activeIndex:"/maindownload",
-      theme: 'dark',
-      items:[
-        {id: 1,iconmsg :"HomeFilled",key:"maindownload" ,index:"/maindownload"},
-        {id: 2,iconmsg :"StarFilled",key:"follow",index:"/follow"},
-        {id: 3,iconmsg :"Histogram",key:"rank",index:"/rank"},
-        {id: 4,iconmsg :"Search",key:"search",index:"/search"},
-        {id: 5,iconmsg :"Setting",key:"setting",index:"/setting"},
-      ],
-      userself: {
-        id:6,key: "user",index:"/user"
-      },
-      Input:'',
-      wait:false,
-    }
-  },
-  watch:{
-    "wait":function(data)
-    {
-      this.wait=data;
-    },
-    "UpdateInput":function (NewValue){
-      this.Input=NewValue
-    }
-  },
-  methods: {
-    handleMenuSelect(index) {
-      console.log("ee",this.activeIndex)
-    },
-
-  },
+const activeIndex=ref("/maindownload")
+const theme= ref('dark')
+const items=ref([
+  {id: 1,iconmsg :"HomeFilled",key:"maindownload" ,index:"/maindownload"},
+  {id: 2,iconmsg :"StarFilled",key:"follow",index:"/follow"},
+  {id: 3,iconmsg :"Histogram",key:"rank",index:"/rank"},
+  {id: 4,iconmsg :"Search",key:"search",index:"/search"},
+  {id: 5,iconmsg :"Setting",key:"setting",index:"/setting"},
+])
+const userself=ref({
+  id:6,key: "user",index:"/user"
+})
+const Input=ref('')
+const wait=ref(false)
+function waitchange(val){
+  wait.value=val
+}
+function  handleMenuSelect(index) {
+  console.log("ee",this.activeIndex)
 }
 </script>
 

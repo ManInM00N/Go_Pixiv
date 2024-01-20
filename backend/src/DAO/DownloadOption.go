@@ -6,15 +6,16 @@ import (
 )
 
 type Option struct {
-	Mode       int64
-	R18        bool
-	Likelimit  int64
-	ShowSingle bool
-	Suffix     string
-	MinDate    string
-	Rank       string
-	RankDate   string
-	DiffAuthor bool
+	Mode        int64
+	R18         bool
+	Likelimit   int64
+	ShowSingle  bool
+	Suffix      string
+	MinDate     string
+	Rank        string
+	RankDate    string
+	DiffAuthor  bool
+	OnlyPreview bool
 }
 
 const (
@@ -37,15 +38,16 @@ type option func(*Option)
 
 func NewOption(op ...option) *Option {
 	Op := &Option{
-		Mode:       ByPid,
-		R18:        false,
-		Likelimit:  0,
-		ShowSingle: false,
-		Suffix:     "",
-		MinDate:    "19900101",
-		Rank:       "daily",
-		RankDate:   fmt.Sprintf("%04d%02d%02d", time.Now().Year(), time.Now().Month(), time.Now().Day()),
-		DiffAuthor: true,
+		Mode:        ByPid,
+		R18:         false,
+		Likelimit:   0,
+		ShowSingle:  false,
+		Suffix:      "",
+		MinDate:     "19900101",
+		Rank:        "daily",
+		RankDate:    fmt.Sprintf("%04d%02d%02d", time.Now().Year(), time.Now().Month(), time.Now().Day()),
+		DiffAuthor:  true,
+		OnlyPreview: false,
 	}
 	for _, O := range op {
 		O(Op)
@@ -103,6 +105,11 @@ func WithPage(page string) option {
 func WithDiffAuthor(is bool) option {
 	return func(o *Option) {
 		o.DiffAuthor = is
+	}
+}
+func WithOnlyPreview(is bool) option {
+	return func(o *Option) {
+		o.OnlyPreview = is
 	}
 }
 

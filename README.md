@@ -1,8 +1,7 @@
 <h1>使用须知 Read Me First!!!</h1>
 <br>
 
-![License](https://img.shields.io/badge/license-MIT-yellow)
-![Static Badge](https://img.shields.io/badge/LICENSE-GPL3.0-green)
+![License](https://img.shields.io/badge/LICENSE-GPL3.0-green)
 ![Static Badge](https://img.shields.io/badge/Wails-2.7.1-%2332CD99)
 ![Static Badge](https://img.shields.io/badge/Go-%3E%3D1.21.5-%23007FFF)
 

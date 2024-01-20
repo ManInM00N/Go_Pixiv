@@ -45,6 +45,48 @@ func Download(i *Illust, op *Option) bool {
 			Response.Body.Close()
 		}
 	}()
+	if op.OnlyPreview {
+		ok := true
+		_, err := os.Stat("cache")
+		if err != nil {
+			os.Mkdir("cache", os.ModePerm)
+		}
+		cachepath := "cache/images"
+		_, err = os.Stat(cachepath)
+		if err != nil {
+			os.Mkdir(cachepath, os.ModePerm)
+
+		}
+		cachepath += "/" + statics.Int64ToString(i.Pid) + ".jpg"
+		if _, err := os.Stat(cachepath); err == nil {
+			return true
+		}
+		for k := 0; k < 10; k++ {
+			Response, err = clientcopy.Do(Request)
+			if k == 9 && err != nil {
+				DebugLog.Println("Illust Resouce Request Error", err)
+				ok = false
+				break
+			} else if err == nil {
+				break
+			}
+			time.Sleep(time.Millisecond * time.Duration(Setting.Downloadinterval))
+		}
+		if !ok {
+			os.Remove(cachepath)
+			return false
+		}
+
+		f, _ := os.OpenFile(cachepath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0755)
+		bufWriter := bufio.NewWriter(f)
+		_, err = io.Copy(bufWriter, Response.Body)
+		if err != nil {
+			return false
+		}
+		f.Close()
+		bufWriter.Flush()
+		return true
+	}
 	_, err = os.Stat(Setting.Downloadposition)
 	if err != nil {
 		os.Mkdir(Setting.Downloadposition, os.ModePerm)
@@ -118,7 +160,6 @@ func Download(i *Illust, op *Option) bool {
 		bufWriter := bufio.NewWriter(f)
 		_, err = io.Copy(bufWriter, Response.Body)
 		if err != nil {
-
 			DebugLog.Println(i.Pid, " Write Failed", err)
 			return false
 		}
@@ -248,6 +289,11 @@ func work(id int64, mode *Option) (i *Illust, err error) { //按作品id查找
 	if i.AgeLimit == "r18" && !mode.R18 {
 		err = fmt.Errorf("%w", &AgeLimit{S: "AgeLimitExceed", Err: errors.New("AgeLimitExceed")})
 	}
+	if mode.OnlyPreview {
+		i.PreviewImageUrl = jsonmsg.Get("urls.small").String()
+		//DebugLog.Println(i.PreviewImageUrl)
+		return i, err
+	}
 	pages, err2 := GetWebpageData(urltail+"/pages", strid, 1)
 	if err2 != nil {
 		err = fmt.Errorf("Get illustpage data error %w", err2)
@@ -263,7 +309,7 @@ func work(id int64, mode *Option) (i *Illust, err error) { //按作品id查找
 		return nil, err
 	}
 
-	i.PreviewImageUrl = imagedata[0].URLs.ThumbMini
+	i.PreviewImageUrl = imagedata[0].URLs.Small
 	for _, image := range imagedata {
 		i.ImageUrl = append(i.ImageUrl, image.URLs.Original)
 	}
@@ -293,7 +339,9 @@ func GetRank(option *Option) ([]gjson.Result, error) {
 func JustDownload(pid string, mode *Option) (int, bool) {
 	illust, err := work(statics.StringToInt64(pid), mode)
 	if ContainMyerror(err) {
-		return 0, true
+		if !mode.OnlyPreview {
+			return 0, true
+		}
 	}
 	if illust == nil {
 		DebugLog.Println(pid, " Download failed")

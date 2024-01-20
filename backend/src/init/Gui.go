@@ -18,10 +18,12 @@ var (
 	QueueTaskMsg = ""
 	ProcessMax   = int64(0)
 	ProcessNow   = int64(0)
+	LoadingNow   = false
 )
 
 func Download_By_Pid(text string) {
 	text = statics.CatchNumber(text)
+	println(text)
 	if text == "" {
 		return
 	}
@@ -87,8 +89,6 @@ func Download_By_Author(text string, callEvent func(name string, data ...interfa
 				satisfy++
 				ProcessNow++
 				callEvent("UpdateProcess", 100*ProcessNow/max(ProcessMax, 1))
-				//process.Refresh()
-
 				return nil, nil
 			})
 		}
@@ -129,7 +129,7 @@ func Download_By_Rank(text, Type string, callEvent func(name string, data ...int
 	for i := range temp {
 		date += temp[i]
 	}
-	if len(date) != 6 {
+	if len(date) != 8 {
 		return
 	}
 	//hasrank := time.Date(		,tt.Location())
@@ -220,4 +220,67 @@ func Download_By_Rank(text, Type string, callEvent func(name string, data ...int
 		})
 
 	}
+}
+func DownloadRankMsg(text, Type string, callEvent func(name string, data ...interface{})) {
+	date := ""
+	println(text, Type)
+	temp := strings.Split(text, "-")
+	for i := range temp {
+		date += temp[i]
+	}
+	println(date)
+
+	if len(date) != 8 {
+		println("date error")
+		return
+	}
+	//hasrank := time.Date(		,tt.Location())
+	RankPool.Add(func() {
+		for i := int64(1); i < int64(3); i++ {
+			temp := i
+			if IsClosed || !LoadingNow {
+				break
+			}
+
+			page := temp
+			dd := date
+			op := NewOption(WithType(0), WithRankmode(Type), WithDate(dd), WithR18(true), WithLikeLimit(Setting.LikeLimit), WithPage(strconv.FormatInt(page, 10)))
+			//println(page)
+			c := make(chan *Illust, 2000)
+			all, err := GetRank(op)
+			if err != nil {
+				DebugLog.Println("Error getting Rank", err)
+				return
+			}
+			options := NewOption(WithMode(ByPid), WithR18(Setting.Agelimit), WithLikeLimit(Setting.LikeLimit), WithDiffAuthor(false), WithDate(op.RankDate), WithRankmode(Type), WithOnlyPreview(true))
+			for _, key := range all {
+				k := key
+				if IsClosed || !LoadingNow {
+					break
+				}
+				RankloadPool.AddTask(func() (interface{}, error) {
+					if IsClosed || !LoadingNow {
+						return nil, nil
+					}
+					temp := k
+					illust, err := work(statics.StringToInt64(temp.String()), options)
+					if err != nil {
+						if !ContainMyerror(err) {
+							return nil, nil
+						}
+					}
+					Download(illust, options)
+					if IsClosed || !LoadingNow {
+						return nil, nil
+					}
+					callEvent("UpdateLoad", illust.Pid, illust.Title, illust.UserName, illust.Pages, illust.UserID)
+					return nil, nil
+				})
+			}
+			RankloadPool.Wait()
+			close(c)
+			ProcessNow = 0
+		}
+		callEvent("LoadOk")
+	})
 }

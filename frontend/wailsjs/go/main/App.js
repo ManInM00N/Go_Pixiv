@@ -14,6 +14,14 @@ export function DownloadByRank(arg1, arg2) {
   return window['go']['main']['App']['DownloadByRank'](arg1, arg2);
 }
 
+export function PopLoadPool() {
+  return window['go']['main']['App']['PopLoadPool']();
+}
+
+export function PreloadRank(arg1, arg2) {
+  return window['go']['main']['App']['PreloadRank'](arg1, arg2);
+}
+
 export function ReturnString() {
   return window['go']['main']['App']['ReturnString']();
 }

@@ -30,19 +30,18 @@
       </el-row >
       <el-divider class="Divide_Line"/>
       <el-row>
-        <el-col :span="8" v-if="this.now!=='Rank'">
+        <el-col :span="8" v-if="now!=='Rank'">
         </el-col>
-        <el-col :span="8" v-if="this.now!=='Rank'">
+        <el-col :span="8" v-if="now!=='Rank'">
           <el-input
               v-model="inputValue"
               size="large"
               placeholder="Pid/AuthorId"
               clearable
               type="number"
-              @input="updateParentValue"
           ></el-input>
         </el-col>
-        <el-col :span="8" v-if="this.now==='Rank'">
+        <el-col :span="8" v-if="now==='Rank'">
           <el-select
               v-model="period"
               class="m-2"
@@ -58,7 +57,7 @@
             />
           </el-select>
         </el-col>
-        <el-col :span="8" v-if="this.now==='Rank'">
+        <el-col :span="8" v-if="now==='Rank'">
           <date-choose
             key="main"
             ref="dateSelect"
@@ -143,7 +142,7 @@
 import DateChoose from "./DateChoose.vue";
 import {DownloadByAuthorId, DownloadByPid,DownloadByRank} from "../../wailsjs/go/main/App.js";
 import {EventsEmit, EventsOn} from "../../wailsjs/runtime";
-import { ref} from "vue";
+import {defineComponent, ref} from "vue";
 import emitter from "../assets/js/Pub.js"
 export default {
   name: "maindownload",
@@ -153,13 +152,11 @@ export default {
     wait: Boolean,
   },
   setup(){
-    const logs=ref([
-
-    ]);
+    const logs=ref([]);
     const rows= ref(10); // 可根据需要调整展示的行数
     const cellStyle = ({  rowIndex }) => {
-    if (rowIndex === 0) {
-      return 'Xbord'
+      if (rowIndex === 0) {
+        return 'Xbord'
       }
     }
     const percent= ref(0);
@@ -202,11 +199,9 @@ export default {
         label:"By Rank",
       },
     ]);
-
     const inputValue= ref('');
     const period=ref("daily");
     EventsOn("UpdateProcess",function(newnum){
-
       console.log(newnum[0])
       percent.value=newnum[0];
     });
@@ -218,11 +213,12 @@ export default {
       queue.value.shift()
     });
     EventsOn("UpdateTerminal",function (newmsg) {
-        logs.value.push(newmsg[0])
-        if (logs.value.length>50){
-          logs.value.pop()
-        }
+      logs.value.push(newmsg[0])
+      if (logs.value.length>50){
+        logs.value.pop()
+      }
     })
+
     return{
       rows,
       queue,
@@ -247,14 +243,15 @@ export default {
     },
     Download(){
       if(this.now=="Pid"){
+        console.log("Get Downloading",this.inputValue,this.inputValue.length)
         if (this.inputValue.length==0){
           return
         }
-        this.$refs.queue.value.push(this.inputValue)
         DownloadByPid(this.inputValue);
         this.inputValue="";
       }else if (this.now=="Author"){
         this.$emit("wait",true)
+        // this.$refs.queue.value.push(this.inputValue)
         DownloadByAuthorId(this.inputValue)
         this.inputValue="";
         this.$emit("wait",false)
@@ -266,22 +263,19 @@ export default {
       }
 
     }
-  },
-  mounted() {
-    emitter.on("DownloadByRank",(e)=>{
-      DownloadByRank(e.date,e.period);
-    })
-    emitter.on("DownloadByAuthor",function(e){
-      DownloadByPid(e.author);
-    })
-    emitter.on("DownloadByPid",function(e){
-      DownloadByAuthorId(e.pid);
-    })
   }
 }
-
+emitter.on("DownloadByRank",(e)=>{
+  DownloadByRank(e.date,e.period);
+})
+emitter.on("DownloadByAuthor",function(e){
+  DownloadByAuthorId(e.author);
+})
+emitter.on("DownloadByPid",function(e){
+  console.log("Received ",e,e.pid)
+  DownloadByPid(e.pid);
+})
 </script>
-
 <style lang="less" scoped>
 @import "../assets/style/font.less";
 @import "../assets/style/variable.less";

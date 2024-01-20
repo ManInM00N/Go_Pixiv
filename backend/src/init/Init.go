@@ -44,9 +44,11 @@ func init() {
 	Setting.Downloadinterval = max(Setting.Downloadinterval, 100)
 	DebugLog.Println("Check settings:"+Setting.Proxy, "PHPSESSID="+Setting.Cookie, "Download Position=", Setting.Downloadposition)
 	UpdateSettings()
-
+	RankPool = goruntine.NewGoPool(200, 1)
 	TaskPool = goruntine.NewGoPool(200, 1)
 	TaskPool.Run()
+	RankPool.Run()
+	RankloadPool = gopool.NewGoPool(2, gopool.WithTaskQueueSize(5000))
 	SinglePool = gopool.NewGoPool(1, gopool.WithTaskQueueSize(100))
 	P = gopool.NewGoPool(4, gopool.WithTaskQueueSize(5000))
 }

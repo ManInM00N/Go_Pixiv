@@ -6,6 +6,7 @@
           format="YYYY-MM-DD"
           value-format="YYYY-MM-DD"
           type="date"
+          :disabled="lock"
           placeholder="Pick a day"
           :disabled-date="disabledDate"
           size="large"
@@ -19,11 +20,17 @@
 <script lang="ts" setup>
 import {onMounted, ref} from 'vue'
 import {padStart} from "../assets/js/Time.js"
+import emitter from "../assets/js/Pub.js";
+
 const props =defineProps({
   re: {
     type: Boolean,
     default: false,
   },
+  lock:{
+    type: Boolean,
+    default:false,
+  }
 });
 function disabledDate(time: Date) {
   return time.getTime() >  calculateNearestNoon();
@@ -34,7 +41,6 @@ const calculateNearestNoon = () => {
   noon.setHours(12, 0, 0, 0);
   return now.getHours() >= 12 ? new Date(noon.getTime()-24*60*60*1000) : new Date(noon.getTime()- 48 * 60 * 60 * 1000);
 };
-
 const selectedDate= ref(formatDateToYYYYMMDD(calculateNearestNoon()))
 function formatDateToYYYYMMDD(date) {
   const year = date.getFullYear();
@@ -42,16 +48,19 @@ function formatDateToYYYYMMDD(date) {
   const day = padStart(date.getDate(), 2, '0');
   return `${year}-${month}-${day}`;
 }
+const emitsEventList=defineEmits(["DownloadByRank"])
 
 const re = ref(props.re)
 function refresh(){
   if (re.value==true){
-    location.reload()
+    // location.reload()
   }
-  console.log(re,props.re)
-  console.log(selectedDate.value)
-
+  // console.log(re,props.re)
+  // console.log(selectedDate.value)
 }
+defineExpose(
+    {selectedDate}
+)
 </script>
 
 <style scoped lang="less">
