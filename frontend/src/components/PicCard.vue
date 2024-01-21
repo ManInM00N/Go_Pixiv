@@ -31,22 +31,21 @@
         />
         <div style="padding: 14px">
           <el-row>
-
-            <el-text class="w-280px mb-2" truncated>
-
-              <a :href="'https://www.pixiv.net/artworks/'+$props.pid"
-                style="text-decoration: none;"
-              >
+            <el-text
+                class="w-280px mb-2"
+                truncated
+                @click="jump('https://www.pixiv.net/artworks/'+$props.pid)"
+            >
                 {{ $props.title }}
-              </a>
-
             </el-text>
-
           </el-row>
           <el-row>
-            <a :href="'https://www.pixiv.net/users/'+$props.authorId">
-              <el-text class="w-280px mb-2" truncated type="primary">{{$props.author}}</el-text>
-            </a>
+              <el-text
+                  class="w-280px mb-2"
+                  truncated
+                  type="primary"
+                  @click="'https://www.pixiv.net/users/'+$props.authorId"
+              >{{$props.author}}</el-text>
           </el-row>
           <el-row>
             <el-col :span="20">
@@ -110,6 +109,11 @@ const download = ()=>{
 defineExpose({
 
 })
+function jump(event) {
+  console.log("jump" ,event)
+  window.open(event, '_blank')
+
+}
 </script>
 
 <style lang="less" scoped>

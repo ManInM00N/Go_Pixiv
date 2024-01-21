@@ -49,7 +49,7 @@
       class="View"
       id = "View"
       name="View"
-      style="padding-right: 5px"
+      style="padding-right: 5px;padding-left: 5px"
   >
 
     <router-view v-slot="{ Component,route }">

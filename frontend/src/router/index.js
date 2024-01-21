@@ -33,10 +33,7 @@ const router=createRouter({
             meta: {
                 keepAlive: true,
             },
-            beforeRouteLeave(to,from,next){
-                to.meta.keepAlive = true
-                next(0)
-            }
+
         },
         {
             path: '/search',

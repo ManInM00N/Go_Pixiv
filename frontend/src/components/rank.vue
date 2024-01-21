@@ -49,94 +49,78 @@
       </el-col>
       <el-col :span="4">
         <el-button
+            size="large"
             @click="Rankload"
+            :disabled="lock"
         >
           <el-icon size="25px"><Search/> </el-icon>
         </el-button>
 
       </el-col>
     </el-row>
-    <br>
-    <el-skeleton
-        :loading="loading"
-        animated
-        :throttle="500"
-    >
-      <template #template>
-        <el-space
-          wrap
-        >
-          <el-skeleton-item variant="image" style="width: 290px; height: 240px" />
-          <el-skeleton-item variant="image" style="width: 290px; height: 240px" />
-          <el-skeleton-item variant="image" style="width: 290px; height: 240px" />
-          <el-skeleton-item variant="image" style="width: 290px; height: 240px" />
-          <el-skeleton-item variant="image" style="width: 290px; height: 240px" />
-          <el-skeleton-item variant="image" style="width: 290px; height: 240px" />
+    <el-row>
+      <el-col :span="8">
 
-        </el-space>
-        <br>
-        <h1 size="60px">{{tip}}  {{loadup}}/{{sum}}</h1>
-      </template>
-      <template #default>
-        <el-row>
-          <el-col :span="8">
-            <el-text
+          <el-text
               type="primary"
-              align="center"
-            >
-              {{pagemsg}}
-            </el-text>
-            <el-text>
-              {{remainderTime}}
-            </el-text>
-          </el-col>
-          <el-col :span="4">
-            <el-text>
-              download this page
-            </el-text>
-          </el-col>
-          <el-col>
-            <el-icon>
-              <Download/>
-              <el-button @click="downloadthispage"/>
-
-            </el-icon>
-          </el-col>
-        </el-row>
-<!--        <el-container-->
-<!--            v-masonry-->
-<!--        >-->
-<!--            <PicCard-->
-<!--                v-for="(item, index) in picitem"-->
-<!--                :author="item.Author"-->
-<!--                :img="item.src"-->
-<!--                :title="item.Title"-->
-<!--                :pid="item.pid"-->
-<!--                :pages="item.pages"-->
-<!--                :key="index"-->
-<!--                v-masonry-tile-->
-<!--            />-->
-<!--        </el-container>-->
-        <MasonryWall
-            :gap="9"
-            :column-width="260"
-            :items="picitem"
-        >
-          <template
-              #default="{item,index}"
           >
-            <PicCard
-                :author="item.Author"
-                :img="item.src"
-                :title="item.Title"
-                :pid="item.pid"
-                :authorId="item.authorId"
-            />
-          </template>
-        </MasonryWall>
-      </template>
+            <h1>
+            {{pagemsg}}
+            </h1>
 
-    </el-skeleton>
+          </el-text>
+
+      </el-col>
+
+      <el-col :span="11">
+        <el-text
+        type="success"
+        >
+          <h1>
+            {{remainderTime}}
+
+          </h1>
+        </el-text>
+      </el-col>
+      <el-col :span="5">
+        <h1>
+          <el-button
+              @click="downloadthispage"
+              size="large"
+          >
+            download this page
+            <el-icon
+                size="large"
+            >
+              <Download/>
+            </el-icon>
+          </el-button>
+        </h1>
+
+      </el-col>
+    </el-row>
+    <Waterfall
+        :list="picitem"
+        width="300"
+        background-color=""
+        animation-effect="fadeInUp"
+    >
+      <template #item="{ item, url, index }">
+        <div class="card">
+<!--            <LazyImg :url="url" />-->
+<!--            <p class="text">这是具体内容</p>-->
+          <PicCard
+              :author="item.Author"
+              :img="item.src"
+              :title="item.Title"
+              :pid="item.pid"
+              :authorId="item.authorId"
+              :pages="item.pages"
+          />
+        </div>
+      </template>
+    </Waterfall>
+
 
   </el-main>
 </template>
@@ -150,6 +134,9 @@ import {defineComponent, onMounted, ref,toRef} from "vue";
 import emitter from "../assets/js/Pub.js";
 import MasonryWall from '@yeger/vue-masonry-wall'
 import {Download} from "@element-plus/icons-vue";
+import { LazyImg, Waterfall } from 'vue-waterfall-plugin-next'
+import 'vue-waterfall-plugin-next/dist/style.css'
+import 'animate.css';
 defineComponent({
   PicCard, DateChoose,MasonryWall
 })
@@ -187,7 +174,7 @@ const loading = ref(true)
 const sum = ref(100)
 const loadup = ref(0)
 const pagemsg = ref('')
-const pages = ref(1)
+const pages = ref('1')
 const downloadthispage = ()=>{
   console.log(dateSelect.value.selectedDate);
   emitter.emit("DownloadByRank",{date:dateSelect.value.selectedDate,period:period.value})
@@ -207,7 +194,9 @@ function Rankload(){
 }
 EventsOn("UpdateLoad",function(msg){
   console.log(msg[0])
-  picitem.value = [...picitem.value,{pid:msg[0],Title:msg[1],Author: msg[2],src: "cache/images/"+msg[0]+".jpg",pages:msg[3],authorId:msg[4]}]
+  // picitem.value = [...picitem.value,{pid:msg[0],Title:msg[1],Author: msg[2],src: "cache/images/"+msg[0]+".jpg",pages:msg[3],authorId:msg[4]}]
+  // picitem.value.push({pid:msg[0],Title:msg[1],Author: msg[2],src: "cache/images/"+msg[0]+".jpg",pages:msg[3],authorId:msg[4]})
+  picitem.value=picitem.value.concat({pid:msg[0],Title:msg[1],Author: msg[2],src: "cache/images/"+msg[0]+".jpg",pages:msg[3],authorId:msg[4]})
   loadup.value++;
 })
 EventsOn("LoadOk",function(){
@@ -222,7 +211,7 @@ onMounted(function(){
 
 function  ComputeDate(){
   var strDate=new Date(re_Date.value);
-  var endDate = new Date(); // 结束时间
+  var endDate = new Date();
   var diffDate = endDate.getTime() - strDate.getTime()
   var days = Math.floor(diffDate / (24 * 3600 * 1000));
   var leave1 = diffDate % (24 * 3600 * 1000);
@@ -231,7 +220,7 @@ function  ComputeDate(){
   var minutes = Math.floor(leave2 / (60 * 1000));
   var leave3 = leave2 % (60 * 1000);
   var seconds = Math.round(leave3 / 1000);
-  remainderTime.value=minutes+'分钟' + seconds +"秒"
+  remainderTime.value="耗时："+minutes+'分钟' + seconds +"秒"
   console.log(remainderTime.value);
 }
 </script>
