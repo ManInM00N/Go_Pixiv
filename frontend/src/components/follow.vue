@@ -172,7 +172,7 @@ EventsOn("UpdateLoadFollow",function(msg){
   picitem.value.push({pid:msg[0],Title:msg[1],Author: msg[2],src: "cache/images/"+msg[0]+".jpg",pages:msg[3],authorId:msg[4],r18:msg[5]})
   // picitem.value=picitem.value.concat({pid:msg[0],Title:msg[1],Author: msg[2],src: "cache/images/"+msg[0]+".jpg",pages:msg[3],authorId:msg[4]})
 })
-EventsOn("FollowOk",function(){
+EventsOn("FollowLoadOk",function(){
   loading.value=false
 })
 function handlePageChange(Page) {

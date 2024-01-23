@@ -118,6 +118,12 @@ EventsOn("login",function(msg){
   }else {
     items.value[1].logined=false
     form.value.cookie=""
+    const temp = GetSetting()
+    console.log(temp)
+    temp.then(res=>{
+      form.value=res
+      console.log(form.value)
+    })
   }
   console.log(items.value[1].logined,form.value['r-18'],!(!form.value['r-18']))
 })

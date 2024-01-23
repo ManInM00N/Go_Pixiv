@@ -34,6 +34,7 @@ func init() {
 	defer ymlfile.Close()
 	bytevalue, _ := ioutil.ReadAll(ymlfile)
 	yaml.Unmarshal(bytevalue, &Setting)
+	Setting.Prefix = "http://127.0.0.1:"
 	Setting.LikeLimit = max(Setting.LikeLimit, 0)
 	_, err := os.Stat(Setting.Downloadposition)
 	if err != nil {
