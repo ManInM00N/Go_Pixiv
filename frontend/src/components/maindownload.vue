@@ -139,6 +139,12 @@
         </el-col>
       </el-row>
     </el-main>
+    <el-footer>
+      <el-text
+      type="danger">
+        此软件为免费开源，如果是购买获得请退款举报
+      </el-text>
+    </el-footer>
   </el-container>
 </template>
 

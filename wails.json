@@ -9,5 +9,12 @@
   "author": {
     "name": "ManInM00N",
     "email": "571404393@qq.com"
+  },
+  "Info": {
+    "companyName": "",
+    "productName": "Go!Pixiv",
+    "productVersion": "1.0.0",
+    "copyright": "",
+    "comments": "Built using Wails (https://wails.io)"
   }
 }

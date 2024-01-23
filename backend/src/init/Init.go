@@ -40,9 +40,9 @@ func init() {
 	if err != nil {
 		Setting.Downloadposition = "Download"
 	}
-	Setting.Retry429 = max(Setting.Retry429, 3000)
-	Setting.Retryinterval = max(Setting.Retryinterval, 200)
-	Setting.Downloadinterval = max(Setting.Downloadinterval, 100)
+	Setting.Retry429 = max(Setting.Retry429, 5000)
+	Setting.Retryinterval = max(Setting.Retryinterval, 1000)
+	Setting.Downloadinterval = max(Setting.Downloadinterval, 200)
 	DebugLog.Println("Check settings:"+Setting.Proxy, "PHPSESSID="+Setting.Cookie, "Download Position=", Setting.Downloadposition)
 	UpdateSettings()
 	RankPool = goruntine.NewGoPool(200, 1)
