@@ -7,7 +7,7 @@ import (
 )
 
 func GetClient() *http.Client {
-	proxyURL, _ := url2.Parse(Setting.Proxy)
+	proxyURL, _ := url2.Parse(Setting.Prefix + Setting.Proxy)
 	return &http.Client{
 		Transport: &http.Transport{
 			Proxy:                 http.ProxyURL(proxyURL),

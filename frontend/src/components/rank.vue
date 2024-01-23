@@ -1,8 +1,14 @@
 <template>
+
+
   <el-main
     style="padding-left: 5px;padding-right: 5px"
+    class="scrollbar"
+
   >
-    <el-row>
+    <el-row
+      class="ret"
+    >
       <el-col :span="1"/>
       <el-col :span="6">
         <el-select
@@ -55,17 +61,18 @@
         >
           <el-icon size="25px"><Search/> </el-icon>
         </el-button>
-
       </el-col>
     </el-row>
+
     <el-row>
       <el-col :span="8">
 
           <el-text
-              type="primary"
+              type="danger"
           >
             <h1>
             {{pagemsg}}
+              {{tip}}
             </h1>
 
           </el-text>
@@ -99,16 +106,16 @@
 
       </el-col>
     </el-row>
+
     <Waterfall
         :list="picitem"
         width="300"
         background-color=""
         animation-effect="fadeInUp"
+        key="rankWaterfall"
     >
       <template #item="{ item, url, index }">
         <div class="card">
-<!--            <LazyImg :url="url" />-->
-<!--            <p class="text">这是具体内容</p>-->
           <PicCard
               :author="item.Author"
               :img="item.src"
@@ -116,13 +123,26 @@
               :pid="item.pid"
               :authorId="item.authorId"
               :pages="item.pages"
+              :r18="item.r18"
+              :limit="$props.form['r-18']"
           />
         </div>
       </template>
     </Waterfall>
+    <el-footer v-if="loading===true">
+      <div class="loader" id ="loader" >
+        <div class ="loading">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
 
-
+    </el-footer>
   </el-main>
+
 </template>
 
 <script lang="ts" setup>
@@ -130,21 +150,30 @@ import DateChoose from "./DateChoose.vue";
 import PicCard from "./PicCard.vue";
 import {DownloadByAuthorId, DownloadByPid, DownloadByRank, PreloadRank,PopLoadPool} from "../../wailsjs/go/main/App.js";
 import {EventsEmit, EventsOn} from "../../wailsjs/runtime";
-import {defineComponent, onMounted, ref,toRef} from "vue";
+import {defineComponent, onMounted, ref} from "vue";
 import emitter from "../assets/js/Pub.js";
-import MasonryWall from '@yeger/vue-masonry-wall'
 import {Download} from "@element-plus/icons-vue";
 import { LazyImg, Waterfall } from 'vue-waterfall-plugin-next'
 import 'vue-waterfall-plugin-next/dist/style.css'
 import 'animate.css';
+import {DAO} from "../../wailsjs/go/models.ts";
 defineComponent({
-  PicCard, DateChoose,MasonryWall
+  PicCard, DateChoose
 })
-name: "maindownload";
+name: "rank";
+const props = defineProps({
+  limit:{
+    type:Boolean,
+    default:true
+  },
+  form:{
+    type:DAO.Settings,
+  }
+})
 const picitem  =ref([])
 const period=ref("daily");
 const lock= ref(false)
-const tip = ref("Search a page Please")
+const tip = ref("Select a page First")
 const options = ref([
   {
     value:"daily",
@@ -170,7 +199,7 @@ const options = ref([
 const re_Date=ref(new Date());
 const remainderTime=ref('')
 const dateSelect= ref(null)
-const loading = ref(true)
+const loading = ref(false)
 const sum = ref(100)
 const loadup = ref(0)
 const pagemsg = ref('')
@@ -181,22 +210,16 @@ const downloadthispage = ()=>{
 }
 function Rankload(){
   pagemsg.value=dateSelect.value.selectedDate+period.value
+  tip.value=""
   tip.value="Please Wait..."
+  remainderTime.value=""
   PopLoadPool()
-  re_Date.value=new Date()
-  picitem.value=[]
-  loadup.value=0;
-  sum.value=100
-  console.log("preload ",dateSelect.value.selectedDate,period.value)
-  lock.value=true
-  loading.value=true;
-  PreloadRank(dateSelect.value.selectedDate,period.value)
+
 }
 EventsOn("UpdateLoad",function(msg){
   console.log(msg[0])
-  // picitem.value = [...picitem.value,{pid:msg[0],Title:msg[1],Author: msg[2],src: "cache/images/"+msg[0]+".jpg",pages:msg[3],authorId:msg[4]}]
   // picitem.value.push({pid:msg[0],Title:msg[1],Author: msg[2],src: "cache/images/"+msg[0]+".jpg",pages:msg[3],authorId:msg[4]})
-  picitem.value=picitem.value.concat({pid:msg[0],Title:msg[1],Author: msg[2],src: "cache/images/"+msg[0]+".jpg",pages:msg[3],authorId:msg[4]})
+  picitem.value=picitem.value.concat({pid:msg[0],Title:msg[1],Author: msg[2],src: "cache/images/"+msg[0]+".jpg",pages:msg[3],authorId:msg[4],r18:msg[5]})
   loadup.value++;
 })
 EventsOn("LoadOk",function(){
@@ -204,8 +227,18 @@ EventsOn("LoadOk",function(){
   lock.value=false;
   ComputeDate()
 })
-onMounted(function(){
+EventsOn("RankmsgPopUp",function(){
+  re_Date.value=new Date()
+  picitem.value=[]
+  loadup.value=0;
+  sum.value=100
+  console.log("preload ",dateSelect.value.selectedDate,period.value,pages.value)
+  lock.value=true
   loading.value=true;
+  PreloadRank(dateSelect.value.selectedDate,period.value,pages.value)
+})
+onMounted(function(){
+  loading.value=false;
   // PreloadRank(dateSelect.value.selectedDate,period.value)
 })
 
@@ -225,5 +258,16 @@ function  ComputeDate(){
 }
 </script>
 <style lang="less" scoped>
+@import "../assets/style/load.less";
+.wrap {
+  height: 100vh;
+  overflow: scroll;
+}
 
+.scrollbar {
+  height: calc(100vh - 40px);
+}
+/deep/.el-scrollbar__wrap {
+  overflow-x: hidden;
+}
 </style>

@@ -1,6 +1,7 @@
 <template>
   <el-container>
-    <p>search</p>
+    <h1>Waitings For Build</h1>
+
   </el-container>
 </template>
 

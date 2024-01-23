@@ -40,9 +40,7 @@ func (h *FileLoader) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
-	// Create an instance of the MainApp structure
 	MainApp := NewApp()
-	// Create application with options
 	err := wails.Run(&options.App{
 		Title:       "Go!Pixiv",
 		Width:       1024,
@@ -60,6 +58,7 @@ func main() {
 		//OnDomReady: MainApp.startup,
 		Bind: []interface{}{
 			MainApp,
+			&Setting,
 		},
 		EnumBind: []interface{}{
 			WaitingTasks,
@@ -83,11 +82,8 @@ func main() {
 				LightModeTitleText: windows.RGB(20, 20, 20),
 				LightModeBorder:    windows.RGB(200, 200, 200),
 			},
-			// User messages that can be customised
-			Messages: &windows.Messages{},
-			// OnSuspend is called when Windows enters low power mode
-			OnSuspend: func() {},
-			// OnResume is called when Windows resumes from low power mode
+			Messages:             &windows.Messages{},
+			OnSuspend:            func() {},
 			OnResume:             func() {},
 			WebviewGpuIsDisabled: false,
 		},
@@ -104,7 +100,7 @@ func main() {
 			WebviewIsTransparent: true,
 			WindowIsTranslucent:  false,
 			About: &mac.AboutInfo{
-				Title:   "My Application",
+				Title:   "Go!Pixiv",
 				Message: "© 2021 Me",
 				//Icon:    Logo,
 			},
@@ -113,7 +109,7 @@ func main() {
 			//Icon:                Logo,
 			WindowIsTranslucent: false,
 			WebviewGpuPolicy:    linux.WebviewGpuPolicyAlways,
-			ProgramName:         "wails",
+			ProgramName:         "Go!Pixiv",
 		},
 		Debug: options.Debug{
 			OpenInspectorOnStartup: false,

@@ -35,5 +35,4 @@ type Illust struct {
 func (i *Illust) msg() string {
 	return strconv.FormatInt(i.Pid, 10) +
 		"\n  " + i.PreviewImageUrl
-
 }

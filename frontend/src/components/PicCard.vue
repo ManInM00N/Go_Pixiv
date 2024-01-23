@@ -1,4 +1,7 @@
-<template>
+<template
+
+>
+<!--    -->
   <el-skeleton
       style="width: 240px"
       :loading="false"
@@ -24,7 +27,10 @@
       </div>
     </template>
     <template #default>
-      <el-card :body-style="{ padding: '0px', marginBottom: '1px',width: '100%' }">
+      <el-card
+          :body-style="{ padding: '0px', marginBottom: '1px',width: '100%' }"
+          v-if="!($props.r18==='r18'&&!$props.limit)"
+      >
         <img
             :src="$props.img"
             class="image"
@@ -78,6 +84,11 @@ import {ref} from "vue";
 import emitter from "../assets/js/Pub.js";
 const name= "PicCard"
 const props = defineProps({
+  limit:{
+    type: Boolean,
+    default:true,
+  }
+  ,
   pid :{
     type:String,
   },
@@ -99,6 +110,10 @@ const props = defineProps({
   authorId:{
     type: String,
     default:1,
+  },
+  r18:{
+    type: String,
+    default:"r18",
   }
 });
 
@@ -112,7 +127,6 @@ defineExpose({
 function jump(event) {
   console.log("jump" ,event)
   window.open(event, '_blank')
-
 }
 </script>
 

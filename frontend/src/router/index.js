@@ -3,8 +3,7 @@ import follow from "../components/follow.vue";
 import rank from "../components/rank.vue";
 import maindownload from "../components/maindownload.vue";
 import search from "../components/search.vue";
-import user from "../components/user.vue";
-import setting from "../components/setting.vue";
+import setting from "../components/settings.vue";
 const router=createRouter({
     history: createWebHashHistory(),
     routes:[
@@ -22,10 +21,6 @@ const router=createRouter({
             meta: {
                 keepAlive: true,
             },
-            beforeRouteLeave(to,from,next){
-                to.meta.keepAlive = true
-                next(0)
-            }
         },
         {
             path: '/rank',
@@ -48,14 +43,6 @@ const router=createRouter({
         {
             path: '/setting',
             component: setting,
-            meta: {
-                keepAlive: true,
-                refresh: false,
-            },
-        },
-        {
-            path: '/user',
-            component: user,
             meta: {
                 keepAlive: true,
                 refresh: false,

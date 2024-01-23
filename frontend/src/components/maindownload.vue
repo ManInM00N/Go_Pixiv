@@ -130,7 +130,11 @@
 
               style="height:490px"
           >
-              <el-table-column  label="TaskQueue" prop="value" />
+              <el-table-column
+                  label="TaskQueue"
+                  prop="value"
+                  style="height:60px"
+              />
           </el-table>
         </el-col>
       </el-row>

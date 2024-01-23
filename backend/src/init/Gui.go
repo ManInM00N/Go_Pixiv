@@ -12,13 +12,14 @@ import (
 )
 
 var (
-	Appwindow    fyne.Window
-	Logo         []byte
-	NowTaskMsg   = ""
-	QueueTaskMsg = ""
-	ProcessMax   = int64(0)
-	ProcessNow   = int64(0)
-	LoadingNow   = false
+	Appwindow        fyne.Window
+	Logo             []byte
+	NowTaskMsg       = ""
+	QueueTaskMsg     = ""
+	ProcessMax       = int64(0)
+	ProcessNow       = int64(0)
+	RankLoadingNow   = false
+	FollowLoadingNow = false
 )
 
 func Download_By_Pid(text string) {
@@ -132,7 +133,6 @@ func Download_By_Rank(text, Type string, callEvent func(name string, data ...int
 	if len(date) != 8 {
 		return
 	}
-	//hasrank := time.Date(		,tt.Location())
 	println(date)
 
 	for i := int64(1); i < int64(3); i++ {
@@ -221,7 +221,7 @@ func Download_By_Rank(text, Type string, callEvent func(name string, data ...int
 
 	}
 }
-func DownloadRankMsg(text, Type string, callEvent func(name string, data ...interface{})) {
+func DownloadRankMsg(text, Type, page string, callEvent func(name string, data ...interface{})) {
 	date := ""
 	println(text, Type)
 	temp := strings.Split(text, "-")
@@ -234,53 +234,176 @@ func DownloadRankMsg(text, Type string, callEvent func(name string, data ...inte
 		println("date error")
 		return
 	}
-	//hasrank := time.Date(		,tt.Location())
 	RankPool.Add(func() {
-		for i := int64(1); i < int64(3); i++ {
-			temp := i
-			if IsClosed || !LoadingNow {
+		if IsClosed || !RankLoadingNow {
+			return
+		}
+		dd := date
+		op := NewOption(WithType(0), WithRankmode(Type), WithDate(dd), WithR18(true), WithLikeLimit(0), WithPage(page))
+		//println(page)
+		c := make(chan *Illust, 2000)
+		all, err := GetRank(op)
+		if err != nil {
+			DebugLog.Println("Error getting Rank", err)
+			return
+		}
+		options := NewOption(WithMode(ByPid), WithR18(Setting.Agelimit), WithDiffAuthor(false), WithDate(op.RankDate), WithRankmode(Type), WithOnlyPreview(true))
+		for _, key := range all {
+			k := key
+			if IsClosed || !RankLoadingNow {
 				break
 			}
+			RankloadPool.AddTask(func() (interface{}, error) {
+				if IsClosed || !RankLoadingNow {
+					return nil, nil
+				}
+				temp := k
+				illust, err := work(statics.StringToInt64(temp.String()), options)
+				if err != nil {
+					if !ContainMyerror(err) {
+						return nil, nil
+					}
+				}
+				Download(illust, options)
+				if IsClosed || !RankLoadingNow {
+					return nil, nil
+				}
+				callEvent("UpdateLoad", illust.Pid, illust.Title, illust.UserName, illust.Pages, illust.UserID, illust.AgeLimit)
+				return nil, nil
+			})
+		}
+		RankloadPool.Wait()
+		close(c)
+		ProcessNow = 0
+		callEvent("LoadOk")
+	})
+}
+func Download_By_FollowPage(page, Type string, callEvent func(name string, data ...interface{})) {
+	WaitingTasks++
 
-			page := temp
-			dd := date
-			op := NewOption(WithType(0), WithRankmode(Type), WithDate(dd), WithR18(true), WithLikeLimit(Setting.LikeLimit), WithPage(strconv.FormatInt(page, 10)))
-			//println(page)
-			c := make(chan *Illust, 2000)
-			all, err := GetRank(op)
-			if err != nil {
-				DebugLog.Println("Error getting Rank", err)
+	callEvent("Push", fmt.Sprint("follow page", page, Type))
+	TaskPool.Add(func() {
+
+		if IsClosed {
+			return
+		}
+		op := NewOption(WithRankmode(Type), WithPage(page))
+		InfoLog.Println("follow page", page, " "+Type+" pushed queue")
+
+		//println(page)
+		c := make(chan string, 2000)
+		all, err := GetFollow(op)
+		WaitingTasks--
+		if err != nil {
+			DebugLog.Println("Error getting Follow", err)
+			callEvent("UpdateTerminal", fmt.Sprintln("follow page", page, Type, err))
+			callEvent("Pop")
+			return
+		}
+		ProcessMax = int64(len(all))
+		ProcessNow = 0
+		callEvent("UpdateProcess", 100*ProcessNow/max(ProcessMax, 1))
+
+		InfoLog.Println("follow page", page, " "+Type+" Start download")
+		satisfy := 0
+		options := NewOption(WithMode(ByPid), WithR18(Setting.Agelimit), WithLikeLimit(0), WithDiffAuthor(false), WithRankmode(Type))
+		for _, key := range all {
+			k := key
+			if IsClosed {
 				return
 			}
-			options := NewOption(WithMode(ByPid), WithR18(Setting.Agelimit), WithLikeLimit(Setting.LikeLimit), WithDiffAuthor(false), WithDate(op.RankDate), WithRankmode(Type), WithOnlyPreview(true))
-			for _, key := range all {
-				k := key
-				if IsClosed || !LoadingNow {
-					break
-				}
-				RankloadPool.AddTask(func() (interface{}, error) {
-					if IsClosed || !LoadingNow {
-						return nil, nil
-					}
-					temp := k
-					illust, err := work(statics.StringToInt64(temp.String()), options)
-					if err != nil {
-						if !ContainMyerror(err) {
-							return nil, nil
-						}
-					}
-					Download(illust, options)
-					if IsClosed || !LoadingNow {
-						return nil, nil
-					}
-					callEvent("UpdateLoad", illust.Pid, illust.Title, illust.UserName, illust.Pages, illust.UserID)
+			P.AddTask(func() (interface{}, error) {
+				//time.Sleep(1 * time.Second)
+				if IsClosed {
 					return nil, nil
-				})
-			}
-			RankloadPool.Wait()
-			close(c)
-			ProcessNow = 0
+				}
+				temp := k
+				illust, err := work(statics.StringToInt64(temp.String()), options)
+				if err != nil {
+					//continue
+					if !ContainMyerror(err) {
+						c <- temp.Str
+					}
+					satisfy++
+					ProcessNow++
+					callEvent("UpdateProcess", 100*ProcessNow/max(ProcessMax, 1))
+					return nil, nil
+				}
+				Download(illust, options)
+				satisfy++
+				ProcessNow++
+				callEvent("UpdateProcess", 100*ProcessNow/max(ProcessMax, 1))
+				return nil, nil
+			})
 		}
-		callEvent("LoadOk")
+		P.Wait()
+		println(len(c), " ", satisfy)
+		for len(c) > 0 {
+			if IsClosed {
+				return
+			}
+			ss := <-c
+			//log.Println(ss, " Download failed Now retrying")
+			P.AddTask(func() (interface{}, error) {
+				if a, b := JustDownload(ss, options); b {
+					satisfy += a
+				}
+				return nil, nil
+			})
+		}
+		P.Wait()
+		InfoLog.Println("follow page", page, " "+Type, "Satisfied and Successfully downloaded illusts: ", satisfy, "in all: ", len(all))
+		callEvent("UpdateTerminal", fmt.Sprintln("follow page", page, " "+Type, "Satisfied and Successfully downloaded illusts: ", satisfy, "in all: ", len(all)))
+		satisfy = 0
+		close(c)
+		ProcessNow = 0
+		callEvent("UpdateProcess", ProcessNow/max(ProcessMax, 1))
+		callEvent("Pop")
+	})
+}
+func DownloadFollowMsg(page, Type string, callEvent func(name string, data ...interface{})) {
+	FollowPool.Add(func() {
+		if IsClosed || !FollowLoadingNow {
+			return
+		}
+
+		op := NewOption(WithR18(true), WithRankmode(Type), WithPage(page))
+		//println(page)
+		c := make(chan *Illust, 2000)
+		all, err := GetFollow(op)
+		if err != nil {
+			DebugLog.Println("Error getting Rank", err)
+			return
+		}
+		options := NewOption(WithMode(ByPid), WithR18(Setting.Agelimit), WithDiffAuthor(false), WithOnlyPreview(true))
+		println(len(all))
+		for _, key := range all {
+			k := key
+			if IsClosed || !FollowLoadingNow {
+				break
+			}
+			//println(k.Int())
+			FollowLoadPool.AddTask(func() (interface{}, error) {
+				if IsClosed || !FollowLoadingNow {
+					return nil, nil
+				}
+				temp := k
+				illust, err := work(temp.Int(), options)
+				if err != nil {
+					if !ContainMyerror(err) || illust == nil {
+						return nil, nil
+					}
+				}
+				Download(illust, options)
+				if IsClosed || !FollowLoadingNow {
+					return nil, nil
+				}
+				callEvent("UpdateLoadFollow", illust.Pid, illust.Title, illust.UserName, illust.Pages, illust.UserID, illust.AgeLimit)
+				return nil, nil
+			})
+		}
+		FollowLoadPool.Wait()
+		close(c)
+		callEvent("FollowLoadOk")
 	})
 }

@@ -177,9 +177,11 @@ func CheckMode(url, id string, num int) (string, string) {
 	} else if num == 2 { // author page
 		return "https://www.pixiv.net/ajax/user/" + url + "/profile/all", "https://www.pixiv.net/member.php?id=" + id
 	} else if num == 4 { //ranking page
-		return url, "https://www.pixiv.net/"
+		return "https://www.pixiv.net/ranking.php?format=json" + url, "https://www.pixiv.net/"
+	} else if num == 8 {
+		return "https://www.pixiv.net/ajax/follow_latest/illust?" + url, "https://www.pixiv.net/"
 	}
-	return "", ""
+	return "https://www.pixiv.net/ajax/user/extra", "https://www.pixiv.net/"
 }
 
 // TODO:下载作品主题信息json OK
@@ -328,12 +330,28 @@ func GetAuthor(id int64) (map[string]gjson.Result, error) {
 func GetRank(option *Option) ([]gjson.Result, error) {
 	option.Msg()
 	//println("https://www.pixiv.net/ranking.php?format=json" + option.Suffix)
-	data, err := GetWebpageData("https://www.pixiv.net/ranking.php?format=json"+option.Suffix, "", 4)
+	data, err := GetWebpageData(option.Suffix, "", 4)
 	if err != nil {
 		//println("get failed: ", err.Error())
 		return nil, err
 	}
 	arr := gjson.ParseBytes(data).Get("contents.#.illust_id").Array()
+	return arr, nil
+}
+func GetFollow(option *Option) ([]gjson.Result, error) {
+	option.Msg()
+	//https://www.pixiv.net/ajax/follow_latest/illust?&mode=all&p=1
+	println("https://www.pixiv.net/ajax/follow_latest/illust?" + option.Suffix)
+	data, err := GetWebpageData(option.Suffix, "", 8)
+	if err != nil {
+		println("get failed: ", err.Error())
+		return nil, err
+	}
+	arr := gjson.ParseBytes(data).Get("body.page.ids").Array()
+	//println(arr)
+	//for i := range arr {
+	//	println(arr[i].Int())
+	//}
 	return arr, nil
 }
 func JustDownload(pid string, mode *Option) (int, bool) {
