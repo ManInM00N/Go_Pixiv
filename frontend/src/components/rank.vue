@@ -246,9 +246,7 @@ function  ComputeDate(){
   var strDate=new Date(re_Date.value);
   var endDate = new Date();
   var diffDate = endDate.getTime() - strDate.getTime()
-  var days = Math.floor(diffDate / (24 * 3600 * 1000));
   var leave1 = diffDate % (24 * 3600 * 1000);
-  var hours = Math.floor(leave1 / (3600 * 1000));
   var leave2 = leave1 % (3600 * 1000);
   var minutes = Math.floor(leave2 / (60 * 1000));
   var leave3 = leave2 % (60 * 1000);

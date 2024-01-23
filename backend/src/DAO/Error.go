@@ -54,16 +54,3 @@ func ContainMyerror(err error) bool {
 	check = new(AgeLimit)
 	return errors.As(err, &check)
 }
-
-type girlfriend struct {
-	ATK int `default:"3000"`
-	DEF int `default:"2500"`
-}
-
-func (gf *girlfriend) Like() {
-	println("好きです")
-}
-func NewGirlfriend() {
-	girl := new(girlfriend)
-	girl.Like()
-}

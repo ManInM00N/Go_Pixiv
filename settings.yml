@@ -1,8 +1,8 @@
 prefix: 'http://127.0.0.1:'
 proxy: "10811"
-cookie: 26338360_alRggBevpTyZ9LHGDn2SukPtxOsfXo54
+cookie: ''
 agelimit: false
-downloadposition: D:\personal things\Download
+downloadposition: Download
 likelimit: 3500
 retry429: 10000
 downloadinterval: 500

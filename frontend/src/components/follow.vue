@@ -169,7 +169,6 @@ EventsOn("PopUp",function (){
 })
 EventsOn("UpdateLoadFollow",function(msg){
   console.log(msg[0],msg)
-  // picitem.value = [...picitem.value,{pid:msg[0],Title:msg[1],Author: msg[2],src: "cache/images/"+msg[0]+".jpg",pages:msg[3],authorId:msg[4]}]
   picitem.value.push({pid:msg[0],Title:msg[1],Author: msg[2],src: "cache/images/"+msg[0]+".jpg",pages:msg[3],authorId:msg[4],r18:msg[5]})
   // picitem.value=picitem.value.concat({pid:msg[0],Title:msg[1],Author: msg[2],src: "cache/images/"+msg[0]+".jpg",pages:msg[3],authorId:msg[4]})
 })

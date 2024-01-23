@@ -11,7 +11,6 @@
           :disabled-date="disabledDate"
           size="large"
           :clearable="false"
-          @change="refresh"
       />
     </div>
   </div>
@@ -51,13 +50,6 @@ function formatDateToYYYYMMDD(date) {
 const emitsEventList=defineEmits(["DownloadByRank"])
 
 const re = ref(props.re)
-function refresh(){
-  if (re.value==true){
-    // location.reload()
-  }
-  // console.log(re,props.re)
-  // console.log(selectedDate.value)
-}
 defineExpose(
     {selectedDate}
 )
