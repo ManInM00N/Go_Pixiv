@@ -29,6 +29,16 @@ func (a *App) DownloadByPid(text string) bool {
 func (a *App) ReturnString() string {
 	return NowTaskMsg
 }
+func (a *App) Close(ctx context.Context) {
+	IsClosed = true
+	P.Wait()
+	defer func() {
+		P.Release()
+		TaskPool.Close()
+		SinglePool.Release()
+	}()
+
+}
 func (a *App) DownloadByAuthorId(text string) bool {
 	Download_By_Author(text, func(name string, data ...interface{}) {
 		runtime.EventsEmit(a.ctx, name, data)

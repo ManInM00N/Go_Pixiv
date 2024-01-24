@@ -55,6 +55,7 @@ func main() {
 		},
 		BackgroundColour: &options.RGBA{R: 233, G: 233, B: 233, A: 128},
 		OnStartup:        MainApp.startup,
+		OnShutdown:       MainApp.Close,
 		//OnDomReady: MainApp.startup,
 		Bind: []interface{}{
 			MainApp,
@@ -115,13 +116,6 @@ func main() {
 			OpenInspectorOnStartup: false,
 		},
 	})
-	IsClosed = true
-	P.Wait()
-	defer func() {
-		P.Release()
-		TaskPool.Close()
-		SinglePool.Release()
-	}()
 	if err != nil {
 		println("Error:", err.Error())
 	}

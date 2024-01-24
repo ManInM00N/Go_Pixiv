@@ -3,10 +3,13 @@
 <p align="center">
 
 <img src="https://github.com/ManInM00N/Go_Pixiv/blob/master/build/appicon.png">
+<br>
+<a href="https://github.com/ManInM00N/Go_Pixiv/releases"> <img src="https://img.shields.io/github/v/release/ManInM00N/Go_Pixiv" alt=""/> </a>
+<a href="https://golang.google.cn/dl/"> <img src="https://img.shields.io/github/go-mod/go-version/ManInM00N/Go_Pixiv"> </a>
+<a href="https://wails.io/zh-Hans/docs/gettingstarted/installation"> <img src="https://img.shields.io/badge/Wails-v2.7.0-%252332CD99"> </a>
+<a href="https://github.com/ManInM00N/Go_Pixiv/blob/master/LICENSE"><img src="https://img.shields.io/github/license/ManInM00N/Go_Pixiv"> </a>
 
-![License](https://img.shields.io/badge/LICENSE-GPL3.0-green)
-![Static Badge](https://img.shields.io/badge/Wails-2.7.1-%2332CD99)
-![Static Badge](https://img.shields.io/badge/Go-%3E%3D1.21.5-%23007FFF)
+
 </p>
 
 
@@ -14,7 +17,7 @@
 ！！！不提供代理！！！<br>
 梯子代理问题需要自己解决<br>
 关注页面需要有自己的pixiv账号(cookie),若个人行为导致账号封禁概不负责<br>
-保证代理无误的情况下，不添加cookie也可以下载，但是不能下载和观看r18图片<br>
+保证代理无误的情况下，不添加cookie也可以下载，但是不能下载和观看r18和部分图片<br>
 应用内置网页,点击图片的名字可以打开对应网页,所以rank和follow两个页面其实没必要，但是做都做了索性稍微写了写<br>
 下载速度取决于你的代理，理论上参数可以调很快但是会报429，而且太快会被封443端口，所以不建议下太快，默认设置间隔时间1000ms
 </h1>
