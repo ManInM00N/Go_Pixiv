@@ -29,7 +29,7 @@ func Download_By_Pid(text string) {
 		return
 	}
 	SinglePool.AddTask(func() (interface{}, error) {
-		op := NewOption(WithMode(ByPid), WithLikeLimit(0), WithR18(true), WithShowSingle(true))
+		op := NewOption(WithMode(ByPid), WithLikeLimit(0), WithR18(true), WithShowSingle(true), WithDiffAuthor(false))
 		JustDownload(text, op)
 		return nil, nil
 	})
@@ -182,7 +182,6 @@ func Download_By_Rank(text, Type string, callEvent func(name string, data ...int
 						if !ContainMyerror(err) {
 							c <- temp.Str
 						}
-						satisfy++
 						ProcessNow++
 						callEvent("UpdateProcess", 100*ProcessNow/max(ProcessMax, 1))
 						return nil, nil

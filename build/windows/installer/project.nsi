@@ -49,6 +49,7 @@ VIAddVersionKey "ProductName"     "${INFO_PRODUCTNAME}"
 ManifestDPIAware true
 
 !include "MUI.nsh"
+!include "nsProcess.nsh"
 
 !define MUI_ICON "..\icon.ico"
 !define MUI_UNICON "..\icon.ico"
@@ -75,8 +76,27 @@ OutFile "..\..\bin\${INFO_PROJECTNAME}-${ARCH}-installer.exe" # Name of the inst
 InstallDir "$PROGRAMFILES64\${INFO_COMPANYNAME}\${INFO_PRODUCTNAME}" # Default installing folder ($PROGRAMFILES is Program Files folder).
 ShowInstDetails show # This will always show the installation details.
 
+
+
 Function .onInit
+   StrCpy $1 "UGUI.exe"
+    nsProcess::_FindProcess "$1" 
+    Pop $R0
+    ${If} $R0 = 0
+      MessageBox MB_OK|MB_ICONSTOP "程序检测到应用正在运行,请关闭应用！" IDOK
+      Abort
+    ${EndIf}
    !insertmacro wails.checkArchitecture
+FunctionEnd
+
+Function un.onInit
+    StrCpy $1 "UGUI.exe"
+    nsProcess::_FindProcess "$1" 
+    Pop $R0
+    ${If} $R0 = 0
+      MessageBox MB_OK|MB_ICONSTOP "程序检测到应用正在运行,请关闭应用！" IDOK
+      Abort
+    ${EndIf}
 FunctionEnd
 
 Section
@@ -101,7 +121,8 @@ Section "uninstall"
     !insertmacro wails.setShellContext
 
     RMDir /r "$AppData\${PRODUCT_EXECUTABLE}" # Remove the WebView2 DataPath
-
+    RMDir "$INSTDIR\cache\images"
+    RMDir "$INSTDIR\cache"
     RMDir /r $INSTDIR
 
     Delete "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk"

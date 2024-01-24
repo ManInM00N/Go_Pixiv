@@ -64,7 +64,7 @@ func Download(i *Illust, op *Option) bool {
 		for k := 0; k < 10; k++ {
 			Response, err = clientcopy.Do(Request)
 			if k == 9 && err != nil {
-				DebugLog.Println("Illust Resouce Request Error", err)
+				DebugLog.Println("Illust Resouce Request Error", err, Request.URL.String())
 				ok = false
 				break
 			} else if err == nil {
@@ -132,7 +132,7 @@ func Download(i *Illust, op *Option) bool {
 		for k := 0; k < 10; k++ {
 			Response, err = clientcopy.Do(Request)
 			if k == 9 && err != nil {
-				DebugLog.Println("Illust Resouce Request Error", err)
+				DebugLog.Println("Illust Resouce Request Error", err, Request.URL.String())
 				ok = false
 				j--
 				failtimes++
@@ -310,8 +310,10 @@ func work(id int64, mode *Option) (i *Illust, err error) { //按作品id查找
 		DebugLog.Println("Error decoding", err2)
 		return nil, err
 	}
-
-	i.PreviewImageUrl = imagedata[0].URLs.Small
+	if len(imagedata) == 0 {
+		DebugLog.Println("No images found ", i.Pid)
+		return nil, fmt.Errorf("No images found", i.Pid)
+	}
 	for _, image := range imagedata {
 		i.ImageUrl = append(i.ImageUrl, image.URLs.Original)
 	}
@@ -329,7 +331,7 @@ func GetAuthor(id int64) (map[string]gjson.Result, error) {
 }
 func GetRank(option *Option) ([]gjson.Result, error) {
 	option.Msg()
-	//println("https://www.pixiv.net/ranking.php?format=json" + option.Suffix)
+	println("https://www.pixiv.net/ranking.php?format=json" + option.Suffix)
 	data, err := GetWebpageData(option.Suffix, "", 4)
 	if err != nil {
 		//println("get failed: ", err.Error())

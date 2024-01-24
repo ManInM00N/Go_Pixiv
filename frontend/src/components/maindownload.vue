@@ -282,8 +282,8 @@ emitter.on("DownloadByAuthor",function(e){
   DownloadByAuthorId(e.author);
 })
 emitter.on("DownloadByPid",function(e){
-  console.log("Received ",e,e.pid)
-  DownloadByPid(e.pid);
+  console.log("Received ",e,e.pid.toString())
+  DownloadByPid(e.pid.toString());
 })
 </script>
 <style lang="less" scoped>
