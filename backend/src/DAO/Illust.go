@@ -27,8 +27,8 @@ type Illust struct {
 	CreatedTime     string    `db:"created_time"`
 	UserID          int64     `db:"userId"`
 	UserName        string    `db:"user_name"`
-	Pages           int64     `db:"pages"`
-	Likecount       int64     `db:"likecount"`
+	Pages           int       `db:"pages"`
+	Likecount       int       `db:"likecount"`
 	UploadedTime    time.Time `db:"uploaded_time"`
 }
 

@@ -11,7 +11,7 @@ type Settings struct {
 	Cookie           string `yml:"cookie" json:"cookie"`
 	Agelimit         bool   `yml:"r-18" json:"r-18"`
 	Downloadposition string `yml:"downloadposition" json:"downloadposition"`
-	LikeLimit        int64  `yml:"minlikelimit" json:"minlikelimit"`
+	LikeLimit        int    `yml:"likelimit" json:"likelimit"`
 	Retry429         int    `yml:"retry429" json:"retry429"`
 	Downloadinterval int    `yml:"downloadinterval" json:"downloadinterval"`
 	Retryinterval    int    `yml:"retryinterval"json:"retryinterval"`
@@ -33,4 +33,5 @@ func (s *Settings) UpdateSettings(NewSetting Settings) {
 	s.Retry429 = max(s.Retry429, 3000)
 	s.Retryinterval = max(s.Retryinterval, 200)
 	s.Downloadinterval = max(s.Downloadinterval, 100)
+	println(s.MsgDetail())
 }

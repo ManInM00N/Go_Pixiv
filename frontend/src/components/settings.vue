@@ -2,7 +2,7 @@
   <el-main>
     <el-form
         label-width="100px"
-        :model="form"
+        :model="props.form"
         style="max-width: 460px"
         class="Background_Opacity"
     >
@@ -10,7 +10,7 @@
       label="Localhost:"
       >
         <el-input
-            v-model="$props.form.prefix"
+            v-model="props.form.prefix"
             disabled="true"
         />
       </el-form-item>
@@ -18,7 +18,7 @@
           label="代理端口"
       >
         <el-input
-          v-model="$props.form.proxy"
+          v-model="props.form.proxy"
         >
         </el-input>
       </el-form-item>
@@ -26,14 +26,14 @@
           label="Cookie"
       >
         <el-input
-            v-model="$props.form.cookie"
+            v-model="props.form.cookie"
         >
         </el-input>
       </el-form-item>
       <el-form-item
           label="下载位置"
       >
-        <el-input v-model="$props.form.downloadposition"/>
+        <el-input v-model="props.form.downloadposition"/>
       </el-form-item>
       <el-form-item>
 
@@ -43,8 +43,7 @@
       >
         <el-input
             type="number"
-
-            v-model="$props.form.retry429"
+            v-model="props.form.retry429"
         />
       </el-form-item>
       <el-form-item
@@ -52,8 +51,7 @@
       >
         <el-input
             type="number"
-
-            v-model="$props.form.retryinterval"
+            v-model="props.form.retryinterval"
         />
       </el-form-item>
       <el-form-item
@@ -61,25 +59,25 @@
       >
         <el-input
             type="number"
-            v-model="$props.form.downloadinterval"
+            v-model="props.form.downloadinterval"
         />
       </el-form-item>
       <el-form-item
           label="作品收藏数限制"
       >
         <el-input
-            type="number"
-            v-model="$props.form.minlikelimit"
+            type="text" oninput="value=value.replace(/[^\d.]/g,'')"
+            v-model="props.form.likelimit"
         />
       </el-form-item>
       <el-form-item>
         <el-checkbox
             label="是否启用R-18"
-            v-model="$props.form['r-18']"
+            v-model="props.form['r-18']"
         />
         <el-checkbox
             label="下载图片对作者分类"
-            v-model="$props.form.differauthor"
+            v-model="props.form.differauthor"
         />
       </el-form-item>
       <el-form-item>
@@ -105,9 +103,8 @@ const props = defineProps({
   }
 })
 function UpLoad(){
-  console.log(props.form)
+  console.log(props.form,props.form)
   UpdateSetting(props.form)
-  emitter.emit("Relogin")
 }
 </script>
 

@@ -115,7 +115,7 @@ func Download(i *Illust, op *Option) bool {
 		os.Mkdir(Type, os.ModePerm)
 	}
 	failtimes := 0
-	for j := int64(0); j < i.Pages; j++ {
+	for j := 0; j < i.Pages; j++ {
 		imagefilename := statics.GetFileName(i.ImageUrl[j])
 		imagefilepath := Type + "/" + imagefilename
 		img, err2 := os.Stat(imagefilepath)
@@ -196,7 +196,7 @@ func GetWebpageData(url, id string, num int) ([]byte, error) { //请求得到作
 		DebugLog.Println("Error creating request", err)
 		return nil, err
 	}
-	Request.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36")
+	Request.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0")
 	Request.Header.Set("referer", ref)
 	Cookie := &http.Cookie{
 		Name:  "PHPSESSID",
@@ -273,10 +273,10 @@ func work(id int64, mode *Option) (i *Illust, err error) { //按作品id查找
 		UserID:      jsonmsg.Get("userId").Int(),
 		Caption:     jsonmsg.Get("alt").Str,
 		CreatedTime: jsonmsg.Get("createDate").Str,
-		Pages:       jsonmsg.Get("pageCount").Int(),
+		Pages:       int(jsonmsg.Get("pageCount").Int()),
 		Title:       jsonmsg.Get("illustTitle").Str,
 		UserName:    jsonmsg.Get("userName").Str,
-		Likecount:   jsonmsg.Get("bookmarkCount").Int(),
+		Likecount:   int(jsonmsg.Get("bookmarkCount").Int()),
 	}
 	for _, tag := range jsonmsg.Get("tags.tags.#.tag").Array() {
 		i.Tags = append(i.Tags, tag.Str)

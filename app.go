@@ -1,11 +1,15 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"context"
 	"github.com/tidwall/gjson"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"io"
 	"main/backend/src/DAO"
 	. "main/backend/src/init"
+	"net/http"
 )
 
 type App struct {
@@ -86,14 +90,16 @@ func (a *App) PopLoadPool() {
 func (a *App) GetSetting() DAO.Settings {
 	return Setting
 }
+
 func (a *App) UpdateSetting(data DAO.Settings) {
 	//UpdateSettings()
+	DebugLog.Println(data.MsgDetail())
 	Setting.UpdateSettings(data)
 	UpdateSettings()
-
+	a.CheckLogin()
 }
 
-//	 func (a *App) UpdateSetting(data string) {
+//	func (a *App) UpdateSetting(data string) {
 //		newdata := Setting
 //		jsonmsg, err := json.Marshal(data)
 //		if err != nil {
@@ -101,15 +107,40 @@ func (a *App) UpdateSetting(data DAO.Settings) {
 //		}
 //		json.Unmarshal(jsonmsg, newdata)
 //		Setting.UpdateSettings(newdata)
+//		UpdateSettings()
+//		a.CheckLogin()
 //	}
 func (a *App) CheckLogin() bool {
-	data, err := GetWebpageData("", "", 0)
+	url, ref := CheckMode("", "", 0)
+	Request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
+		DebugLog.Println("Error creating request", err)
+		runtime.EventsEmit(a.ctx, "login", "False")
+
 		return false
 	}
+	client := GetClient()
+	Request.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0")
+	Request.Header.Set("referer", ref)
+	Cookie := &http.Cookie{
+		Name:  "PHPSESSID",
+		Value: Setting.Cookie,
+	}
+	Request.AddCookie(Cookie)
+	Request.Header.Set("PHPSESSID", Setting.Cookie)
+	res, err := client.Do(Request)
+	if err != nil {
+		runtime.EventsEmit(a.ctx, "login", "False")
+		return false
+	}
+	var buffer bytes.Buffer
+	reader := bufio.NewReader(res.Body)
+	io.Copy(&buffer, reader)
+	data := buffer.Bytes()
 	Results := gjson.ParseBytes(data)
 	canbedownload := Results.Get("error").Bool()
 	println(canbedownload)
+	DebugLog.Println("Loading results:", canbedownload)
 	if canbedownload {
 		runtime.EventsEmit(a.ctx, "login", "False")
 	} else {

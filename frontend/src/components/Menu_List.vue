@@ -108,10 +108,6 @@ function waitchange(val){
 function  handleMenuSelect(index) {
   console.log("ee",this.activeIndex)
 }
-emitter.on("Relogin",function(){
-  // logined()
-  CheckLogin()
-})
 EventsOn("login",function(msg){
   if(msg==="True"){
     items.value[1].logined=true
@@ -120,7 +116,7 @@ EventsOn("login",function(msg){
     form.value.cookie=""
     const temp = GetSetting()
     console.log(temp)
-    temp.then(res=>{
+    temp.then(res=>{                                                                                                                                                                                                                
       form.value=res
       console.log(form.value)
     })
@@ -128,13 +124,17 @@ EventsOn("login",function(msg){
   console.log(items.value[1].logined,form.value['r-18'],!(!form.value['r-18']))
 })
 onMounted(function(){
-  CheckLogin()
   const temp = GetSetting()
   console.log(temp)
   temp.then(res=>{
     form.value=res
     console.log(form.value)
+    if (form.value.cookie!=""){
+      CheckLogin()
+    }
   })
+
+
 })
 
 </script>

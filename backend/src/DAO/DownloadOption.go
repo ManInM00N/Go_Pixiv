@@ -8,7 +8,7 @@ import (
 type Option struct {
 	Mode        int64
 	R18         bool
-	Likelimit   int64
+	Likelimit   int
 	ShowSingle  bool
 	Suffix      string
 	MinDate     string
@@ -59,7 +59,7 @@ func WithR18(r18 bool) option {
 		o.R18 = r18
 	}
 }
-func WithLikeLimit(num int64) option {
+func WithLikeLimit(num int) option {
 	return func(o *Option) {
 		o.Likelimit = num
 	}
