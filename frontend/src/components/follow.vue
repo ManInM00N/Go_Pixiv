@@ -142,15 +142,19 @@ import {DAO} from "../../wailsjs/go/models.ts";
 defineComponent({
   PicCard,
 })
-const props=defineProps({
-  limit:{
-    type:Boolean,
-    default:true
-  },
-  form:{
-    type:DAO.Settings,
-  }
-})
+// const props=defineProps({
+//   limit:{
+//     type:Boolean,
+//     default:true
+//   },
+//   form:{
+//     type:DAO.Settings,
+//   }
+// })
+const props = defineProps([
+    'limit',
+    'form',
+])
 const picitem = ref([])
 const currentPage=ref(1)
 const name=ref("follow")

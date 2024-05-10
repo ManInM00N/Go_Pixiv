@@ -22,10 +22,6 @@ export function DownloadByRank(arg1, arg2) {
   return window['go']['main']['App']['DownloadByRank'](arg1, arg2);
 }
 
-export function GetSetting() {
-  return window['go']['main']['App']['GetSetting']();
-}
-
 export function PopFollowPool() {
   return window['go']['main']['App']['PopFollowPool']();
 }
@@ -44,8 +40,4 @@ export function PreloadRank(arg1, arg2, arg3) {
 
 export function ReturnString() {
   return window['go']['main']['App']['ReturnString']();
-}
-
-export function UpdateSetting(arg1) {
-  return window['go']['main']['App']['UpdateSetting'](arg1);
 }

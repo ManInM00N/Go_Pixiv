@@ -41,6 +41,10 @@ func (h *FileLoader) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 
 func main() {
 	MainApp := NewApp()
+	ServerInit()
+	go func() {
+		R.Run(":7234")
+	}()
 	err := wails.Run(&options.App{
 		Title:       "Go!Pixiv",
 		Width:       1024,
@@ -56,7 +60,6 @@ func main() {
 		BackgroundColour: &options.RGBA{R: 233, G: 233, B: 233, A: 128},
 		OnStartup:        MainApp.startup,
 		OnShutdown:       MainApp.Close,
-		//OnDomReady: MainApp.startup,
 		Bind: []interface{}{
 			MainApp,
 			&Setting,

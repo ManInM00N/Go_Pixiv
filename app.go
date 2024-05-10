@@ -7,7 +7,6 @@ import (
 	"github.com/tidwall/gjson"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"io"
-	"main/backend/src/DAO"
 	. "main/backend/src/init"
 	"net/http"
 )
@@ -87,29 +86,7 @@ func (a *App) PopLoadPool() {
 	RankLoadingNow = true
 	runtime.EventsEmit(a.ctx, "RankmsgPopUp")
 }
-func (a *App) GetSetting() DAO.Settings {
-	return Setting
-}
 
-func (a *App) UpdateSetting(data DAO.Settings) {
-	//UpdateSettings()
-	DebugLog.Println(data.MsgDetail())
-	Setting.UpdateSettings(data)
-	UpdateSettings()
-	a.CheckLogin()
-}
-
-//	func (a *App) UpdateSetting(data string) {
-//		newdata := Setting
-//		jsonmsg, err := json.Marshal(data)
-//		if err != nil {
-//			return
-//		}
-//		json.Unmarshal(jsonmsg, newdata)
-//		Setting.UpdateSettings(newdata)
-//		UpdateSettings()
-//		a.CheckLogin()
-//	}
 func (a *App) CheckLogin() bool {
 	url, ref := CheckMode("", "", 0)
 	Request, err := http.NewRequest("GET", url, nil)

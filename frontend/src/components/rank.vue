@@ -161,15 +161,19 @@ defineComponent({
   PicCard, DateChoose
 })
 name: "rank";
-const props = defineProps({
-  limit:{
-    type:Boolean,
-    default:true
-  },
-  form:{
-    type:DAO.Settings,
-  }
-})
+// const props = defineProps({
+//   limit:{
+//     type:Boolean,
+//     default:true
+//   },
+//   form:{
+//     type:DAO.Settings,
+//   }
+// })
+const props = defineProps([
+    'limit',
+    'form',
+])
 const picitem  =ref([])
 const period=ref("daily");
 const lock= ref(false)

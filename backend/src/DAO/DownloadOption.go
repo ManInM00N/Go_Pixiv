@@ -91,22 +91,30 @@ func WithType(idx int64) option {
 		o.Suffix += "&content=" + ContentType[idx]
 	}
 }
+
+// 查询日期
 func WithDate(date string) option {
 	return func(o *Option) {
 		o.Suffix += "&date=" + date
 		o.RankDate = date
 	}
 }
+
+// 前缀查询页码
 func WithPage(page string) option {
 	return func(o *Option) {
 		o.Suffix += "&p=" + page
 	}
 }
+
+// 是否对作者分类
 func WithDiffAuthor(is bool) option {
 	return func(o *Option) {
 		o.DiffAuthor = is
 	}
 }
+
+// 只下载预览图
 func WithOnlyPreview(is bool) option {
 	return func(o *Option) {
 		o.OnlyPreview = is

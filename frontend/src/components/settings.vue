@@ -97,14 +97,36 @@ import {defineComponent, onMounted, ref,reactive} from "vue";
 import {UpdateSetting,GetSetting} from "../../wailsjs/go/main/App.js";
 import {DAO} from "../../wailsjs/go/models.ts";
 import emitter from "../assets/js/Pub.js"
-const props = defineProps({
-  form:{
-    type:DAO.Settings,
-  }
-})
+import axios from "axios";
+// const props = defineProps({
+//
+//   form:{
+//     type:DAO.Settings,
+//   }
+// })
+const props = defineProps([
+    'form',
+])
+
 function UpLoad(){
   console.log(props.form,props.form)
-  UpdateSetting(props.form)
+  axios.post("/apis/api/update",{
+    prefix : props.form.prefix,
+    proxy: props.form.proxy,
+    cookie: props.form.proxy,
+    r_18: props.form.r_18,
+    downloadposition:props.form.downloadposition,
+    likelimit:props.form.likelimit,
+    retry429:props.form.retry429,
+    downloadinterval : props.form.downloadinterval,
+
+  },{
+
+  }).then(res=>{
+
+  }).catch(error=>{
+
+  })
 }
 </script>
 

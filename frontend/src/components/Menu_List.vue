@@ -82,11 +82,24 @@
 <script setup>
 import {defineComponent, onMounted, ref} from "vue";
 import settings from "./settings.vue";
-import {CheckLogin, GetSetting, UpdateSetting} from "../../wailsjs/go/main/App.js";
+import {CheckLogin} from "../../wailsjs/go/main/App.js";
 import emitter from "../assets/js/Pub.js"
 import {EventsOn} from "../../wailsjs/runtime/runtime.js";
 import {DAO} from "../../wailsjs/go/models.ts";
-const form = ref(DAO.Settings)
+import axios from "axios";
+// const form = ref(DAO.Settings)
+const form = ref({
+  prefix:'',
+  proxy:'',
+  cookie:'',
+  r_18:false,
+  downloadposition:'download',
+  likelimit:0,
+  retry429:2000,
+  downloadinterval:500,
+  retryinterval:1000,
+  differauthor:false,
+})
 const activeIndex=ref("/maindownload")
 const theme= ref('dark')
 const set = ref(null)
@@ -124,6 +137,21 @@ EventsOn("login",function(msg){
   console.log(items.value[1].logined,form.value['r-18'],!(!form.value['r-18']))
 })
 onMounted(function(){
+  axios.get("/apis/api/getsetting").then(res=>{
+    form.value.prefix = res.data.setting.prefix,
+    form.value.proxy = res.data.setting.proxy,
+    form.value.cookie = res.data.setting.cookie,
+    form.value.r_18 = res.data.setting.r_18,
+    form.value.downloadposition = res.data.setting.downloadposition,
+    form.value.likelimit = res.data.setting.likelimit,
+    form.value.retry429 = res.data.setting.retry429,
+    form.value.downloadinterval = res.data.search.downloadinterval,
+    form.value.retryinterval = res.data.search.retryinterval,
+    form.value.differauthor = res.data.search.differauthor
+  }).catch(error=>{
+    console.log(error)
+  })
+
   const temp = GetSetting()
   console.log(temp)
   temp.then(res=>{

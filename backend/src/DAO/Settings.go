@@ -9,7 +9,7 @@ type Settings struct {
 	Prefix           string `yml:"prefix" json:"prefix"`
 	Proxy            string `yml:"proxy" json:"proxy"`
 	Cookie           string `yml:"cookie" json:"cookie"`
-	Agelimit         bool   `yml:"r-18" json:"r-18"`
+	Agelimit         bool   `yml:"r_18" json:"r_18"`
 	Downloadposition string `yml:"downloadposition" json:"downloadposition"`
 	LikeLimit        int    `yml:"likelimit" json:"likelimit"`
 	Retry429         int    `yml:"retry429" json:"retry429"`
