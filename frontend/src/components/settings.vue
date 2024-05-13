@@ -94,7 +94,6 @@
 <script lang="ts" setup>
 import {EventsOn} from "../../wailsjs/runtime/runtime.js";
 import {defineComponent, onMounted, ref,reactive} from "vue";
-import {UpdateSetting,GetSetting} from "../../wailsjs/go/main/App.js";
 import {DAO} from "../../wailsjs/go/models.ts";
 import emitter from "../assets/js/Pub.js"
 import axios from "axios";
@@ -110,7 +109,7 @@ const props = defineProps([
 
 function UpLoad(){
   console.log(props.form,props.form)
-  axios.post("/apis/api/update",{
+  axios.post("http://127.0.0.1:7234/api/update",{
     prefix : props.form.prefix,
     proxy: props.form.proxy,
     cookie: props.form.proxy,

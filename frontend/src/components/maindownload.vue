@@ -148,143 +148,100 @@
   </el-container>
 </template>
 
-<script lang="ts" >
+<script lang="ts" setup >
 import DateChoose from "./DateChoose.vue";
 import {DownloadByAuthorId, DownloadByPid,DownloadByRank} from "../../wailsjs/go/main/App.js";
 import {EventsEmit, EventsOn} from "../../wailsjs/runtime";
-import {defineComponent, ref} from "vue";
-import emitter from "../assets/js/Pub.js"
-export default {
-  name: "maindownload",
-  components: {DateChoose},
-  props:{
-    Input: Number,
-    wait: Boolean,
-  },
-  setup(){
-    const logs=ref([]);
-    const rows= ref(10); // 可根据需要调整展示的行数
-    const cellStyle = ({  rowIndex }) => {
-      if (rowIndex === 0) {
-        return 'Xbord'
-      }
-    }
-    const percent= ref(0);
-    const  now = ref("Pid")
-    const queue=ref([
-    ])
-    const options = ref([
-      {
-        value:"daily",
-        label:"Daily",
-      },
-      {
-        value:"weekly",
-        label:"Weekly",
-      },
-      {
-        value:"monthly",
-        label:"Monthly",
-      },
-      {
-        value:"daily_r18",
-        label:"Daily_R18",
-      },
-      {
-        value:"weekly_r18",
-        label:"Weekly_R18",
-      },
-    ]);
-    const modes=ref([
-      {
-        value:"Pid",
-        label:"By Pid",
-      },
-      {
-        value:"Author",
-        label:"By AuthorId",
-      },
-      {
-        value:"Rank",
-        label:"By Rank",
-      },
-    ]);
-    const inputValue= ref('');
-    const period=ref("daily");
-    EventsOn("UpdateProcess",function(newnum){
-      console.log(newnum[0])
-      percent.value=newnum[0];
-    });
-    EventsOn("Push",function(newmsg){
-      console.log(newmsg[0])
-      queue.value.push({value:newmsg[0]})
-    });
-    EventsOn("Pop",function(){
-      queue.value.shift()
-    });
-    EventsOn("UpdateTerminal",function (newmsg) {
-      logs.value.push(newmsg[0])
-      if (logs.value.length>50){
-        logs.value.pop()
-      }
-    })
+import {defineComponent, onMounted, ref} from "vue";
+import emitter from "../assets/js/Pub.js";
+import {ElMessage} from "element-plus";
+import axios from "axios";
 
-    return{
-      rows,
-      queue,
-      percent,
-      inputValue,
-      period,
-      now,
-      options,
-      modes,
-      cellStyle,
-      logs,
-    }
-  }
-  ,
-  methods:{
-    updateParentValue() {
-      this.$emit('UpdateInput', this.inputValue);
-    },
-    changetype(data){
-      console.log(data)
-      this.value=data;
-    },
-    Download(){
-      if(this.now=="Pid"){
-        console.log("Get Downloading",this.inputValue,this.inputValue.length)
-        if (this.inputValue.length==0){
-          return
-        }
-        DownloadByPid(this.inputValue);
-        this.inputValue="";
-      }else if (this.now=="Author"){
-        this.$emit("wait",true)
-        // this.$refs.queue.value.push(this.inputValue)
-        DownloadByAuthorId(this.inputValue)
-        this.inputValue="";
-        this.$emit("wait",false)
-      }else {
-        this.$emit("wait",true)
-        DownloadByRank(this.$refs.dateSelect.selectedDate,this.period)
-        this.$refs.dateSelect.selectedDate = null
-        this.$emit("wait",false)
-      }
-
-    }
+const props = defineProps({
+  Input: Number,
+  wait: Boolean,
+  ws:WebSocket,
+})
+onMounted(()=>{
+    props.ws.value.onmessage = (event) => {
+      // res.value = event.data;
+      handleMessage(JSON.parse(event.data));
+    };
+})
+const logs=ref([]);
+const rows= ref(10); // 可根据需要调整展示的行数
+const cellStyle = ({  rowIndex }) => {
+  if (rowIndex === 0) {
+    return 'Xbord'
   }
 }
-emitter.on("DownloadByRank",(e)=>{
-  DownloadByRank(e.date,e.period);
+function handleMessage(data){
+  if (data.type==1){
+    percent.value=data.newnum
+  }else if (data.type==2){
+
+  }else if ()
+}
+const percent= ref(0);
+const  now = ref("Pid")
+const queue=ref([
+])
+const options = ref([
+  {
+    value:"daily",
+    label:"Daily",
+  },
+  {
+    value:"weekly",
+    label:"Weekly",
+  },
+  {
+    value:"monthly",
+    label:"Monthly",
+  },
+  {
+    value:"daily_r18",
+    label:"Daily_R18",
+  },
+  {
+    value:"weekly_r18",
+    label:"Weekly_R18",
+  },
+]);
+const modes=ref([
+  {
+    value:"Pid",
+    label:"By Pid",
+  },
+  {
+    value:"Author",
+    label:"By AuthorId",
+  },
+  {
+    value:"Rank",
+    label:"By Rank",
+  },
+]);
+const inputValue= ref('');
+const period=ref("daily");
+EventsOn("UpdateProcess",function(newnum){
+  console.log(newnum[0])
+  percent.value=newnum[0];
+});
+EventsOn("Push",function(newmsg){
+  console.log(newmsg[0])
+  queue.value.push({value:newmsg[0]})
+});
+EventsOn("Pop",function(){
+  queue.value.shift()
+});
+EventsOn("UpdateTerminal",function (newmsg) {
+  logs.value.push(newmsg[0])
+  if (logs.value.length>50){
+    logs.value.pop()
+  }
 })
-emitter.on("DownloadByAuthor",function(e){
-  DownloadByAuthorId(e.author);
-})
-emitter.on("DownloadByPid",function(e){
-  console.log("Received ",e,e.pid.toString())
-  DownloadByPid(e.pid.toString());
-})
+
 </script>
 <style lang="less" scoped>
 @import "../assets/style/font.less";
