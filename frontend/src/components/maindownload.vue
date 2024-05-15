@@ -53,7 +53,7 @@
                 :key="item.value"
                 :label="item.label"
                 :value="item.value"
-                :disabled="wait"
+                :disabled="!item.disabled"
             />
           </el-select>
         </el-col>
@@ -160,6 +160,10 @@ import axios from "axios";
 const props = defineProps({
   Input: Number,
   wait: Boolean,
+  form:{
+    type: Object,
+    required:true,
+  },
   ws:WebSocket,
 })
 onMounted(()=>{
@@ -179,8 +183,17 @@ function handleMessage(data){
   if (data.type==1){
     percent.value=data.newnum
   }else if (data.type==2){
-
-  }else if ()
+    queue.value.shift()
+  }else if (data.type==3){
+    queue.value.push(data.newtask)
+  }
+}
+const mode = ref('')
+function changetype(data){
+  console.log(data)
+  this.value=data;
+  now.value=data;
+  mode.value=data;
 }
 const percent= ref(0);
 const  now = ref("Pid")
@@ -202,10 +215,12 @@ const options = ref([
   {
     value:"daily_r18",
     label:"Daily_R18",
+    disabled:props.form.r_18,
   },
   {
     value:"weekly_r18",
     label:"Weekly_R18",
+    disabled:props.form.r_18,
   },
 ]);
 const modes=ref([
@@ -224,23 +239,39 @@ const modes=ref([
 ]);
 const inputValue= ref('');
 const period=ref("daily");
-EventsOn("UpdateProcess",function(newnum){
-  console.log(newnum[0])
-  percent.value=newnum[0];
-});
-EventsOn("Push",function(newmsg){
-  console.log(newmsg[0])
-  queue.value.push({value:newmsg[0]})
-});
-EventsOn("Pop",function(){
-  queue.value.shift()
-});
-EventsOn("UpdateTerminal",function (newmsg) {
-  logs.value.push(newmsg[0])
-  if (logs.value.length>50){
-    logs.value.pop()
-  }
-})
+// EventsOn("UpdateProcess",function(newnum){
+//   console.log(newnum[0])
+//   percent.value=newnum[0];
+// });
+// EventsOn("Push",function(newmsg){
+//   console.log(newmsg[0])
+//   queue.value.push({value:newmsg[0]})
+// });
+// EventsOn("Pop",function(){
+//   queue.value.shift()
+// });
+// EventsOn("UpdateTerminal",function (newmsg) {
+//   logs.value.push(newmsg[0])
+//   if (logs.value.length>50){
+//     logs.value.pop()
+//   }
+// })
+
+function Download(){
+  return
+  axios.post("http://127.0.0.1:7234/api/download",{
+    type: "Pid",
+
+  },{
+    headers:{
+      'Content-Type': 'application/json'
+    }
+  }).then(response=>{
+
+  }).catch(error=>{
+    console.error
+  })
+}
 
 </script>
 <style lang="less" scoped>
