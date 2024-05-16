@@ -1,6 +1,8 @@
 package init
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"log"
@@ -15,10 +17,20 @@ var (
 	}
 )
 
+type DownloadRequest struct {
+	Type   string `json:"type"`
+	ID     string `json:"id"`
+	Period string `json:"period"`
+	Time   string `json:"time"`
+}
+
+func (a *DownloadRequest) Msg() string {
+	return fmt.Sprintf(`Type: %s, ID: %s, Period: %s, Time: %s`, a.Type, a.ID, a.Period, a.Time)
+}
 func UpdateProgress(c *gin.Context) {
 	ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		log.Println(err)
+		DebugLog.Println(err)
 		return
 	}
 	defer ws.Close()
@@ -26,16 +38,16 @@ func UpdateProgress(c *gin.Context) {
 	for {
 		_, msg, err := ws.ReadMessage()
 		if err != nil {
-			log.Println(err)
+			DebugLog.Println(err)
 			break
 		}
-
-		userInput := string(msg)
-
-		err = ws.WriteMessage(websocket.TextMessage, []byte(userInput+" txt"))
+		var rq DownloadRequest
+		err = json.Unmarshal(msg, &rq)
 		if err != nil {
-			log.Println(err)
+			DebugLog.Println(err)
 			break
+		} else {
+			InfoLog.Println(rq.Msg())
 		}
 	}
 }

@@ -123,8 +123,7 @@ function waitchange(val){
 function  handleMenuSelect(index) {
   console.log("ee",this.activeIndex)
 }
-
-const ws = ref<WebSocket>(null)
+let ws = WebSocket;
 const startWebSocket = () => {
   ws.value = new WebSocket("ws://127.0.0.1:7234/api/ws");
 
@@ -173,7 +172,7 @@ onMounted(function(){
   }).catch(error=>{
     console.log(error)
   })
-
+  startWebSocket()
 
 })
 

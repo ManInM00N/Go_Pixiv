@@ -16,7 +16,7 @@
             ref="mode"
             class="m-2"
             size="default"
-            @change="changetype"
+            @click="changetype"
             style="width:150px"
           >
             <el-option
@@ -156,7 +156,7 @@ import {defineComponent, onMounted, ref} from "vue";
 import emitter from "../assets/js/Pub.js";
 import {ElMessage} from "element-plus";
 import axios from "axios";
-
+const dateSelect =ref(null)
 const props = defineProps({
   Input: Number,
   wait: Boolean,
@@ -167,7 +167,10 @@ const props = defineProps({
   ws:WebSocket,
 })
 onMounted(()=>{
-    props.ws.value.onmessage = (event) => {
+  console.log(dateSelect.value);
+
+
+  props.ws.value.onmessage = (event) => {
       // res.value = event.data;
       handleMessage(JSON.parse(event.data));
     };
@@ -188,12 +191,10 @@ function handleMessage(data){
     queue.value.push(data.newtask)
   }
 }
-const mode = ref('')
+// const mode = ref('')
 function changetype(data){
   console.log(data)
   this.value=data;
-  now.value=data;
-  mode.value=data;
 }
 const percent= ref(0);
 const  now = ref("Pid")
@@ -258,19 +259,28 @@ const period=ref("daily");
 // })
 
 function Download(){
+  props.ws.value.send(
+      JSON.stringify({
+        type:now.value,
+        id:inputValue.value,
+        period:period.value,
+        time:dateSelect.value.selectedDate
+      })
+  )
   return
-  axios.post("http://127.0.0.1:7234/api/download",{
-    type: "Pid",
 
-  },{
-    headers:{
-      'Content-Type': 'application/json'
-    }
-  }).then(response=>{
-
-  }).catch(error=>{
-    console.error
-  })
+  // axios.post("http://127.0.0.1:7234/api/download",{
+  //   type: "Pid",
+  //
+  // },{
+  //   headers:{
+  //     'Content-Type': 'application/json'
+  //   }
+  // }).then(response=>{
+  //
+  // }).catch(error=>{
+  //   console.error
+  // })
 }
 
 </script>
