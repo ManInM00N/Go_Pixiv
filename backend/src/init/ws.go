@@ -15,6 +15,7 @@ var (
 			return true
 		},
 	}
+	WS *websocket.Conn
 )
 
 type DownloadRequest struct {
@@ -28,23 +29,24 @@ func (a *DownloadRequest) Msg() string {
 	return fmt.Sprintf(`Type: %s, ID: %s, Period: %s, Time: %s`, a.Type, a.ID, a.Period, a.Time)
 }
 func UpdateProgress(c *gin.Context) {
-	ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+	var err error
+	WS, err = upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		DebugLog.Println(err)
 		return
 	}
-	defer ws.Close()
+	defer WS.Close()
 
 	for {
-		_, msg, err := ws.ReadMessage()
+		_, msg, err := WS.ReadMessage()
 		if err != nil {
-			DebugLog.Println(err)
+			DebugLog.Println("Read Error", err)
 			break
 		}
 		var rq DownloadRequest
 		err = json.Unmarshal(msg, &rq)
 		if err != nil {
-			DebugLog.Println(err)
+			DebugLog.Println("Write back", err)
 			break
 		} else {
 			InfoLog.Println(rq.Msg())
@@ -71,7 +73,7 @@ func Transform(c *gin.Context) {
 
 		err = ws.WriteMessage(websocket.TextMessage, []byte(userInput+" txt"))
 		if err != nil {
-			log.Println(err)
+			log.Println("Write back", err)
 			break
 		}
 	}

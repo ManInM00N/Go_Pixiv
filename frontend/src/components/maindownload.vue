@@ -23,6 +23,7 @@
                 v-for="item in modes"
                 :key="item.value"
                 :label="item.label"
+
                 :value="item.value"
             />
           </el-select>
@@ -30,9 +31,7 @@
       </el-row >
       <el-divider class="Divide_Line"/>
       <el-row>
-        <el-col :span="8" v-if="now!=='Rank'">
-        </el-col>
-        <el-col :span="8" v-if="now!=='Rank'">
+        <el-col :span="6" >
           <el-input
               v-model="inputValue"
               size="large"
@@ -41,12 +40,15 @@
               type="number"
           ></el-input>
         </el-col>
-        <el-col :span="8" v-if="now==='Rank'">
+        <el-col :span="2"/>
+        <el-col :span="8">
           <el-select
               v-model="period"
+              ref="mode2"
               class="m-2"
               size="large"
               style="width:150px"
+              @change="changetype2"
           >
             <el-option
                 v-for="(item) in options"
@@ -57,27 +59,11 @@
             />
           </el-select>
         </el-col>
-        <el-col :span="8" v-if="now==='Rank'">
+        <el-col :span="8">
           <date-choose
             key="main"
             ref="dateSelect"
           ></date-choose>
-        </el-col>
-        <el-col :span="2"/>
-        <el-col :span="6">
-          <el-button
-              style=""
-              id="bt"
-              type="success"
-              size="large"
-              @click="Download"
-              :disabled="wait"
-          >
-            Download
-            <el-icon size="large">
-            <Download/>
-            </el-icon>
-          </el-button>
         </el-col>
       </el-row >
       <el-row style="height: 20px"/>
@@ -98,6 +84,19 @@
         </el-col>
         <el-col :span="2"/>
         <el-col :span="6">
+          <el-button
+              style=""
+              id="bt"
+              type="success"
+              size="large"
+              @click="Download"
+              :disabled="wait"
+          >
+            Download
+            <el-icon size="large">
+              <Download/>
+            </el-icon>
+          </el-button>
           <el-text class="Tre">
             {{queuenow}}
           </el-text>
@@ -167,9 +166,6 @@ const props = defineProps({
   ws:WebSocket,
 })
 onMounted(()=>{
-  console.log(dateSelect.value);
-
-
   props.ws.value.onmessage = (event) => {
       // res.value = event.data;
       handleMessage(JSON.parse(event.data));
@@ -194,24 +190,31 @@ function handleMessage(data){
 // const mode = ref('')
 function changetype(data){
   console.log(data)
-  this.value=data;
+  now.value=data
+}
+function changetype2(data){
+  console.log(data)
+  period.value=data
 }
 const percent= ref(0);
-const  now = ref("Pid")
+let now = ref("Pid")
 const queue=ref([
 ])
 const options = ref([
   {
     value:"daily",
     label:"Daily",
+    disabled: true
   },
   {
     value:"weekly",
     label:"Weekly",
+    disabled: true
   },
   {
     value:"monthly",
     label:"Monthly",
+    disabled: true
   },
   {
     value:"daily_r18",
@@ -240,25 +243,12 @@ const modes=ref([
 ]);
 const inputValue= ref('');
 const period=ref("daily");
-// EventsOn("UpdateProcess",function(newnum){
-//   console.log(newnum[0])
-//   percent.value=newnum[0];
-// });
-// EventsOn("Push",function(newmsg){
-//   console.log(newmsg[0])
-//   queue.value.push({value:newmsg[0]})
-// });
-// EventsOn("Pop",function(){
-//   queue.value.shift()
-// });
-// EventsOn("UpdateTerminal",function (newmsg) {
-//   logs.value.push(newmsg[0])
-//   if (logs.value.length>50){
-//     logs.value.pop()
-//   }
-// })
 
 function Download(){
+  console.log("Downloading ",now.value)
+  if (now.value!="Rank"&&inputValue.value===''){
+    return
+  }
   props.ws.value.send(
       JSON.stringify({
         type:now.value,
@@ -267,20 +257,8 @@ function Download(){
         time:dateSelect.value.selectedDate
       })
   )
+  inputValue.value = ''
   return
-
-  // axios.post("http://127.0.0.1:7234/api/download",{
-  //   type: "Pid",
-  //
-  // },{
-  //   headers:{
-  //     'Content-Type': 'application/json'
-  //   }
-  // }).then(response=>{
-  //
-  // }).catch(error=>{
-  //   console.error
-  // })
 }
 
 </script>
