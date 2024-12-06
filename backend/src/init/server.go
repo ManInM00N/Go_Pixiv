@@ -1,13 +1,12 @@
 package init
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
-var (
-	R *gin.Engine
-)
+var R *gin.Engine
 
 func Cors() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -24,6 +23,7 @@ func Cors() gin.HandlerFunc {
 		c.Next()
 	}
 }
+
 func ServerInit() {
 	gin.SetMode(gin.DebugMode)
 	R = gin.Default()
@@ -32,6 +32,7 @@ func ServerInit() {
 	Api.POST("/update", UpdateSetting)
 	Api.GET("/getsetting", GetSetting)
 	Api.GET("/ws", UpdateProgress)
+	Api.GET("/preview", PreviewUrl)
 	Ws := R.Group("/ws")
 	Ws.GET("/progress", UpdateProgress)
 	Ws.GET("/rank", Transform)

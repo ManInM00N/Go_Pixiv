@@ -2,124 +2,91 @@ package main
 
 import (
 	"embed"
-	"fmt"
-	"github.com/wailsapp/wails/v2"
-	"github.com/wailsapp/wails/v2/pkg/options"
-	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
-	"github.com/wailsapp/wails/v2/pkg/options/linux"
-	"github.com/wailsapp/wails/v2/pkg/options/mac"
-	"github.com/wailsapp/wails/v2/pkg/options/windows"
+	_ "embed"
+	"log"
 	. "main/backend/src/init"
-	"net/http"
-	"os"
-	"strings"
+	"time"
+
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
-//go:embed all:frontend/dist
+// Wails uses Go's `embed` package to embed the frontend files into the binary.
+// Any files in the frontend/dist folder will be embedded into the binary and
+// made available to the frontend.
+// See https://pkg.go.dev/embed for more information.
+
+//go:embed frontend/dist
 var assets embed.FS
 
-type FileLoader struct {
-	http.Handler
-}
-
-func NewFileLoader() *FileLoader {
-	return &FileLoader{}
-}
-
-func (h *FileLoader) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	var err error
-	requestedFilename := strings.TrimPrefix(req.URL.Path, "/")
-	println("Requesting file:", requestedFilename)
-	fileData, err := os.ReadFile(requestedFilename)
-	if err != nil {
-		res.WriteHeader(http.StatusBadRequest)
-		res.Write([]byte(fmt.Sprintf("Could not load file %s", requestedFilename)))
-	}
-
-	res.Write(fileData)
-}
-
+// main function serves as the application's entry point. It initializes the application, creates a window,
+// and starts a goroutine that emits a time-based event every second. It subsequently runs the application and
+// logs any error that might occur.
 func main() {
-	MainApp := NewApp()
 	ServerInit()
 	go func() {
 		R.Run(":7234")
 	}()
-	err := wails.Run(&options.App{
-		Title:       "Go!Pixiv",
-		Width:       1024,
-		Height:      768,
-		MinWidth:    1024,
-		MinHeight:   768,
-		Fullscreen:  false,
-		StartHidden: false,
-		AssetServer: &assetserver.Options{
-			Assets:  assets,
-			Handler: NewFileLoader(),
+	// Variables 'Name' and 'Description' are for application metadata.
+	// 'Assets' configures the asset server with the 'FS' variable pointing to the frontend files.
+	// 'Bind' is a list of Go struct instances. The frontend has access to the methods of these instances.
+	// 'Mac' options tailor the application when running an macOS.
+	App = application.New(application.Options{
+		Name:        "GoPixiv2",
+		Description: "Pivix Crawler",
+
+		Services: []application.Service{
+			application.NewService(&GreetService{}),
+			application.NewService(NewCtl()),
 		},
-		BackgroundColour: &options.RGBA{R: 233, G: 233, B: 233, A: 128},
-		OnStartup:        MainApp.startup,
-		OnShutdown:       MainApp.Close,
-		Bind: []interface{}{
-			MainApp,
-			&Setting,
+		Assets: application.AssetOptions{
+			Handler: application.AssetFileServerFS(assets),
 		},
-		EnumBind: []interface{}{
-			WaitingTasks,
-			QueueTaskMsg,
+		Mac: application.MacOptions{
+			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
-		ErrorFormatter: func(err error) any { return err.Error() },
-		Windows: &windows.Options{
-			WebviewIsTransparent:              false,
-			WindowIsTranslucent:               false,
-			BackdropType:                      windows.Mica,
-			DisableWindowIcon:                 false,
-			DisableFramelessWindowDecorations: false,
-			WebviewUserDataPath:               "",
-			WebviewBrowserPath:                "",
-			Theme:                             windows.SystemDefault,
-			CustomTheme: &windows.ThemeSettings{
-				DarkModeTitleBar:   windows.RGB(20, 20, 20),
-				DarkModeTitleText:  windows.RGB(200, 200, 200),
-				DarkModeBorder:     windows.RGB(20, 0, 20),
-				LightModeTitleBar:  windows.RGB(200, 200, 200),
-				LightModeTitleText: windows.RGB(20, 20, 20),
-				LightModeBorder:    windows.RGB(200, 200, 200),
-			},
-			Messages:             &windows.Messages{},
-			OnSuspend:            func() {},
-			OnResume:             func() {},
-			WebviewGpuIsDisabled: false,
+		Windows: application.WindowsOptions{
+			WebviewUserDataPath: "",
+			WebviewBrowserPath:  "",
 		},
-		Mac: &mac.Options{
-			TitleBar: &mac.TitleBar{
-				TitlebarAppearsTransparent: true,
-				HideTitle:                  false,
-				HideTitleBar:               false,
-				FullSizeContent:            false,
-				UseToolbar:                 false,
-				HideToolbarSeparator:       true,
-			},
-			Appearance:           mac.NSAppearanceNameDarkAqua,
-			WebviewIsTransparent: true,
-			WindowIsTranslucent:  false,
-			About: &mac.AboutInfo{
-				Title:   "Go!Pixiv",
-				Message: "© 2021 Me",
-				//Icon:    Logo,
-			},
-		},
-		Linux: &linux.Options{
-			//Icon:                Logo,
-			WindowIsTranslucent: false,
-			WebviewGpuPolicy:    linux.WebviewGpuPolicyAlways,
-			ProgramName:         "Go!Pixiv",
-		},
-		Debug: options.Debug{
-			OpenInspectorOnStartup: false,
+		Linux: application.LinuxOptions{
+			ProgramName: "GoPixiv2",
 		},
 	})
-	if err != nil {
-		println("Error:", err.Error())
-	}
+
+	// Create a new window with the necessary options.
+	// 'Title' is the title of the window.
+	// 'Mac' options tailor the window when running on macOS.
+	// 'BackgroundColour' is the background colour of the window.
+	// 'URL' is the URL that will be loaded into the webview.
+	App.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+		Title: "GoPixiv2",
+		Mac: application.MacWindow{
+			InvisibleTitleBarHeight: 50,
+			Backdrop:                application.MacBackdropTranslucent,
+			TitleBar:                application.MacTitleBarHiddenInset,
+		},
+		Width:            1024,
+		Height:           768,
+		MinWidth:         1024,
+		MinHeight:        768,
+		MaxWidth:         768,
+		MaxHeight:        768,
+		BackgroundColour: application.NewRGBA(233, 233, 233, 128),
+		URL:              "/",
+	})
+
+	// Create a goroutine that emits an event containing the current time every second.
+	// The frontend can listen to this event and update the UI accordingly.
+	go func() {
+		for {
+			now := time.Now().Format(time.RFC1123)
+			App.EmitEvent("time", now)
+			time.Sleep(time.Second)
+		}
+	}()
+
+	// Run the application. This blocks until the application has been exited.
+	err := App.Run()
+	// If an error occurred while running the application, log it and exit.
+	log.Fatal(err)
 }

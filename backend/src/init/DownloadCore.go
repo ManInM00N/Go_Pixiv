@@ -2,13 +2,14 @@ package init
 
 import (
 	"fmt"
-	"fyne.io/fyne/v2"
-	"github.com/ManInM00N/go-tool/statics"
 	_ "image/png"
+	"strconv"
 	"strings"
 
+	"fyne.io/fyne/v2"
+	"github.com/ManInM00N/go-tool/statics"
+
 	. "main/backend/src/DAO"
-	"strconv"
 )
 
 var (
@@ -34,6 +35,7 @@ func Download_By_Pid(text string) {
 		return nil, nil
 	})
 }
+
 func Download_By_Author(text string, callEvent func(name string, data ...interface{})) {
 	text = statics.CatchNumber(text)
 	if text == "" {
@@ -61,13 +63,13 @@ func Download_By_Author(text string, callEvent func(name string, data ...interfa
 		satisfy := 0
 		options := NewOption(WithMode(ByAuthor), WithR18(Setting.Agelimit), WithLikeLimit(Setting.LikeLimit))
 
-		for key, _ := range all {
+		for key := range all {
 			k := key
 			if IsClosed {
 				return
 			}
 			P.AddTask(func() (interface{}, error) {
-				//time.Sleep(1 * time.Second)
+				// time.Sleep(1 * time.Second)
 				if IsClosed {
 					return nil, nil
 				}
@@ -75,7 +77,7 @@ func Download_By_Author(text string, callEvent func(name string, data ...interfa
 				temp := k
 				illust, err := work(statics.StringToInt64(temp), options)
 				if err != nil {
-					//continue
+					// continue
 					if !ContainMyerror(err) {
 						c <- temp
 					}
@@ -100,7 +102,7 @@ func Download_By_Author(text string, callEvent func(name string, data ...interfa
 				return
 			}
 			ss := <-c
-			//log.Println(ss, " Download failed Now retrying")
+			// log.Println(ss, " Download failed Now retrying")
 			P.AddTask(func() (interface{}, error) {
 				if a, b := JustDownload(ss, options); b {
 					satisfy += a
@@ -119,8 +121,8 @@ func Download_By_Author(text string, callEvent func(name string, data ...interfa
 		callEvent("UpdateProcess", 100*ProcessNow/max(ProcessMax, 1))
 		callEvent("Pop")
 	})
-
 }
+
 func Download_By_Rank(text, Type string, callEvent func(name string, data ...interface{})) {
 	WaitingTasks++
 
@@ -139,7 +141,6 @@ func Download_By_Rank(text, Type string, callEvent func(name string, data ...int
 		temp := i
 		callEvent("Push", fmt.Sprint(date+" page", i, " "+Type))
 		TaskPool.Add(func() {
-
 			if IsClosed {
 				return
 			}
@@ -148,7 +149,7 @@ func Download_By_Rank(text, Type string, callEvent func(name string, data ...int
 			op := NewOption(WithType(0), WithRankmode(Type), WithDate(dd), WithR18(true), WithLikeLimit(Setting.LikeLimit), WithPage(strconv.FormatInt(page, 10)))
 			InfoLog.Println(op.RankDate+" page", page, " "+op.Rank+"Rank pushed queue")
 
-			//println(page)
+			// println(page)
 			c := make(chan string, 2000)
 			all, err := GetRank(op)
 			WaitingTasks--
@@ -171,14 +172,14 @@ func Download_By_Rank(text, Type string, callEvent func(name string, data ...int
 					return
 				}
 				P.AddTask(func() (interface{}, error) {
-					//time.Sleep(1 * time.Second)
+					// time.Sleep(1 * time.Second)
 					if IsClosed {
 						return nil, nil
 					}
 					temp := k
 					illust, err := work(statics.StringToInt64(temp.String()), options)
 					if err != nil {
-						//continue
+						// continue
 						if !ContainMyerror(err) {
 							c <- temp.Str
 						}
@@ -200,7 +201,7 @@ func Download_By_Rank(text, Type string, callEvent func(name string, data ...int
 					return
 				}
 				ss := <-c
-				//log.Println(ss, " Download failed Now retrying")
+				// log.Println(ss, " Download failed Now retrying")
 				P.AddTask(func() (interface{}, error) {
 					if a, b := JustDownload(ss, options); b {
 						satisfy += a
@@ -220,6 +221,7 @@ func Download_By_Rank(text, Type string, callEvent func(name string, data ...int
 
 	}
 }
+
 func DownloadRankMsg(text, Type, page string, callEvent func(name string, data ...interface{})) {
 	date := ""
 	println(text, Type)
@@ -239,7 +241,7 @@ func DownloadRankMsg(text, Type, page string, callEvent func(name string, data .
 		}
 		dd := date
 		op := NewOption(WithType(0), WithRankmode(Type), WithDate(dd), WithR18(true), WithLikeLimit(0), WithPage(page))
-		//println(page)
+		// println(page)
 		c := make(chan *Illust, 2000)
 		all, err := GetRank(op)
 		if err != nil {
@@ -263,11 +265,11 @@ func DownloadRankMsg(text, Type, page string, callEvent func(name string, data .
 						return nil, nil
 					}
 				}
-				Download(illust, options)
+				// Download(illust, options)
 				if IsClosed || !RankLoadingNow {
 					return nil, nil
 				}
-				callEvent("UpdateLoad", illust.Pid, illust.Title, illust.UserName, illust.Pages, illust.UserID, illust.AgeLimit)
+				callEvent("UpdateLoad", illust.Pid, illust.Title, illust.UserName, illust.Pages, illust.UserID, illust.AgeLimit, temp.Get("url").String())
 				return nil, nil
 			})
 		}
@@ -277,19 +279,19 @@ func DownloadRankMsg(text, Type, page string, callEvent func(name string, data .
 		callEvent("LoadOk")
 	})
 }
+
 func Download_By_FollowPage(page, Type string, callEvent func(name string, data ...interface{})) {
 	WaitingTasks++
 
 	callEvent("Push", fmt.Sprint("follow page", page, Type))
 	TaskPool.Add(func() {
-
 		if IsClosed {
 			return
 		}
 		op := NewOption(WithRankmode(Type), WithPage(page))
 		InfoLog.Println("follow page", page, " "+Type+" pushed queue")
 
-		//println(page)
+		// println(page)
 		c := make(chan string, 2000)
 		all, err := GetFollow(op)
 		WaitingTasks--
@@ -312,14 +314,14 @@ func Download_By_FollowPage(page, Type string, callEvent func(name string, data 
 				return
 			}
 			P.AddTask(func() (interface{}, error) {
-				//time.Sleep(1 * time.Second)
+				// time.Sleep(1 * time.Second)
 				if IsClosed {
 					return nil, nil
 				}
 				temp := k
 				illust, err := work(statics.StringToInt64(temp.String()), options)
 				if err != nil {
-					//continue
+					// continue
 					if !ContainMyerror(err) {
 						c <- temp.Str
 					}
@@ -342,7 +344,7 @@ func Download_By_FollowPage(page, Type string, callEvent func(name string, data 
 				return
 			}
 			ss := <-c
-			//log.Println(ss, " Download failed Now retrying")
+			// log.Println(ss, " Download failed Now retrying")
 			P.AddTask(func() (interface{}, error) {
 				if a, b := JustDownload(ss, options); b {
 					satisfy += a
@@ -360,6 +362,7 @@ func Download_By_FollowPage(page, Type string, callEvent func(name string, data 
 		callEvent("Pop")
 	})
 }
+
 func DownloadFollowMsg(page, Type string, callEvent func(name string, data ...interface{})) {
 	FollowPool.Add(func() {
 		if IsClosed || !FollowLoadingNow {
@@ -367,7 +370,7 @@ func DownloadFollowMsg(page, Type string, callEvent func(name string, data ...in
 		}
 
 		op := NewOption(WithR18(true), WithRankmode(Type), WithPage(page))
-		//println(page)
+		// println(page)
 		c := make(chan *Illust, 2000)
 		all, err := GetFollow(op)
 		if err != nil {
@@ -381,23 +384,24 @@ func DownloadFollowMsg(page, Type string, callEvent func(name string, data ...in
 			if IsClosed || !FollowLoadingNow {
 				break
 			}
-			//println(k.Int())
+			// println(k.Int())
 			FollowLoadPool.AddTask(func() (interface{}, error) {
 				if IsClosed || !FollowLoadingNow {
 					return nil, nil
 				}
 				temp := k
-				illust, err := work(temp.Int(), options)
+				illust, err := work(statics.StringToInt64(temp.Get("id").String()), options)
+				// DebugLog.Println(temp, temp.Get("url").Str, temp.Get("url").String())
 				if err != nil {
 					if !ContainMyerror(err) || illust == nil {
 						return nil, nil
 					}
 				}
-				Download(illust, options)
+				// Download(illust, options)
 				if IsClosed || !FollowLoadingNow {
 					return nil, nil
 				}
-				callEvent("UpdateLoadFollow", illust.Pid, illust.Title, illust.UserName, illust.Pages, illust.UserID, illust.AgeLimit)
+				callEvent("UpdateLoadFollow", illust.Pid, illust.Title, illust.UserName, illust.Pages, illust.UserID, illust.AgeLimit, temp.Get("url").String())
 				return nil, nil
 			})
 		}

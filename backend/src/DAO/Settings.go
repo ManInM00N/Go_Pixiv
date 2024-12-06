@@ -23,7 +23,9 @@ func (s *Settings) MsgDetail() string {
 	println(str)
 	return str
 }
+
 func (s *Settings) UpdateSettings(NewSetting Settings) {
+	println(s.MsgDetail())
 	*s = NewSetting
 	s.LikeLimit = max(s.LikeLimit, 0)
 	_, err := os.Stat(s.Downloadposition)

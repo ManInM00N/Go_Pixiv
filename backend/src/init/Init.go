@@ -2,12 +2,13 @@ package init
 
 import (
 	"context"
-	"github.com/ManInM00N/go-tool/goruntine"
-	"github.com/devchat-ai/gopool"
-	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	. "main/backend/src/DAO"
 	"os"
+
+	"github.com/ManInM00N/go-tool/goruntine"
+	"github.com/devchat-ai/gopool"
+	"gopkg.in/yaml.v3"
 )
 
 var (
@@ -27,7 +28,7 @@ func init() {
 	}
 	is = true
 	Log_init()
-	//logoInit()
+	// logoInit()
 
 	Ctx, Cancel = context.WithCancel(context.Background())
 	ymlfile, _ = os.OpenFile("settings.yml", os.O_RDWR, 0644)

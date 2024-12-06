@@ -6,9 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/ManInM00N/go-tool/statics"
-	"github.com/tidwall/gjson"
-	"github.com/yuin/goldmark/util"
 	"io"
 	. "main/backend/src/DAO"
 	"net/http"
@@ -16,6 +13,10 @@ import (
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/ManInM00N/go-tool/statics"
+	"github.com/tidwall/gjson"
+	"github.com/yuin/goldmark/util"
 )
 
 // TODO: 作者全部作品下载OK
@@ -34,11 +35,11 @@ func Download(i *Illust, op *Option) bool {
 	Request.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36")
 	Request.Header.Set("referer", "https://www.pixiv.net")
 	Cookie := &http.Cookie{
-		Name:  "PHPSESSID",
+		Name:  "cookie",
 		Value: Setting.Cookie,
 	}
 	Request.AddCookie(Cookie)
-	Request.Header.Set("PHPSESSID", Setting.Cookie)
+	Request.Header.Set("cookie", Setting.Cookie)
 	var Response *http.Response
 	defer func() {
 		if Response != nil {
@@ -55,7 +56,6 @@ func Download(i *Illust, op *Option) bool {
 		_, err = os.Stat(cachepath)
 		if err != nil {
 			os.Mkdir(cachepath, os.ModePerm)
-
 		}
 		cachepath += "/" + statics.Int64ToString(i.Pid) + ".jpg"
 		if _, err := os.Stat(cachepath); err == nil {
@@ -90,7 +90,6 @@ func Download(i *Illust, op *Option) bool {
 	_, err = os.Stat(Setting.Downloadposition)
 	if err != nil {
 		os.Mkdir(Setting.Downloadposition, os.ModePerm)
-
 	}
 	Path := Setting.Downloadposition
 	if op.Mode == ByRank {
@@ -106,7 +105,7 @@ func Download(i *Illust, op *Option) bool {
 		if err != nil {
 			os.Mkdir(Path, os.ModePerm)
 		}
-		//Path = AuthorFile
+		// Path = AuthorFile
 	}
 
 	Type := Path + "/" + i.AgeLimit
@@ -172,11 +171,11 @@ func Download(i *Illust, op *Option) bool {
 }
 
 func CheckMode(url, id string, num int) (string, string) {
-	if num == 1 { //illust page
+	if num == 1 { // illust page
 		return "https://www.pixiv.net/ajax/illust/" + url, "https://www.pixiv.net/artworks/" + id
 	} else if num == 2 { // author page
 		return "https://www.pixiv.net/ajax/user/" + url + "/profile/all", "https://www.pixiv.net/member.php?id=" + id
-	} else if num == 4 { //ranking page
+	} else if num == 4 { // ranking page
 		return "https://www.pixiv.net/ranking.php?format=json" + url, "https://www.pixiv.net/"
 	} else if num == 8 {
 		return "https://www.pixiv.net/ajax/follow_latest/illust?" + url, "https://www.pixiv.net/"
@@ -185,12 +184,12 @@ func CheckMode(url, id string, num int) (string, string) {
 }
 
 // TODO:下载作品主题信息json OK
-func GetWebpageData(url, id string, num int) ([]byte, error) { //请求得到作品json
+func GetWebpageData(url, id string, num int) ([]byte, error) { // 请求得到作品json
 
 	var response *http.Response
 	var err error
 	ur, ref := CheckMode(url, id, num)
-	//println(ur, ref)
+	// println(ur, ref)
 	Request, err := http.NewRequest("GET", ur, nil)
 	if err != nil {
 		DebugLog.Println("Error creating request", err)
@@ -212,7 +211,7 @@ func GetWebpageData(url, id string, num int) ([]byte, error) { //请求得到作
 			if response.StatusCode == 429 {
 				println("429")
 				time.Sleep(time.Duration(Setting.Retry429) * time.Millisecond)
-				//i--
+				// i--
 				continue
 			}
 			break
@@ -226,7 +225,7 @@ func GetWebpageData(url, id string, num int) ([]byte, error) { //请求得到作
 	}
 	defer response.Body.Close()
 
-	//webpageBytes, err3 := ioutil.ReadAll(response.Body)
+	// webpageBytes, err3 := ioutil.ReadAll(response.Body)
 	var buffer bytes.Buffer
 	reader := bufio.NewReader(response.Body)
 	_, err3 := io.Copy(&buffer, reader)
@@ -248,7 +247,7 @@ func GetWebpageData(url, id string, num int) ([]byte, error) { //请求得到作
 
 // TODO: 作品信息json请求   OK
 // TODO: 多页下载 OK
-func work(id int64, mode *Option) (i *Illust, err error) { //按作品id查找
+func work(id int64, mode *Option) (i *Illust, err error) { // 按作品id查找
 	urltail := strconv.FormatInt(id, 10)
 	strid := urltail
 	err = nil
@@ -262,11 +261,11 @@ func work(id int64, mode *Option) (i *Illust, err error) { //按作品id查找
 	Results := gjson.ParseBytes(data)
 	canbedownload := Results.Get("error").Bool()
 	if canbedownload {
-		//println(strid, len(strid))
+		// println(strid, len(strid))
 		return nil, &NotGood{}
 	}
-	jsonmsg := gjson.ParseBytes(data).Get("body") //读取json内作品及作者id信息
-	//println(id, jsonmsg.Str)
+	jsonmsg := gjson.ParseBytes(data).Get("body") // 读取json内作品及作者id信息
+	// println(id, jsonmsg.Str)
 	i = &Illust{
 		AgeLimit:    "all-age",
 		Pid:         jsonmsg.Get("illustId").Int(),
@@ -293,7 +292,7 @@ func work(id int64, mode *Option) (i *Illust, err error) { //按作品id查找
 	}
 	if mode.OnlyPreview {
 		i.PreviewImageUrl = jsonmsg.Get("urls.small").String()
-		//DebugLog.Println(i.PreviewImageUrl)
+		// DebugLog.Println(i.PreviewImageUrl)
 		return i, err
 	}
 	pages, err2 := GetWebpageData(urltail+"/pages", strid, 1)
@@ -320,6 +319,7 @@ func work(id int64, mode *Option) (i *Illust, err error) { //按作品id查找
 
 	return i, err
 }
+
 func GetAuthor(id int64) (map[string]gjson.Result, error) {
 	data, err := GetWebpageData(strconv.FormatInt(id, 10), strconv.FormatInt(id, 10), 2)
 	if err != nil {
@@ -329,33 +329,39 @@ func GetAuthor(id int64) (map[string]gjson.Result, error) {
 	ss := jsonmsg.Get("illusts").Map()
 	return ss, nil
 }
+
 func GetRank(option *Option) ([]gjson.Result, error) {
 	option.Msg()
 	println("https://www.pixiv.net/ranking.php?format=json" + option.Suffix)
 	data, err := GetWebpageData(option.Suffix, "", 4)
 	if err != nil {
-		//println("get failed: ", err.Error())
+		// println("get failed: ", err.Error())
 		return nil, err
 	}
 	arr := gjson.ParseBytes(data).Get("contents.#.illust_id").Array()
 	return arr, nil
 }
+
 func GetFollow(option *Option) ([]gjson.Result, error) {
 	option.Msg()
-	//https://www.pixiv.net/ajax/follow_latest/illust?&mode=all&p=1
+	// https://www.pixiv.net/ajax/follow_latest/illust?&mode=all&p=1
 	println("https://www.pixiv.net/ajax/follow_latest/illust?" + option.Suffix)
 	data, err := GetWebpageData(option.Suffix, "", 8)
 	if err != nil {
 		println("get failed: ", err.Error())
 		return nil, err
 	}
-	arr := gjson.ParseBytes(data).Get("body.page.ids").Array()
+	// arr := gjson.ParseBytes(data).Get("body.page.ids").Array()
+	arr := gjson.ParseBytes(data).Get("body.thumbnails.illust").Array()
+	DebugLog.Println(arr)
+	// arr[0].Get("illust").Map()
 	//println(arr)
 	//for i := range arr {
 	//	println(arr[i].Int())
 	//}
 	return arr, nil
 }
+
 func JustDownload(pid string, mode *Option) (int, bool) {
 	illust, err := work(statics.StringToInt64(pid), mode)
 	if ContainMyerror(err) {

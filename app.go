@@ -4,35 +4,41 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	"github.com/tidwall/gjson"
-	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"io"
 	. "main/backend/src/init"
 	"net/http"
+
+	"github.com/tidwall/gjson"
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
-type App struct {
+var App *application.App
+
+type Ctl struct {
 	ctx context.Context
 }
 
-func NewApp() *App {
-	return &App{}
+func NewCtl() *Ctl {
+	return &Ctl{}
 }
 
 // startup is called when the app starts. The context is saved
 // so we can call the runtime methods
-func (a *App) startup(ctx context.Context) {
+func (a *Ctl) startup(ctx context.Context) {
 	a.ctx = ctx
 }
-func (a *App) DownloadByPid(text string) bool {
+
+func (a *Ctl) DownloadByPid(text string) bool {
 	println(text)
 	Download_By_Pid(text)
 	return true
 }
-func (a *App) ReturnString() string {
+
+func (a *Ctl) ReturnString() string {
 	return NowTaskMsg
 }
-func (a *App) Close(ctx context.Context) {
+
+func (a *Ctl) Close(ctx context.Context) {
 	IsClosed = true
 	P.Wait()
 	defer func() {
@@ -40,59 +46,65 @@ func (a *App) Close(ctx context.Context) {
 		TaskPool.Close()
 		SinglePool.Release()
 	}()
+}
 
-}
-func (a *App) DownloadByAuthorId(text string) bool {
+func (a *Ctl) DownloadByAuthorId(text string) bool {
 	Download_By_Author(text, func(name string, data ...interface{}) {
-		runtime.EventsEmit(a.ctx, name, data)
+		App.EmitEvent(name, data)
 	})
 	return true
 }
-func (a *App) DownloadByRank(text, Type string) bool {
+
+func (a *Ctl) DownloadByRank(text, Type string) bool {
 	Download_By_Rank(text, Type, func(name string, data ...interface{}) {
-		runtime.EventsEmit(a.ctx, name, data)
+		App.EmitEvent(name, data)
 	})
 	return true
 }
-func (a *App) DownloadByFollowPage(page, Type string) bool {
+
+func (a *Ctl) DownloadByFollowPage(page, Type string) bool {
 	Download_By_FollowPage(page, Type, func(name string, data ...interface{}) {
-		runtime.EventsEmit(a.ctx, name, data)
+		App.EmitEvent(name, data)
 	})
 	return true
 }
-func (a *App) PreloadRank(text, Type, page string) bool {
+
+func (a *Ctl) PreloadRank(text, Type, page string) bool {
 	RankLoadingNow = true
 	DownloadRankMsg(text, Type, page, func(name string, data ...interface{}) {
-		runtime.EventsEmit(a.ctx, name, data)
+		App.EmitEvent(name, data)
 	})
 	return true
 }
-func (a *App) PreloadFollow(page, Type string) bool {
+
+func (a *Ctl) PreloadFollow(page, Type string) bool {
 	FollowLoadingNow = true
 	DownloadFollowMsg(page, Type, func(name string, data ...interface{}) {
-		runtime.EventsEmit(a.ctx, name, data)
+		App.EmitEvent(name, data)
 	})
 	return true
 }
-func (a *App) PopFollowPool() {
+
+func (a *Ctl) PopFollowPool() {
 	FollowLoadingNow = false
 	FollowLoadPool.Wait()
 	FollowLoadingNow = true
-	runtime.EventsEmit(a.ctx, "PopUp")
+	App.EmitEvent("PopUp")
 }
-func (a *App) PopLoadPool() {
+
+func (a *Ctl) PopLoadPool() {
 	RankLoadingNow = false
 	RankloadPool.Wait()
 	RankLoadingNow = true
-	runtime.EventsEmit(a.ctx, "RankmsgPopUp")
+	App.EmitEvent("RankmsgPopUp")
 }
 
-func (a *App) CheckLogin() bool {
+func (a *Ctl) CheckLogin() bool {
 	url, ref := CheckMode("", "", 0)
 	Request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		DebugLog.Println("Error creating request", err)
-		runtime.EventsEmit(a.ctx, "login", "False")
+		App.EmitEvent("login", "False")
 
 		return false
 	}
@@ -107,7 +119,7 @@ func (a *App) CheckLogin() bool {
 	Request.Header.Set("PHPSESSID", Setting.Cookie)
 	res, err := client.Do(Request)
 	if err != nil {
-		runtime.EventsEmit(a.ctx, "login", "False")
+		App.EmitEvent("login", "False")
 		return false
 	}
 	var buffer bytes.Buffer
@@ -117,12 +129,11 @@ func (a *App) CheckLogin() bool {
 	Results := gjson.ParseBytes(data)
 	canbedownload := Results.Get("error").Bool()
 	println(canbedownload)
-	DebugLog.Println("Loading results:", canbedownload)
+	DebugLog.Println("Loading succeed? :", !canbedownload)
 	if canbedownload {
-		runtime.EventsEmit(a.ctx, "login", "False")
+		App.EmitEvent("login", "False")
 	} else {
-		runtime.EventsEmit(a.ctx, "login", "True")
-
+		App.EmitEvent("login", "True")
 	}
 	return true
 }
