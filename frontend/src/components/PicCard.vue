@@ -20,7 +20,7 @@
         <template #default>
             <el-card :body-style="{ padding: '0px', marginBottom: '1px', width: '100%' }"
                 v-if="!($props.r18 === 'r18' && !form.r_18)">
-                <img :src="'http://127.0.0.1:7234/preview?url=' + $props.img" class="image" />
+                <img :src="'http://127.0.0.1:7234/api/preview?url=' + $props.img" class="image" />
                 <div style="padding: 14px">
                     <el-row>
                         <el-text class="w-280px mb-2" truncated

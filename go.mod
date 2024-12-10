@@ -1,8 +1,6 @@
 module main
 
-go 1.22.4
-
-toolchain go1.23.3
+go 1.23.4
 
 require (
 	fyne.io/fyne/v2 v2.5.2

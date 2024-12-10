@@ -1,15 +1,15 @@
 {
 	"fixed": {
-		"file_version": "0.1.0"
+		"file_version": "2.0.0"
 	},
 	"info": {
 		"0000": {
-			"ProductVersion": "0.1.0",
-			"CompanyName": "My Company",
-			"FileDescription": "My Product Description",
-			"LegalCopyright": "© now, My Company",
-			"ProductName": "My Product",
-			"Comments": "This is a comment"
+			"ProductVersion": "2.0.0",
+			"CompanyName": "ManInM00N",
+			"FileDescription": "A Go-based crawler for Pixiv",
+			"LegalCopyright": "© now, ManInM00N",
+			"ProductName": "GoPixiv2",
+			"Comments": "Go编写的Pixiv爬虫"
 		}
 	}
 }

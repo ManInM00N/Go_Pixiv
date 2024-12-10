@@ -16,6 +16,7 @@ type Settings struct {
 	Downloadinterval int    `yml:"downloadinterval" json:"downloadinterval"`
 	Retryinterval    int    `yml:"retryinterval"json:"retryinterval"`
 	DifferAuthor     bool   `yml:"differauthor" json:"differauthor"`
+	ExpiredTime      int    `yml:"expiretime" json:"expired_time"`
 }
 
 func (s *Settings) MsgDetail() string {
@@ -35,5 +36,6 @@ func (s *Settings) UpdateSettings(NewSetting Settings) {
 	s.Retry429 = max(s.Retry429, 3000)
 	s.Retryinterval = max(s.Retryinterval, 200)
 	s.Downloadinterval = max(s.Downloadinterval, 100)
+	s.ExpiredTime = max(1, min(366, s.ExpiredTime))
 	println(s.MsgDetail())
 }

@@ -34,7 +34,6 @@ func PreviewUrl(c *gin.Context) {
 		DebugLog.Println("Missing url")
 		return
 	}
-
 	// 发起请求到目标图片地址
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", imageURL, nil)
@@ -58,6 +57,9 @@ func PreviewUrl(c *gin.Context) {
 	// 将目标图片的内容和 Content-Type 返回给前端
 	c.Header("Content-Type", resp.Header.Get("Content-Type"))
 	c.Status(resp.StatusCode)
-	DebugLog.Println(resp.StatusCode)
-	io.Copy(c.Writer, resp.Body)
+	_, err = io.Copy(c.Writer, resp.Body)
+	if err != nil {
+		DebugLog.Println(err.Error())
+		return
+	}
 }
