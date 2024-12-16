@@ -1,6 +1,6 @@
 <template>
     <!--    -->
-    <el-skeleton style="width: 240px" :loading="false" animated :throttle="500">
+    <el-skeleton style="width: 240px" :loading="load" animated :throttle="500">
         <template #template>
             <el-skeleton-item variant="image" style="width: 240px; height: 240px" />
             <div style="padding: 14px">
@@ -19,8 +19,9 @@
         </template>
         <template #default>
             <el-card :body-style="{ padding: '0px', marginBottom: '1px', width: '100%' }"
-                v-if="!($props.r18 === 'r18' && !form.r_18)">
-                <img :src="'http://127.0.0.1:7234/api/preview?url=' + $props.img" class="image" />
+                v-if="!($props.r18 && !form.r_18)">
+                <LazyImg :ref="pic" :onload="load = false" :url="'http://127.0.0.1:7234/api/preview?url=' + $props.img"
+                    class="image" />
                 <div style="padding: 14px">
                     <el-row>
                         <el-text class="w-280px mb-2" truncated
@@ -33,20 +34,25 @@
                             @click="'https://www.pixiv.net/users/' + $props.authorId">{{ $props.author }}</el-text>
                     </el-row>
                     <el-row>
-                        <el-col :span="20">
+                        <el-col :span="20" style="text-align: left;;">
                             <el-text class="w-250px mb-2" truncated type="success">
                                 Pages:{{ $props.pages }}
                             </el-text>
                         </el-col>
 
                         <el-col :span="4">
-                            <div
-                                class="bottom card-header                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ">
-                                <el-button text class="button" @click="download" :disabled="false">
+                            <div class="bottom card-header">
+                                <el-button text class="button" v-if="!inqueue" @click="download" :disabled="inqueue">
                                     <el-icon size="30">
                                         <Download />
                                     </el-icon>
                                 </el-button>
+                                <div v-if="inqueue" style="text-align: center;height: 32px;padding-left: 15px;">
+                                    <div class="loading" v-if="inqueue && dis"></div>
+                                    <el-icon size="30" v-if="inqueue && !dis">
+                                        <Select color="green" />
+                                    </el-icon>
+                                </div>
                             </div>
                         </el-col>
                     </el-row>
@@ -60,8 +66,14 @@
 <script lang="ts" setup>
 import { onMounted, ref } from "vue";
 import emitter from "../assets/js/Pub.js";
+import { DownloadByPid } from "../../bindings/main/ctl.js";
 const name = "PicCard"
 import { form } from "../assets/js/configuration.js"
+import axios from 'axios'
+import { LazyImg } from "vue-waterfall-plugin-next";
+import { tr } from "element-plus/es/locale/index.mjs";
+import { sleep } from "../assets/js/Time.js"
+const load = ref(true)
 const props = defineProps({
     pid: {
         type: String,
@@ -78,7 +90,7 @@ const props = defineProps({
         default: "",
     },
     pages: {
-        type: String,
+        type: Number,
         default: 1,
     },
     authorId: {
@@ -86,18 +98,23 @@ const props = defineProps({
         default: 1,
     },
     r18: {
-        type: String,
-        default: "r18",
+        type: Boolean,
+        default: true,
     }
 });
+const pic = ref(null)
+const inqueue = ref(false)
+const dis = ref(false)
+async function download() {
+    if (DownloadByPid(props.pid)) {
+        console.log(props.pid)
+        dis.value = true
+        inqueue.value = true
+        await sleep(1000)
+        dis.value = false
+    }
 
-const download = () => {
-    console.log("trying to download", props.pid, props.pid.value)
-    emitter.emit("DownloadByPid", { pid: props.pid })
 }
-defineExpose({
-
-})
 onMounted(() => {
 
 })
@@ -105,12 +122,30 @@ function jump(event) {
     console.log("jump", event)
     window.open(event, '_blank')
 }
+// 
 </script>
 
 <style lang="less" scoped>
 .image {
     width: 100%;
-    height: 100%;
+}
 
+.loading {
+    width: 28px;
+    height: 28px;
+    border: 2px solid #000;
+    border-top-color: transparent;
+    border-radius: 100%;
+    animation: circle infinite 0.75s linear;
+}
+
+@keyframes circle {
+    0% {
+        transform: rotate(0);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 </style>

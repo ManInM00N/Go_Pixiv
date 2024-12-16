@@ -35,3 +35,25 @@ axios.get("http://127.0.0.1:7234/api/getsetting").then(res => {
 }).catch(error => {
     console.log(error)
 })
+export let ws = WebSocket;
+const startWebSocket = () => {
+    ws.value = new WebSocket("ws://127.0.0.1:7234/api/ws");
+
+    ws.value.onopen = () => {
+        console.log('WebSocket connected');
+    };
+
+    ws.value.onmessage = (event) => {
+        // res.value = event.data;
+        handleMessage(JSON.parse(event.data));
+    };
+    ws.value.onclose = () => {
+        ElMessage.error("远程主机关闭")
+        console.log('WebSocket closed');
+    };
+
+    ws.value.onerror = (error) => {
+        console.error('WebSocket error:', error);
+    };
+};
+startWebSocket()

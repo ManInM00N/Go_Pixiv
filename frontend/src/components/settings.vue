@@ -50,12 +50,6 @@ import { form } from "../assets/js/configuration.js"
 import { defineComponent, onMounted, ref, reactive } from "vue";
 import emitter from "../assets/js/Pub.js"
 import axios from "axios";
-// const props = defineProps({
-//
-//   form:{
-//     type:DAO.Settings,
-//   }
-// })
 
 function UpLoad() {
     console.log(form, form)

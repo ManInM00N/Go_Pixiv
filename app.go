@@ -29,7 +29,7 @@ func (a *Ctl) startup(ctx context.Context) {
 }
 
 func (a *Ctl) DownloadByPid(text string) bool {
-	println(text)
+	InfoLog.Println("Download illust ", text)
 	Download_By_Pid(text)
 	return true
 }
@@ -69,43 +69,12 @@ func (a *Ctl) DownloadByFollowPage(page, Type string) bool {
 	return true
 }
 
-func (a *Ctl) PreloadRank(text, Type, page string) bool {
-	RankLoadingNow = true
-	DownloadRankMsg(text, Type, page, func(name string, data ...interface{}) {
-		App.EmitEvent(name, data)
-	})
-	return true
-}
-
-func (a *Ctl) PreloadFollow(page, Type string) bool {
-	FollowLoadingNow = true
-	DownloadFollowMsg(page, Type, func(name string, data ...interface{}) {
-		App.EmitEvent(name, data)
-	})
-	return true
-}
-
-func (a *Ctl) PopFollowPool() {
-	FollowLoadingNow = false
-	FollowLoadPool.Wait()
-	FollowLoadingNow = true
-	App.EmitEvent("PopUp")
-}
-
-func (a *Ctl) PopLoadPool() {
-	RankLoadingNow = false
-	RankloadPool.Wait()
-	RankLoadingNow = true
-	App.EmitEvent("RankmsgPopUp")
-}
-
 func (a *Ctl) CheckLogin() bool {
 	url, ref := CheckMode("", "", 0)
 	Request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		DebugLog.Println("Error creating request", err)
 		App.EmitEvent("login", "False")
-
 		return false
 	}
 	client := GetClient()
@@ -117,7 +86,13 @@ func (a *Ctl) CheckLogin() bool {
 	}
 	Request.AddCookie(Cookie)
 	Request.Header.Set("PHPSESSID", Setting.Cookie)
-	res, err := client.Do(Request)
+	var res *http.Response
+	for i := 0; i < 3; i++ {
+		res, err = client.Do(Request)
+		if err == nil {
+			break
+		}
+	}
 	if err != nil {
 		App.EmitEvent("login", "False")
 		return false
@@ -131,7 +106,7 @@ func (a *Ctl) CheckLogin() bool {
 	println(canbedownload)
 	DebugLog.Println("Loading succeed? :", !canbedownload)
 	if canbedownload {
-		App.EmitEvent("login", "False")
+		App.EmitEvent("login", "False", "Make sure your Cookie not Expired and Existed")
 	} else {
 		App.EmitEvent("login", "True")
 	}

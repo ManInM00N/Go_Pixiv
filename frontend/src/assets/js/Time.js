@@ -6,3 +6,4 @@ export function padStart(value, length, padChar) {
     }
     return value;
 }
+export const sleep = ms => new Promise(r => setTimeout(r, ms));

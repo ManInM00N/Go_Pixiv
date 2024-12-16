@@ -61,43 +61,6 @@ export function DownloadByRank(text, Type) {
 }
 
 /**
- * @returns {Promise<void> & { cancel(): void }}
- */
-export function PopFollowPool() {
-    let $resultPromise = /** @type {any} */($Call.ByID(1720297957));
-    return $resultPromise;
-}
-
-/**
- * @returns {Promise<void> & { cancel(): void }}
- */
-export function PopLoadPool() {
-    let $resultPromise = /** @type {any} */($Call.ByID(747096088));
-    return $resultPromise;
-}
-
-/**
- * @param {string} page
- * @param {string} Type
- * @returns {Promise<boolean> & { cancel(): void }}
- */
-export function PreloadFollow(page, Type) {
-    let $resultPromise = /** @type {any} */($Call.ByID(1294087281, page, Type));
-    return $resultPromise;
-}
-
-/**
- * @param {string} text
- * @param {string} Type
- * @param {string} page
- * @returns {Promise<boolean> & { cancel(): void }}
- */
-export function PreloadRank(text, Type, page) {
-    let $resultPromise = /** @type {any} */($Call.ByID(3560426218, text, Type, page));
-    return $resultPromise;
-}
-
-/**
  * @returns {Promise<string> & { cancel(): void }}
  */
 export function ReturnString() {

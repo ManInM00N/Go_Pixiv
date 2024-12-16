@@ -54,21 +54,28 @@ func NewOption(op ...option) *Option {
 	}
 	return Op
 }
+
 func WithR18(r18 bool) option {
 	return func(o *Option) {
 		o.R18 = r18
 	}
 }
+
 func WithLikeLimit(num int) option {
 	return func(o *Option) {
 		o.Likelimit = num
 	}
 }
+
 func WithShowSingle(show bool) option {
 	return func(o *Option) {
 		o.ShowSingle = show
 	}
 }
+
+/*
+*  1指定pid  2
+ */
 func WithMode(mode int64) option {
 	return func(o *Option) {
 		o.Mode = mode
@@ -76,8 +83,10 @@ func WithMode(mode int64) option {
 	}
 }
 
-// Rankmode: Daily 0, Weekly 1, Monthly 2, Male 3, Female 4, Rookie 5
-// Original 6, Daily_r18 7, Weekly_r18 8, male_r18 9, Female_r18 10
+/*
+Rankmode: Daily 0, Weekly 1, Monthly 2, Male 3, Female 4, Rookie 5
+Original 6, Daily_r18 7, Weekly_r18 8, male_r18 9, Female_r18 10
+*/
 func WithRankmode(Type string) option {
 	return func(o *Option) {
 		o.Suffix += "&mode=" + Type
@@ -85,7 +94,7 @@ func WithRankmode(Type string) option {
 	}
 }
 
-// illust 0 ugoira 1 manga 2
+// illust 0  manga 1 ugoira 2
 func WithType(idx int64) option {
 	return func(o *Option) {
 		o.Suffix += "&content=" + ContentType[idx]
@@ -121,4 +130,4 @@ func WithOnlyPreview(is bool) option {
 	}
 }
 
-//func WithMinDate
+// func WithMinDate

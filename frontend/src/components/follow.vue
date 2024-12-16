@@ -14,7 +14,7 @@
         <el-row>
             <el-col :span="19" />
             <el-col :span="5">
-                <el-button @click="downloadthispage">
+                <el-button @click="downloadthispage" :disabled="wait">
                     download this page
                     <el-icon size="large">
                         <Download />
@@ -32,7 +32,7 @@
             <el-col :span="5" />
             <el-col :span="14" class="center">
                 <el-pagination background layout="prev, pager, next" :total="1000" :page-count="34"
-                    @current-change="handlePageChange">
+                    @current-change="handlePageChange" :disabled="wait">
                 </el-pagination>
             </el-col>
             <el-col :span="5">
@@ -42,8 +42,8 @@
                 </el-select>
             </el-col>
         </el-row>
-
-        <Waterfall :list="picitem" width="300" background-color="" animation-effect="fadeInUp" key="followWaterfall">
+        <Waterfall ref="waterfall" :list="picitem" width="300" background-color="" animation-effect="fadeInUp"
+            key="followWaterfall">
             <template #default="{ item, url, index }">
                 <transition name="el-fade-in-linear">
                     <div class="card" v-if="true">
@@ -77,24 +77,24 @@
 <script lang="ts" setup>
 import { ref, onMounted, defineComponent } from "vue";
 import { Events } from "@wailsio/runtime";
-import { PreloadFollow, PopFollowPool, DownloadByFollowPage } from "../../bindings/main/ctl.js";
+import { PopFollowPool, DownloadByFollowPage } from "../../bindings/main/ctl.js";
 import { LazyImg, Waterfall } from 'vue-waterfall-plugin-next';
+import axios from 'axios'
 import 'vue-waterfall-plugin-next/dist/style.css'
 import 'animate.css';
 import PicCard from './PicCard.vue';
+import { Picture as IconPicture } from '@element-plus/icons-vue'
 import "../assets/style/variable.less"
+const waterfall = ref(null)
+
+const download = () => {
+    console.log("trying to download", props.pid, props.pid.value)
+    emitter.emit("DownloadByPid", { pid: props.pid })
+}
 defineComponent({
     PicCard,
 })
-// const props=defineProps({
-//   limit:{
-//     type:Boolean,
-//     default:true
-//   },
-//   form:{
-//     type:DAO.Settings,
-//   }
-// })
+
 const props = defineProps([
     'limit',
     'form',
@@ -103,37 +103,55 @@ const picitem = ref([])
 const currentPage = ref(1)
 const name = ref("follow")
 const mode = ref("all")
+const wait = ref("falise")
 const loading = ref(true)
 function Download() {
-    console.log(currentPage.value)
-    PopFollowPool()
+}
+function FollowMsg() {
+    wait.value = true
+    loading.value = true
+    console.log("doing get")
+    picitem.value = []
+    axios.get("http://127.0.0.1:7234/api/followpage", {
+        params: {
+            p: currentPage.value.toString(),
+            mode: mode.value,
+        }
+    }).then((res) => {
+        console.log(res, res.data.data.length)
+        let tmp = []
+        for (var i = 0; i < res.data.data.length; i++) {
+            picitem.value.push({ pid: res.data.data[i].id, Title: res.data.data[i].title, Author: res.data.data[i].userName, src: res.data.data[i].url, pages: res.data.data[i].countPage, authorId: res.data.data[i].userId, r18: res.data.data[i].r18 })
 
+        }
+        waterfall.value.renderer()
+    }).catch((error) => {
+        console.log(error, error)
+    }).finally(() => {
+        console.log("ok")
+        loading.value = false
+        wait.value = false
+    })
 }
 Events.On("PopUp", function () {
     console.log("114514")
-    loading.value = true
-    picitem.value = []
-    PreloadFollow(currentPage.value.toString(), mode.value)
 })
 Events.On("UpdateLoadFollow", function (msg) {
     console.log(msg.data[0], msg, msg.data[0][1])
-    // picitem.value.push({ pid: msg.data[0][0], Title: msg.data[0][1], Author: msg.data[0][2], src: "cache/images/" + msg.data[0][0] + ".jpg", pages: msg.data[0][3], authorId: msg.data[0][4], r18: msg.data[0][5] })
-    picitem.value.push({ pid: msg.data[0][0], Title: msg.data[0][1], Author: msg.data[0][2], src: msg.data[0][6], pages: msg.data[0][3], authorId: msg.data[0][4], r18: msg.data[0][5] })
 })
 Events.On("FollowLoadOk", function () {
-    loading.value = false
 })
 function handlePageChange(Page) {
     console.log("Page changed")
     currentPage.value = Page
-    Download()
+    FollowMsg()
 }
 const debug = () => {
     console.log(picitem.value)
 }
 onMounted(function () {
     loading.value = true
-    // Download()
+    FollowMsg()
     window.debug = debug
 })
 function downloadthispage() {
@@ -152,5 +170,20 @@ function downloadthispage() {
 .wrap {
     height: 100%;
     overflow-x: hidden;
+}
+
+.image-slot {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    background: var(--el-fill-color-light);
+    color: var(--el-text-color-secondary);
+    font-size: 30px;
+}
+
+.image-slot .el-icon {
+    font-size: 30px;
 }
 </style>

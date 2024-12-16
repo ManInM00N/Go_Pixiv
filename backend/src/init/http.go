@@ -19,6 +19,16 @@ import (
 	"github.com/yuin/goldmark/util"
 )
 
+const (
+	IllustInfo = 1 << iota
+	AuthorInfo
+	RankInfo
+	FollowInfo
+	GifPage
+	NovelInfo
+	UserDashboard = 0
+)
+
 // TODO: 作者全部作品下载OK
 // TODO: 基础下载 OK   目录管理下载 OK  主要图片全部下载OK    并发下载OK
 // TODO: 指针内存问题OK
@@ -39,54 +49,13 @@ func Download(i *Illust, op *Option) bool {
 		Value: Setting.Cookie,
 	}
 	Request.AddCookie(Cookie)
-	Request.Header.Set("cookie", Setting.Cookie)
+	Request.Header.Set("cookie", "PHPSESSID="+Setting.Cookie)
 	var Response *http.Response
 	defer func() {
 		if Response != nil {
 			Response.Body.Close()
 		}
 	}()
-	if op.OnlyPreview {
-		ok := true
-		_, err := os.Stat("cache")
-		if err != nil {
-			os.Mkdir("cache", os.ModePerm)
-		}
-		cachepath := "cache/images"
-		_, err = os.Stat(cachepath)
-		if err != nil {
-			os.Mkdir(cachepath, os.ModePerm)
-		}
-		cachepath += "/" + statics.Int64ToString(i.Pid) + ".jpg"
-		if _, err := os.Stat(cachepath); err == nil {
-			return true
-		}
-		for k := 0; k < 10; k++ {
-			Response, err = clientcopy.Do(Request)
-			if k == 9 && err != nil {
-				DebugLog.Println("Illust Resouce Request Error", err, Request.URL.String())
-				ok = false
-				break
-			} else if err == nil {
-				break
-			}
-			time.Sleep(time.Millisecond * time.Duration(Setting.Downloadinterval))
-		}
-		if !ok {
-			os.Remove(cachepath)
-			return false
-		}
-
-		f, _ := os.OpenFile(cachepath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0755)
-		bufWriter := bufio.NewWriter(f)
-		_, err = io.Copy(bufWriter, Response.Body)
-		if err != nil {
-			return false
-		}
-		f.Close()
-		bufWriter.Flush()
-		return true
-	}
 	_, err = os.Stat(Setting.Downloadposition)
 	if err != nil {
 		os.Mkdir(Setting.Downloadposition, os.ModePerm)
@@ -170,14 +139,20 @@ func Download(i *Illust, op *Option) bool {
 	return true
 }
 
+// return url & referer
 func CheckMode(url, id string, num int) (string, string) {
+	// switch num{
+	// case 1:
+	// case 2:
+	// case
+	// }
 	if num == 1 { // illust page
 		return "https://www.pixiv.net/ajax/illust/" + url, "https://www.pixiv.net/artworks/" + id
 	} else if num == 2 { // author page
 		return "https://www.pixiv.net/ajax/user/" + url + "/profile/all", "https://www.pixiv.net/member.php?id=" + id
 	} else if num == 4 { // ranking page
 		return "https://www.pixiv.net/ranking.php?format=json" + url, "https://www.pixiv.net/"
-	} else if num == 8 {
+	} else if num == 8 { // follow page
 		return "https://www.pixiv.net/ajax/follow_latest/illust?" + url, "https://www.pixiv.net/"
 	}
 	return "https://www.pixiv.net/ajax/user/extra", "https://www.pixiv.net/"
@@ -197,12 +172,14 @@ func GetWebpageData(url, id string, num int) ([]byte, error) { // 请求得到�
 	}
 	Request.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0")
 	Request.Header.Set("referer", ref)
-	Cookie := &http.Cookie{
-		Name:  "PHPSESSID",
-		Value: Setting.Cookie,
-	}
-	Request.AddCookie(Cookie)
-	Request.Header.Set("PHPSESSID", Setting.Cookie)
+	// Cookie := &http.Cookie{
+	// 	Name:  "PHPSESSID",
+	// 	Value: Setting.Cookie,
+	// }
+	// Request.AddCookie(Cookie)
+	// if num != 4 {
+	Request.Header.Set("Cookie", "PHPSESSID="+Setting.Cookie)
+	// }
 
 	clientcopy := GetClient()
 	for i := 0; i < 10; i++ {
@@ -235,12 +212,11 @@ func GetWebpageData(url, id string, num int) ([]byte, error) { // 请求得到�
 		return nil, err3
 	}
 	if response.StatusCode != http.StatusOK {
-		DebugLog.Println(id, "status code ", response.StatusCode, ur)
+		DebugLog.Println("status code ", response.StatusCode, ur, string(webpageBytes))
 		if response.StatusCode == 429 {
 			time.Sleep(time.Duration(Setting.Retry429) * time.Millisecond)
 			return nil, &TooFastRequest{S: "TooMuchRequest in a short period", Err: errors.New("TooMuchRequest")}
 		}
-
 	}
 	return webpageBytes, nil
 }
@@ -330,32 +306,30 @@ func GetAuthor(id int64) (map[string]gjson.Result, error) {
 	return ss, nil
 }
 
-func GetRank(option *Option) ([]gjson.Result, error) {
+func GetRank(option *Option) (gjson.Result, error) {
 	option.Msg()
-	println("https://www.pixiv.net/ranking.php?format=json" + option.Suffix)
+	// DebugLog.Println("https://www.pixiv.net/ranking.php?format=json" + option.Suffix)
 	data, err := GetWebpageData(option.Suffix, "", 4)
 	if err != nil {
 		// println("get failed: ", err.Error())
-		return nil, err
+		return gjson.Result{}, err
 	}
-	arr := gjson.ParseBytes(data).Get("contents.#.illust_id").Array()
+	// arr := gjson.ParseBytes(data).Get("contents.#.illust_id")
+	arr := gjson.ParseBytes(data).Get("contents")
 	return arr, nil
 }
 
-func GetFollow(option *Option) ([]gjson.Result, error) {
+func GetFollow(option *Option) (gjson.Result, error) {
 	option.Msg()
 	// https://www.pixiv.net/ajax/follow_latest/illust?&mode=all&p=1
-	println("https://www.pixiv.net/ajax/follow_latest/illust?" + option.Suffix)
+	InfoLog.Println("https://www.pixiv.net/ajax/follow_latest/illust?" + option.Suffix)
 	data, err := GetWebpageData(option.Suffix, "", 8)
 	if err != nil {
-		println("get failed: ", err.Error())
-		return nil, err
+		DebugLog.Println("get failed: ", err.Error())
+		return gjson.Result{}, err
 	}
-	// arr := gjson.ParseBytes(data).Get("body.page.ids").Array()
-	arr := gjson.ParseBytes(data).Get("body.thumbnails.illust").Array()
-	DebugLog.Println(arr)
-	// arr[0].Get("illust").Map()
-	//println(arr)
+	arr := gjson.ParseBytes(data).Get("body")
+	// DebugLog.Println(arr.Get("thumbnails"))
 	//for i := range arr {
 	//	println(arr[i].Int())
 	//}
@@ -365,6 +339,7 @@ func GetFollow(option *Option) ([]gjson.Result, error) {
 func JustDownload(pid string, mode *Option) (int, bool) {
 	illust, err := work(statics.StringToInt64(pid), mode)
 	if ContainMyerror(err) {
+		DebugLog.Println(err)
 		if !mode.OnlyPreview {
 			return 0, true
 		}
@@ -375,13 +350,11 @@ func JustDownload(pid string, mode *Option) (int, bool) {
 	}
 	if mode.ShowSingle {
 		InfoLog.Println(pid + " Start download")
+		defer InfoLog.Println(pid + " Finished download")
 	}
 	if !Download(illust, mode) {
 		DebugLog.Println(pid, " Download failed")
 		return 0, false
-	}
-	if mode.ShowSingle {
-		InfoLog.Println(pid + " Finished download")
 	}
 	return 1, true
 }

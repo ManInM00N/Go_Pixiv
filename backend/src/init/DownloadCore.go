@@ -1,8 +1,10 @@
 package init
 
 import (
+	"encoding/json"
 	"fmt"
 	_ "image/png"
+	"main/backend/src/Util"
 	"strconv"
 	"strings"
 
@@ -151,7 +153,10 @@ func Download_By_Rank(text, Type string, callEvent func(name string, data ...int
 
 			// println(page)
 			c := make(chan string, 2000)
-			all, err := GetRank(op)
+			tmp, err := GetRank(op)
+			DebugLog.Println(tmp.Get("#.illust_id"))
+			return
+			all := tmp.Get("#.illust_id").Array()
 			WaitingTasks--
 			if err != nil {
 				DebugLog.Println("Error getting Rank", err)
@@ -222,63 +227,65 @@ func Download_By_Rank(text, Type string, callEvent func(name string, data ...int
 	}
 }
 
-func DownloadRankMsg(text, Type, page string, callEvent func(name string, data ...interface{})) {
-	date := ""
-	println(text, Type)
-	temp := strings.Split(text, "-")
-	for i := range temp {
-		date += temp[i]
-	}
-	println(date)
-
-	if len(date) != 8 {
-		println("date error")
-		return
-	}
-	RankPool.Add(func() {
-		if IsClosed || !RankLoadingNow {
-			return
-		}
-		dd := date
-		op := NewOption(WithType(0), WithRankmode(Type), WithDate(dd), WithR18(true), WithLikeLimit(0), WithPage(page))
-		// println(page)
-		c := make(chan *Illust, 2000)
-		all, err := GetRank(op)
-		if err != nil {
-			DebugLog.Println("Error getting Rank", err)
-			return
-		}
-		options := NewOption(WithMode(ByPid), WithR18(Setting.Agelimit), WithDiffAuthor(false), WithDate(op.RankDate), WithRankmode(Type), WithOnlyPreview(true))
-		for _, key := range all {
-			k := key
-			if IsClosed || !RankLoadingNow {
-				break
-			}
-			RankloadPool.AddTask(func() (interface{}, error) {
-				if IsClosed || !RankLoadingNow {
-					return nil, nil
-				}
-				temp := k
-				illust, err := work(statics.StringToInt64(temp.String()), options)
-				if err != nil {
-					if !ContainMyerror(err) {
-						return nil, nil
-					}
-				}
-				// Download(illust, options)
-				if IsClosed || !RankLoadingNow {
-					return nil, nil
-				}
-				callEvent("UpdateLoad", illust.Pid, illust.Title, illust.UserName, illust.Pages, illust.UserID, illust.AgeLimit, temp.Get("url").String())
-				return nil, nil
-			})
-		}
-		RankloadPool.Wait()
-		close(c)
-		ProcessNow = 0
-		callEvent("LoadOk")
-	})
-}
+// func DownloadRankMsg(text, Type, page string, callEvent func(name string, data ...interface{})) {
+// 	date := ""
+// 	println(text, Type)
+// 	temp := strings.Split(text, "-")
+// 	for i := range temp {
+// 		date += temp[i]
+// 	}
+// 	println(date)
+//
+// 	if len(date) != 8 {
+// 		println("date error")
+// 		return
+// 	}
+// 	RankPool.Add(func() {
+// 		if IsClosed || !RankLoadingNow {
+// 			return
+// 		}
+// 		dd := date
+// 		op := NewOption(WithType(0), WithRankmode(Type), WithDate(dd), WithR18(true), WithLikeLimit(0), WithPage(page))
+// 		// println(page)
+// 		c := make(chan *Illust, 2000)
+// 		tmp, err := GetRank(op)
+// 		if err != nil {
+// 			DebugLog.Println("Error getting Rank", err)
+// 			return
+// 		}
+// 		//
+// 		all := tmp.Get("#.illust_id").Array()
+// 		options := NewOption(WithMode(ByPid), WithR18(Setting.Agelimit), WithDiffAuthor(false), WithDate(op.RankDate), WithRankmode(Type), WithOnlyPreview(true))
+// 		for _, key := range all {
+// 			k := key
+// 			if IsClosed || !RankLoadingNow {
+// 				break
+// 			}
+// 			RankloadPool.AddTask(func() (interface{}, error) {
+// 				if IsClosed || !RankLoadingNow {
+// 					return nil, nil
+// 				}
+// 				temp := k
+// 				illust, err := work(statics.StringToInt64(temp.String()), options)
+// 				if err != nil {
+// 					if !ContainMyerror(err) {
+// 						return nil, nil
+// 					}
+// 				}
+// 				// Download(illust, options)
+// 				if IsClosed || !RankLoadingNow {
+// 					return nil, nil
+// 				}
+// 				callEvent("UpdateLoad", illust.Pid, illust.Title, illust.UserName, illust.Pages, illust.UserID, illust.AgeLimit, temp.Get("url").String())
+// 				return nil, nil
+// 			})
+// 		}
+// 		RankloadPool.Wait()
+// 		close(c)
+// 		ProcessNow = 0
+// 		callEvent("LoadOk")
+// 	})
+// }
 
 func Download_By_FollowPage(page, Type string, callEvent func(name string, data ...interface{})) {
 	WaitingTasks++
@@ -293,7 +300,8 @@ func Download_By_FollowPage(page, Type string, callEvent func(name string, data 
 
 		// println(page)
 		c := make(chan string, 2000)
-		all, err := GetFollow(op)
+		tmp, err := GetFollow(op)
+		all := tmp.Get("page").Get("ids").Array()
 		WaitingTasks--
 		if err != nil {
 			DebugLog.Println("Error getting Follow", err)
@@ -363,50 +371,55 @@ func Download_By_FollowPage(page, Type string, callEvent func(name string, data 
 	})
 }
 
-func DownloadFollowMsg(page, Type string, callEvent func(name string, data ...interface{})) {
-	FollowPool.Add(func() {
-		if IsClosed || !FollowLoadingNow {
-			return
-		}
-
-		op := NewOption(WithR18(true), WithRankmode(Type), WithPage(page))
-		// println(page)
-		c := make(chan *Illust, 2000)
-		all, err := GetFollow(op)
+func NewDownloadRankMsg(date, Type, page, content string) []RankData {
+	num := int64(0)
+	if content == "ugoira" {
+		num = 2
+	} else if content == "manga" {
+		num = 1
+	}
+	op := NewOption(WithR18(true), WithRankmode(Type), WithPage(page), WithType(num), WithDate(date))
+	data, err := GetRank(op)
+	if err != nil {
+		DebugLog.Println("Error getting Rank %v", err)
+		return nil
+	}
+	list := make([]RankData, 0, 100)
+	all := data.Array()
+	for _, value := range all {
+		var tmp RankData
+		err := json.Unmarshal([]byte(value.Raw), &tmp)
 		if err != nil {
-			DebugLog.Println("Error getting Rank", err)
-			return
+			DebugLog.Printf("get follow page %s failed :%v", page, err)
+			return nil
 		}
-		options := NewOption(WithMode(ByPid), WithR18(Setting.Agelimit), WithDiffAuthor(false), WithOnlyPreview(true))
-		println(len(all))
-		for _, key := range all {
-			k := key
-			if IsClosed || !FollowLoadingNow {
-				break
-			}
-			// println(k.Int())
-			FollowLoadPool.AddTask(func() (interface{}, error) {
-				if IsClosed || !FollowLoadingNow {
-					return nil, nil
-				}
-				temp := k
-				illust, err := work(statics.StringToInt64(temp.Get("id").String()), options)
-				// DebugLog.Println(temp, temp.Get("url").Str, temp.Get("url").String())
-				if err != nil {
-					if !ContainMyerror(err) || illust == nil {
-						return nil, nil
-					}
-				}
-				// Download(illust, options)
-				if IsClosed || !FollowLoadingNow {
-					return nil, nil
-				}
-				callEvent("UpdateLoadFollow", illust.Pid, illust.Title, illust.UserName, illust.Pages, illust.UserID, illust.AgeLimit, temp.Get("url").String())
-				return nil, nil
-			})
+		// tmp.R18 = Util.HasR18(&tmp.Tags)
+		list = append(list, tmp)
+
+	}
+	// DebugLog.Println(list)
+	return list
+}
+
+func NewDownloadFollowMsg(page, Type string) []FollowData {
+	op := NewOption(WithR18(true), WithRankmode(Type), WithPage(page))
+	data, err := GetFollow(op)
+	if err != nil {
+		DebugLog.Println("Error getting Follow")
+		return nil
+	}
+	list := make([]FollowData, 0, 100)
+	all := data.Get("thumbnails").Get("illust").Array()
+	for _, value := range all {
+		var tmp FollowData
+		err := json.Unmarshal([]byte(value.Raw), &tmp)
+		if err != nil {
+			DebugLog.Printf("get follow page %s failed", page)
+			return nil
 		}
-		FollowLoadPool.Wait()
-		close(c)
-		callEvent("FollowLoadOk")
-	})
+		tmp.R18 = Util.HasR18(&tmp.Tags)
+		list = append(list, tmp)
+
+	}
+	return list
 }

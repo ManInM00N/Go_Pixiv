@@ -31,6 +31,8 @@ func ServerInit() {
 	Api := R.Group("/api")
 	Api.POST("/update", UpdateSetting)
 	Api.GET("/getsetting", GetSetting)
+	Api.GET("/followpage", Followlist)
+	Api.GET("/rankpage", RankList)
 	Api.GET("/ws", UpdateProgress)
 	Api.GET("/preview", PreviewUrl)
 	Ws := R.Group("/ws")

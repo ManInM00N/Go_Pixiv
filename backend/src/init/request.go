@@ -4,6 +4,7 @@ import (
 	"io"
 	"main/backend/src/DAO"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -35,7 +36,7 @@ func PreviewUrl(c *gin.Context) {
 		return
 	}
 	// 发起请求到目标图片地址
-	client := &http.Client{}
+	client := GetClient()
 	req, err := http.NewRequest("GET", imageURL, nil)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create request"})
@@ -45,14 +46,25 @@ func PreviewUrl(c *gin.Context) {
 
 	// 设置 Referer 头
 	req.Header.Set("Referer", "https://www.pixiv.net")
-
-	resp, err := client.Do(req)
-	if err != nil {
+	var resp *http.Response
+	ok = false
+	for i := 0; i < 5; i++ {
+		resp, err = client.Do(req)
+		if err == nil {
+			ok = true
+			break
+		}
+	}
+	defer func() {
+		if resp != nil && resp.Body != nil {
+			resp.Body.Close()
+		}
+	}()
+	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch image"})
 		DebugLog.Println("request failed")
 		return
 	}
-	defer resp.Body.Close()
 
 	// 将目标图片的内容和 Content-Type 返回给前端
 	c.Header("Content-Type", resp.Header.Get("Content-Type"))
@@ -62,4 +74,44 @@ func PreviewUrl(c *gin.Context) {
 		DebugLog.Println(err.Error())
 		return
 	}
+}
+
+func RankList(c *gin.Context) {
+	p := c.Query("p")
+	mode := c.Query("mode")
+	content := c.Query("content")
+	rawdate := c.Query("date")
+	val := strings.Split(rawdate, "-")
+	date := ""
+	for _, v := range val {
+		date = date + v
+	}
+	DebugLog.Println(val, date)
+	data := NewDownloadRankMsg(date, mode, p, content)
+	if data == nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "获取排行榜数据失败",
+		})
+		c.Abort()
+		return
+	}
+	c.JSON(200, gin.H{
+		"data": data,
+		"num":  len(data),
+	})
+}
+
+func Followlist(c *gin.Context) {
+	p := c.Query("p")
+	data := NewDownloadFollowMsg(p, "all")
+	if data == nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "获取关注数据失败",
+		})
+		return
+	}
+	c.JSON(200, gin.H{
+		"data": data,
+		"num":  len(data),
+	})
 }

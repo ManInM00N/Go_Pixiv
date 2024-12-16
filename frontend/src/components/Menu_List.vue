@@ -43,13 +43,15 @@
 <script setup>
 import { defineComponent, onMounted, ref } from "vue";
 import settings from "./settings.vue";
+
 import { CheckLogin } from "../../bindings/main/ctl.js";
 import emitter from "../assets/js/Pub.js"
 import { Events } from "@wailsio/runtime";
 import axios from "axios";
 import { ElMessage } from "element-plus";
+import { ElNotification } from 'element-plus'
 // const form = ref(DAO.Settings)
-import { form } from "../assets/js/configuration.js"
+import { form, ws } from "../assets/js/configuration.js"
 const activeIndex = ref("/maindownload")
 const theme = ref('dark')
 const set = ref(null)
@@ -72,41 +74,33 @@ function waitchange(val) {
 function handleMenuSelect(index) {
     console.log("ee", this.activeIndex)
 }
-let ws = WebSocket;
-const startWebSocket = () => {
-    ws.value = new WebSocket("ws://127.0.0.1:7234/api/ws");
 
-    ws.value.onopen = () => {
-        console.log('WebSocket connected');
-    };
-
-    ws.value.onmessage = (event) => {
-        // res.value = event.data;
-        handleMessage(JSON.parse(event.data));
-    };
-    ws.value.onclose = () => {
-        ElMessage.error("远程主机关闭")
-        console.log('WebSocket closed');
-    };
-
-    ws.value.onerror = (error) => {
-        console.error('WebSocket error:', error);
-    };
-};
 Events.On("login", function (msg) {
     console.log(msg, msg.data[0], msg.data)
     if (msg.data[0] === "True") {
         items.value[1].logined = true
+        ElNotification({
+            title: "Login succeed",
+            type: "success",
+            message: "Enjoy 🥳",
+            position: 'bottom-right',
+            duration: 3000,
+        })
     } else {
         items.value[1].logined = false
-        form.value.cookie = ""
-
+        ElNotification({
+            title: "Login failed",
+            type: "warning",
+            message: msg.data[1] + " 😭",
+            position: 'bottom-right',
+            duration: 3000,
+        })
     }
     console.log("Login state: ", items.value[1].logined, "r18 mod: ", form.value.r_18,)
 })
 onMounted(function () {
 
-    startWebSocket()
+    // startWebSocket()
 
 })
 
