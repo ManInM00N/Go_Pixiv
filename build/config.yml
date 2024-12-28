@@ -1,17 +1,17 @@
 # This file contains the configuration for this project.
 # When you update `info` or `fileAssociations`, run `wails3 task common:update:build-assets` to update the assets.
 # Note that this will overwrite any changes you have made to the assets.
-version: '3'
+version: "3"
 
 # This information is used to generate the build assets.
 info:
   companyName: "ManInM00N" # The name of the company
-  productName: "GoPixiv2" # The name of the application
-  productIdentifier: "com.maninmoon.gopixiv2" # The unique product identifier
+  productName: "GoPixiv" # The name of the application
+  productIdentifier: "com.maninmoon.gopixiv" # The unique product identifier
   description: "A Go-based crawler for Pixiv" # The application description
   copyright: "(c) 2024, ManInM00N" # Copyright text
   comments: "A personal project to explore web crawling in Go" # Comments
-  version: "v2.0.0" # The application version
+  version: "v1.1.0" # The application version
 
 # Dev mode configuration
 dev_mode:
@@ -60,3 +60,4 @@ fileAssociations:
 # Other data
 other:
   - name: GoPixiv
+

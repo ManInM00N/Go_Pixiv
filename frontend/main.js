@@ -1,13 +1,14 @@
 import * as GreetService from "./bindings/main/greetservice.js";
 import { Events } from "@wailsio/runtime";
 
-
 import { createApp } from 'vue'
 import ElementPlus from 'element-plus'
 import router from './src/router/index.js'
 import 'element-plus/dist/index.css'
 import 'element-plus/theme-chalk/dark/css-vars.css'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+
+import 'element-plus/theme-chalk/dark/css-vars.css'
 import 'element-plus/theme-chalk/base.css'
 import App from './src/App.vue'
 import V3waterfall from 'v3-waterfall'
@@ -23,10 +24,6 @@ app.use(ElementPlus)
 app.use(V3waterfall)
 app.mount('#app')
 
-export let timeElement = '';
-Events.On('time', (time) => {
-    timeElement = time.data;
-});
 window.doGreet = () => {
     let name = document.getElementById('name').value;
     if (!name) {

@@ -1,21 +1,24 @@
 <template>
-    <el-container>
+    <el-container style="margin-left: 15px;">
         <el-main style="
       display: flex;
         flex-direction: column;
-        height: 100%;
+        height: 90%;
       ">
+            <div style="width: 100%;height: 150px;">
+
+            </div>
             <el-row>
                 <el-col :span="16" />
                 <el-col :span="8">
                     下载模式
-                    <el-select v-model="now" ref="mode" class="m-2" size="default" @click="changetype"
+                    <el-select v-model="now" ref="mode" class="m-2" size="default" @change="changetype"
                         style="width:150px">
-                        <el-option v-for="item in modes" :key="item.value" :label="item.label" :value="item.value" />
+                        <el-option v-for="(item) in modes" :key="item.value" :label="item.label" :value="item.value" />
                     </el-select>
                 </el-col>
             </el-row>
-            <el-divider class="Divide_Line" />
+            <el-divider class="Divide_Line" style="color:#52616b" />
             <el-row>
                 <el-col :span="6">
                     <el-input v-model="inputValue" size="large" placeholder="Pid/AuthorId" clearable
@@ -38,8 +41,10 @@
                 <el-col :span="1" />
                 <el-col :span="15" class="Tre">
                     <el-progress stroke-width="28" striped striped-flow :duration="10" :percentage="percent"
-                        text-inside="true" style="">
-                        <span style="font-size:16px" v-if="queue.length > 0">{{ queue[0].value }} {{ percent }}%</span>
+                        text-inside="true" style="color:black">
+                        <span style="font-size:16px;color:#c9d6df" v-if="queue.length > 0">{{ queue[0].value }} {{
+                            percent
+                            }}%</span>
                     </el-progress>
                 </el-col>
                 <el-col :span="2" />
@@ -69,12 +74,19 @@
                 <el-col :span="7">
                     <el-table :data="queue" :cell-class-name="cellStyle" class="Half_light Tre queueTable"
                         style="height:490px">
-                        <el-table-column label="TaskQueue" prop="value" style="height:60px" />
+                        <template #empty>
+                            No Task
+                        </template>
+                        <el-table-column label="TaskQueue" prop="value" style="height:60px;">
+                            <template #default="scope">
+                                <span style="color:#c9d6df">{{ scope.row.value }}</span>
+                            </template>
+                        </el-table-column>
                     </el-table>
                 </el-col>
             </el-row>
         </el-main>
-        <el-footer>
+        <el-footer style="height: 10%;">
             <el-text type="danger" id="time">
                 此软件为免费开源，如果是购买获得请退款举报 {{ timeElement }}
             </el-text>
@@ -84,25 +96,16 @@
 
 <script lang="ts" setup>
 import DateChoose from "./DateChoose.vue";
-import { defineComponent, onMounted, ref } from "vue";
-import emitter from "../assets/js/Pub.js";
+import { onMounted, ref } from "vue";
 import { ElMessage } from "element-plus";
 import axios from "axios";
-
+import { timeElement } from "../assets/js/Time.js"
 import { Events } from "@wailsio/runtime"
-import { timeElement } from "../../main.js"
 const dateSelect = ref(null)
-const props = defineProps({
-    Input: Number,
-    wait: Boolean,
-    form: {
-        type: Object,
-        required: true,
-    },
-    ws: WebSocket,
-})
+import { ws, form } from "../assets/js/configuration.js";
+
 onMounted(() => {
-    props.ws.value.onmessage = (event) => {
+    ws.value.onmessage = (event) => {
         // res.value = event.data;
         handleMessage(JSON.parse(event.data));
     };
@@ -123,7 +126,7 @@ function handleMessage(data) {
         queue.value.push(data.newtask)
     }
 }
-// const mode = ref('')
+const mode = ref('')
 function changetype(data) {
     console.log(data)
     now.value = data
@@ -133,7 +136,7 @@ function changetype2(data) {
     period.value = data
 }
 const percent = ref(0);
-let now = ref("Pid")
+const now = ref("Pid")
 const queue = ref([
 ])
 const options = ref([
@@ -155,12 +158,12 @@ const options = ref([
     {
         value: "daily_r18",
         label: "Daily_R18",
-        disabled: props.form.r_18,
+        disabled: form.r_18,
     },
     {
         value: "weekly_r18",
         label: "Weekly_R18",
-        disabled: props.form.r_18,
+        disabled: form.r_18,
     },
 ]);
 const modes = ref([
@@ -180,6 +183,24 @@ const modes = ref([
 const inputValue = ref('');
 const period = ref("daily");
 
+Events.On("UpdateProcess", function (newnum) {
+    // console.log(newnum, newnum.data[0][0])
+    percent.value = newnum.data[0][0];
+});
+Events.On("Push", function (newmsg) {
+    console.log(newmsg, newmsg.data[0][0])
+    queue.value.push({ value: newmsg.data[0][0] })
+});
+Events.On("Pop", function () {
+    queue.value.shift()
+});
+Events.On("UpdateTerminal", function (newmsg) {
+    console.log(newmsg)
+    logs.value.push(newmsg.data[0][0])
+    if (logs.value.length > 50) {
+        logs.value.pop()
+    }
+})
 function Download() {
     console.log("Downloading ", now.value)
     if (now.value != "Rank" && inputValue.value === '') {
@@ -237,7 +258,9 @@ function Download() {
         left: 0;
         right: 0;
         bottom: 0;
-        border: 2px solid rgb(17, 36, 100);
+        border: 2px solid rgb(#fdffab);
+        border-image: linear-gradient(to right, #fdffab, #ff0000) 1;
+        /* 渐变颜色 */
         transition: all .5s;
         animation: clippath 3s infinite linear;
     }
@@ -267,7 +290,7 @@ function Download() {
     thead {
         color: #fff;
         font-weight: 500;
-        background: linear-gradient(to right, rgba(#6fa3fe, 0.5), rgba(#4cdafe, 0.5)) !important;
+        background: linear-gradient(to right, rgba(#dde7f2, 0.5), rgba(#878ecd, 0.5)) !important;
 
         & th {
             background-color: transparent;

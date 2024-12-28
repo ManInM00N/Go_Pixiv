@@ -1,38 +1,54 @@
 <template>
-    <el-aside name="menu" id="menu" class="asidemenu" style="width: 60px">
-        <el-menu :default-active="$route.path" :theme="theme" class="vertical-menu" mode="vertical" :router="true">
-            <el-container class="top-items">
-                <el-menu-item v-for="(item, idx) in items" :key="item.key" :id="item.id" :index="idx + ''"
-                    :route="item.index" class="menu_item" @select="handleMenuSelect" :disabled="!item.logined"
-                    :limit="form['r-18']">
-                    <el-container class="item_body">
-                        <el-icon size="30" class="item_icon">
-                            <component :is="item.iconmsg" style="color: #32CD99" />
-                        </el-icon>
-                    </el-container>
+    <el-aside name="menu" id="menu" class="asidemenu" width="60px">
+        <el-menu default-active="0" background-color="#626369" :theme="theme" class="vertical-menu" mode="vertical"
+            :router="true" @select="handleMenuSelect">
+            <section class="top-items" height=240>
+                <el-menu-item v-for="(item, idx) in items" :key="item.key" :id="item.id" :index="item.id"
+                    :route="item.index" class="menu_item" :disabled="!item.logined" :limit="form['r-18']"
+                    style="padding-left: 18px;">
+
+                    <el-tooltip :content="item.key" :show-arrow=false placement="bottom-start" offset="2">
+                        <el-container class="item_body">
+                            <el-icon size="30" class="item_icon">
+                                <component :is="item.iconmsg" />
+                            </el-icon>
+                        </el-container>
+                    </el-tooltip>
                 </el-menu-item>
-            </el-container>
-            <el-container class="placeholder-item "></el-container>
-            <el-menu-item :key="userself.key" :id="userself.id" :index="userself.id.toString()" :route="userself.index"
-                class="menu_item" @select="handleMenuSelect">
-                <el-container>
-                    <el-icon size="30" class="item_icon">
-                        <Tools />
-                    </el-icon>
-                    <!--          <el-avatar shape="circle " src="/src/assets/images/no_profile.png" size="default"/>-->
-                </el-container>
-            </el-menu-item>
+            </section>
+            <section class="placeholder-item "></section>
+            <section class="bottom-items">
+                <el-menu-item :key="userself.key" :id="userself.id" :index="userself.id" :route="userself.index"
+                    class="menu_item" style="padding-left: 18px;">
+
+                    <el-tooltip :content="userself.key" :show-arrow=false placement="bottom-start" offset='2'>
+                        <el-container class="item_body">
+                            <el-icon size="30" class="item_icon">
+                                <Tools />
+                            </el-icon>
+                        </el-container>
+                    </el-tooltip>
+
+
+                </el-menu-item>
+            </section>
         </el-menu>
 
     </el-aside>
-    <el-main class="View" id="View" name="View" style="padding-right: 5px;padding-left: 5px">
-        <router-view v-slot="{ Component, route, Path }">
-            <keep-alive v-if="route.meta.keepAlive">
-                <component :is="Component" :form="form" :ws="ws" />
-            </keep-alive>
-            <component v-else :is="Component" />
+    <el-main class="View glass" id="View" name="View" style="padding-right: 5px;padding-left: 5px">
+        <section
+            style="width: 100%;height: calc(100% - 40px); margin-left: 15px; margin-right: 15px;margin-top: 20px;margin-bottom: 20px;">
+            <section style="width:100%">
 
-        </router-view>
+                <router-view v-slot="{ Component, route, Path }">
+                    <keep-alive v-if="route.meta.keepAlive">
+                        <component :is="Component" :form="form" :ws="ws" />
+                    </keep-alive>
+                    <component v-else :is="Component" />
+
+                </router-view>
+            </section>
+        </section>
         <!--    <keep-alive>-->
         <!--      <router-view v-if="$route.meta.keepAlive"></router-view>-->
         <!--    </keep-alive>-->
@@ -44,37 +60,46 @@
 import { defineComponent, onMounted, ref } from "vue";
 import settings from "./settings.vue";
 
-import { CheckLogin } from "../../bindings/main/ctl.js";
+import { CheckLogin, Close } from "../../bindings/main/ctl.js";
 import emitter from "../assets/js/Pub.js"
 import { Events } from "@wailsio/runtime";
 import axios from "axios";
 import { ElMessage } from "element-plus";
 import { ElNotification } from 'element-plus'
-// const form = ref(DAO.Settings)
 import { form, ws } from "../assets/js/configuration.js"
-const activeIndex = ref("/maindownload")
+import { useRoute, useRouter } from "vue-router";
 const theme = ref('dark')
 const set = ref(null)
 const items = ref([
-    { id: 1, iconmsg: "HomeFilled", key: "maindownload", index: "/maindownload", logined: true },
-    { id: 2, iconmsg: "StarFilled", key: "follow", index: "/follow", logined: false },
-    { id: 3, iconmsg: "Histogram", key: "rank", index: "/rank", logined: true },
-    { id: 4, iconmsg: "Search", key: "search", index: "/search", logined: true },
+    { id: '0', iconmsg: "HomeFilled", key: "maindownload", index: "/", logined: true },
+    { id: '1', iconmsg: "StarFilled", key: "follow", index: "/follow", logined: false },
+    { id: '2', iconmsg: "Histogram", key: "rank", index: "/rank", logined: true },
+    { id: '3', iconmsg: "Search", key: "search", index: "/search", logined: true },
 ])
+const activeIndex = ref('0')
 const userself = ref({
     // id:6,key: "user",index:"/user"
-    id: 5, iconmsg: "Tools", key: "settings", index: "/setting", logined: true
+    id: '4', iconmsg: "Tools", key: "settings", index: "/setting", logined: true
 })
-
 const Input = ref('')
 const wait = ref(false)
+const route = useRoute()
+const router = useRouter()
 function waitchange(val) {
     wait.value = val
 }
 function handleMenuSelect(index) {
-    console.log("ee", this.activeIndex)
-}
+    activeIndex.value = index
+    console.log("ee", index, activeIndex.value)
 
+}
+ElNotification({
+    type: "info",
+    title: "INFO",
+    message: "Login ......",
+    position: 'bottom-right',
+    duration: 3000,
+})
 Events.On("login", function (msg) {
     console.log(msg, msg.data[0], msg.data)
     if (msg.data[0] === "True") {
@@ -99,7 +124,10 @@ Events.On("login", function (msg) {
     console.log("Login state: ", items.value[1].logined, "r18 mod: ", form.value.r_18,)
 })
 onMounted(function () {
-
+    console.log(route.path)
+    localStorage.setItem("cookie", form.value.cookie)
+    console.log(localStorage.getItem("cookie"))
+    // activeIndex.value = 1
     // startWebSocket()
 
 })
@@ -112,5 +140,16 @@ onMounted(function () {
 
 .tempheight {
     height: 60px
+}
+
+.glass {
+    background-color: rgba(89, 89, 89, 0.15);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    box-shadow: rgba(14, 14, 14, 0.19) 0px 6px 15px 0px;
+    -webkit-box-shadow: rgba(14, 14, 14, 0.19) 0px 6px 15px 0px;
+    border-radius: 0px;
+    -webkit-border-radius: 0px;
+    color: rgb(128, 128, 128);
 }
 </style>

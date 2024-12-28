@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 includes:
   common: ./build/Taskfile.common.yml
@@ -7,9 +7,9 @@ includes:
   linux: ./build/Taskfile.linux.yml
 
 vars:
-  APP_NAME: "GoPixiv2"
+  APP_NAME: "GoPixiv"
   BIN_DIR: "build/bin"
-  VITE_PORT: '{{.WAILS_VITE_PORT | default 7235}}'
+  VITE_PORT: "{{.WAILS_VITE_PORT | default 7235}}"
 
 tasks:
   build:

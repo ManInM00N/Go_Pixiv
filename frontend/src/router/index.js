@@ -1,15 +1,15 @@
-import {createRouter, createWebHashHistory} from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import follow from "../components/follow.vue";
 import rank from "../components/rank.vue";
 import maindownload from "../components/maindownload.vue";
 import search from "../components/search.vue";
 import setting from "../components/settings.vue";
-const router=createRouter({
+const router = createRouter({
     history: createWebHashHistory(),
-    routes:[
+    routes: [
         {
-            path: '/maindownload',
-            component:maindownload,
+            path: '/',
+            component: maindownload,
             meta: {
                 keepAlive: true,
                 refresh: false,
@@ -43,14 +43,6 @@ const router=createRouter({
         {
             path: '/setting',
             component: setting,
-            meta: {
-                keepAlive: true,
-                refresh: false,
-            },
-        },
-        {
-            path: '/',
-            redirect:'/maindownload',
             meta: {
                 keepAlive: true,
                 refresh: false,

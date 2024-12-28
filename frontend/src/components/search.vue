@@ -1,16 +1,14 @@
 <template>
-  <el-container>
-    <h1>Waitings For Build</h1>
+    <el-container>
+        <h1>Waitings For Build</h1>
 
-  </el-container>
+    </el-container>
 </template>
 
 <script>
 export default {
-  name: "search"
+    name: "search"
 }
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>
