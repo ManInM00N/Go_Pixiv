@@ -2,7 +2,7 @@
 
 <p align="center">
 
-<img src="./build/appicon.png">
+<img style="width :256px" src="./build/appicon.png">
 <br>
 <a href="https://github.com/ManInM00N/Go_Pixiv/releases"> <img src="https://img.shields.io/github/v/release/ManInM00N/Go_Pixiv" alt=""/> </a>
 <a href="https://golang.google.cn/dl/"> <img src="https://img.shields.io/github/go-mod/go-version/ManInM00N/Go_Pixiv"> </a>
