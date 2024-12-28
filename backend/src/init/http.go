@@ -8,15 +8,18 @@ import (
 	"fmt"
 	"io"
 	. "main/backend/src/DAO"
+	"main/backend/src/Util"
 	"net/http"
 	url2 "net/url"
 	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/ManInM00N/go-tool/statics"
+	"github.com/bmaupin/go-epub"
 	"github.com/tidwall/gjson"
-	"github.com/yuin/goldmark/util"
 )
 
 const (
@@ -26,7 +29,11 @@ const (
 	FollowInfo
 	GifPage
 	NovelInfo
-	UserDashboard = 0
+	NovelSeries
+	NovelText
+	UserDashboard
+	PicSource
+	Base = "https://www.pixiv.net/"
 )
 
 // TODO: 作者全部作品下载OK
@@ -34,128 +41,217 @@ const (
 // TODO: 指针内存问题OK
 // TODO: 图片下载完整  OK
 func Download(i *Illust, op *Option) bool {
+	if i.IllustType == 2 {
+		return true
+	}
+
 	var err error
 	total := 0
-	Request, err2 := http.NewRequest("GET", i.PreviewImageUrl, nil)
-	clientcopy := GetClient()
+	// create Request
+	Request, err2 := http.NewRequest("GET", i.Source, nil)
 	if err2 != nil {
 		DebugLog.Println("Error creating request", err2)
 		return false
 	}
 	Request.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36")
 	Request.Header.Set("referer", "https://www.pixiv.net")
-	Cookie := &http.Cookie{
-		Name:  "cookie",
-		Value: Setting.Cookie,
-	}
-	Request.AddCookie(Cookie)
 	Request.Header.Set("cookie", "PHPSESSID="+Setting.Cookie)
 	var Response *http.Response
-	defer func() {
-		if Response != nil {
-			Response.Body.Close()
-		}
-	}()
-	_, err = os.Stat(Setting.Downloadposition)
-	if err != nil {
-		os.Mkdir(Setting.Downloadposition, os.ModePerm)
-	}
+	clientcopy := GetClient()
+
 	Path := Setting.Downloadposition
 	if op.Mode == ByRank {
-		Path = Path + "/" + op.Rank + op.RankDate
-		_, err = os.Stat(Path)
-		if err != nil {
-			os.Mkdir(Path, os.ModePerm)
+		Path = filepath.Join(Path, op.Rank+op.RankDate)
+	} else {
+		if op.DiffAuthor || op.Mode == ByAuthor {
+			Path = filepath.Join(Path, statics.Int64ToString(i.UserID))
 		}
-	}
-	if op.DiffAuthor {
-		Path = Path + "/" + statics.Int64ToString(i.UserID)
-		_, err = os.Stat(Path)
-		if err != nil {
-			os.Mkdir(Path, os.ModePerm)
-		}
-		// Path = AuthorFile
 	}
 
-	Type := Path + "/" + i.AgeLimit
-	_, err = os.Stat(Type)
-	if err != nil {
-		os.Mkdir(Type, os.ModePerm)
+	Type := filepath.Join(Path, i.AgeLimit)
+	if has, _ := Util.FileExists(Type); !has {
+		os.MkdirAll(Type, os.ModePerm)
 	}
+
 	failtimes := 0
-	for j := 0; j < i.Pages; j++ {
-		imagefilename := statics.GetFileName(i.ImageUrl[j])
-		imagefilepath := Type + "/" + imagefilename
-		img, err2 := os.Stat(imagefilepath)
-		if err2 == nil {
-			if op.Mode == ByPid {
-				os.Remove(imagefilepath)
-			} else if img.Size() != 0 {
+	if i.IllustType <= 1 {
+		for j := 0; j < i.Pages; j++ {
+			imagefilename := statics.GetFileName(i.ImageUrl[j])
+			imagefilepath := filepath.Join(Type, imagefilename)
+			img, err2 := os.Stat(imagefilepath)
+			if err2 == nil {
+				if op.Mode == ByPid {
+					os.Remove(imagefilepath)
+				} else if img.Size() != 0 {
+					time.Sleep(time.Millisecond * time.Duration(Setting.Downloadinterval))
+					continue
+				}
+			}
+			Request.URL, _ = url2.Parse(i.ImageUrl[j])
+			ok := true
+			for k := 0; k < 10; k++ {
+				Response, err = clientcopy.Do(Request)
+				if k == 9 && err != nil {
+					DebugLog.Println("Illust Resouce Request Error", err, Request.URL.String())
+					ok = false
+					j--
+					failtimes++
+					if failtimes > 2 {
+						j++
+					}
+					break
+				} else if err == nil {
+					break
+				}
 				time.Sleep(time.Millisecond * time.Duration(Setting.Downloadinterval))
+			}
+			if !ok {
+				os.Remove(imagefilepath)
 				continue
 			}
-		}
-		Request.URL, _ = url2.Parse(i.ImageUrl[j])
-		ok := true
-		for k := 0; k < 10; k++ {
-			Response, err = clientcopy.Do(Request)
-			if k == 9 && err != nil {
-				DebugLog.Println("Illust Resouce Request Error", err, Request.URL.String())
-				ok = false
+			failtimes = 0
+			f, err := os.OpenFile(imagefilepath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0755)
+			if err != nil {
+				DebugLog.Println(i.Pid, "Download Failed", err, "retrying")
+				os.Remove(imagefilepath)
 				j--
-				failtimes++
-				if failtimes > 2 {
-					j++
+				if f != nil {
+					f.Close()
 				}
-				break
-			} else if err == nil {
-				break
+				continue
 			}
+			bufWriter := bufio.NewWriter(f)
+
+			if _, err = io.Copy(bufWriter, Response.Body); err != nil {
+				DebugLog.Println(i.Pid, " Write Failed", err)
+				return false
+			}
+			f.Close()
+			Response.Body.Close()
+			bufWriter.Flush()
+			total++
 			time.Sleep(time.Millisecond * time.Duration(Setting.Downloadinterval))
 		}
-		if !ok {
-			os.Remove(imagefilepath)
-			continue
-		}
-		failtimes = 0
-		f, err := os.OpenFile(imagefilepath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0755)
-		if err != nil {
-			DebugLog.Println(i.Pid, "Download Failed", err, "retrying")
-			os.Remove(imagefilepath)
-			j--
-			continue
-		}
-		bufWriter := bufio.NewWriter(f)
-		_, err = io.Copy(bufWriter, Response.Body)
-		if err != nil {
-			DebugLog.Println(i.Pid, " Write Failed", err)
-			return false
-		}
-		f.Close()
-		bufWriter.Flush()
-		total++
-		time.Sleep(time.Millisecond * time.Duration(Setting.Downloadinterval))
+	} else {
 	}
+
 	return true
 }
 
 // return url & referer
-func CheckMode(url, id string, num int) (string, string) {
-	// switch num{
-	// case 1:
-	// case 2:
-	// case
-	// }
-	if num == 1 { // illust page
-		return "https://www.pixiv.net/ajax/illust/" + url, "https://www.pixiv.net/artworks/" + id
-	} else if num == 2 { // author page
-		return "https://www.pixiv.net/ajax/user/" + url + "/profile/all", "https://www.pixiv.net/member.php?id=" + id
-	} else if num == 4 { // ranking page
-		return "https://www.pixiv.net/ranking.php?format=json" + url, "https://www.pixiv.net/"
-	} else if num == 8 { // follow page
-		return "https://www.pixiv.net/ajax/follow_latest/illust?" + url, "https://www.pixiv.net/"
+func GetUrlRefer(url, id string, num int) (string, string) {
+	switch num {
+	case IllustInfo:
+		return Base + "ajax/illust/" + url, Base + "artworks/" + id
+	case AuthorInfo:
+		return Base + "ajax/user/" + url + "/profile/all", Base + "member.php?id=" + id
+	case RankInfo:
+		return Base + "ranking.php?format=json" + url, Base
+	case FollowInfo:
+		return Base + "ajax/follow_latest/illust?" + url, Base
+	case GifPage:
+		return Base + "ajax/illust/" + id + "ugoira_meta", Base
+	case NovelInfo:
+		return Base + "ajax/novel/" + id, Base
+	case NovelSeries:
+		return Base + "ajax/novel/series_content/" + id, Base
+	case NovelText:
+		return Base + "novel/show.php?id=" + id, Base
+	case UserDashboard:
+		return Base + "ajax/user/extra", Base
+	default:
+		return Base + "ajax/user/extra", Base
 	}
-	return "https://www.pixiv.net/ajax/user/extra", "https://www.pixiv.net/"
+}
+
+func DownloadNovel(id string) bool {
+	body, err := GetNovel(id)
+	if err != nil {
+		DebugLog.Println("GetWebpageData error", err)
+		return false
+	}
+	novel := Novel{
+		Id:          body.Get("id").String(),
+		Content:     body.Get("content").String(),
+		Title:       body.Get("title").String(),
+		UserId:      body.Get("userId").String(),
+		UserName:    body.Get("userName").String(),
+		CoverUrl:    body.Get("coverUrl").String(),
+		SeriesId:    int(body.Get("seriesNavData.seriesId").Int()),
+		SeriesTitle: body.Get("seriesNavData.title").String(),
+	}
+	for _, v := range body.Get("tags.tags.#.tag").Array() {
+		novel.Tags = append(novel.Tags, v.String())
+	}
+	novel.R18 = Util.HasR18(&novel.Tags)
+	Path := filepath.Join(Setting.Downloadposition, "novel")
+	if novel.R18 {
+		Path = filepath.Join(Path, "r18")
+	} else {
+		Path = filepath.Join(Path, "all-age")
+	}
+	os.MkdirAll(Path, os.ModePerm)
+	title := Util.Cut(novel.Id + novel.Title)
+	f, err := os.OpenFile(filepath.Join(Path, title+".txt"), os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0755)
+	if err != nil {
+		DebugLog.Println("open file failed", err)
+		return false
+	}
+	bufWriter := bufio.NewWriter(f)
+	_, err = bufWriter.WriteString(novel.Content)
+	if f != nil {
+		f.Close()
+	}
+	if err != nil {
+		DebugLog.Println("write file failed ", err)
+		return false
+	}
+	e := epub.NewEpub(title)
+	time.Sleep(time.Millisecond * time.Duration(Setting.Downloadinterval))
+	client := GetClient()
+	Request, err := http.NewRequest("GET", novel.CoverUrl, nil)
+	if err != nil {
+		DebugLog.Println("Error creating request", err)
+		return false
+	}
+	Request.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0")
+	Request.Header.Set("Cookie", "PHPSESSID=26338360_ySk6XCx1Orw6SGDavhpnrxfYyphkNiqf")
+	Request.Header.Set("Referer", "https://www.pixiv.net/")
+	res, err := client.Do(Request)
+	if err != nil {
+		DebugLog.Println("novel request failed ", err)
+		return false
+	}
+	reader := bufio.NewReader(res.Body)
+	imgpath := filepath.Join(Path, novel.Id+"_cover."+Util.GetFileType(novel.CoverUrl))
+	f, err = os.OpenFile(imgpath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0755)
+	if err != nil {
+		DebugLog.Println(imgpath, err)
+		return false
+	}
+	bufWriter = bufio.NewWriter(f)
+	_, err = io.Copy(bufWriter, reader)
+	if err != nil {
+		DebugLog.Println("write cover failed ", err)
+		return false
+	}
+	f.Close()
+	coverimg, _ := e.AddImage(imgpath, "cover.jpg")
+	e.SetCover(coverimg, "")
+	novelTextHTML := "<p>" + strings.ReplaceAll(novel.Content, "\n\n", "</p><p>") + "</p>"
+
+	_, err = e.AddSection(novelTextHTML, novel.Title, "", "")
+	if err != nil {
+		DebugLog.Printf("无法添加章节: %v\n", err)
+		return false
+	}
+	err = e.Write(filepath.Join(Path, title+".epub"))
+	if err != nil {
+		DebugLog.Printf("无法保存 %s EPUB文件: %v\n", novel.Id, err)
+		return false
+	}
+	os.Remove(imgpath)
+	return true
 }
 
 // TODO:下载作品主题信息json OK
@@ -163,7 +259,7 @@ func GetWebpageData(url, id string, num int) ([]byte, error) { // 请求得到�
 
 	var response *http.Response
 	var err error
-	ur, ref := CheckMode(url, id, num)
+	ur, ref := GetUrlRefer(url, id, num)
 	// println(ur, ref)
 	Request, err := http.NewRequest("GET", ur, nil)
 	if err != nil {
@@ -172,14 +268,7 @@ func GetWebpageData(url, id string, num int) ([]byte, error) { // 请求得到�
 	}
 	Request.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0")
 	Request.Header.Set("referer", ref)
-	// Cookie := &http.Cookie{
-	// 	Name:  "PHPSESSID",
-	// 	Value: Setting.Cookie,
-	// }
-	// Request.AddCookie(Cookie)
-	// if num != 4 {
 	Request.Header.Set("Cookie", "PHPSESSID="+Setting.Cookie)
-	// }
 
 	clientcopy := GetClient()
 	for i := 0; i < 10; i++ {
@@ -200,17 +289,18 @@ func GetWebpageData(url, id string, num int) ([]byte, error) { // 请求得到�
 		time.Sleep(time.Duration(Setting.Retryinterval) * time.Millisecond)
 
 	}
-	defer response.Body.Close()
-
+	if response.Body != nil {
+		defer response.Body.Close()
+	}
 	// webpageBytes, err3 := ioutil.ReadAll(response.Body)
 	var buffer bytes.Buffer
 	reader := bufio.NewReader(response.Body)
 	_, err3 := io.Copy(&buffer, reader)
-	webpageBytes := buffer.Bytes()
 	if err3 != nil {
 		DebugLog.Println("read failed", err3)
 		return nil, err3
 	}
+	webpageBytes := buffer.Bytes()
 	if response.StatusCode != http.StatusOK {
 		DebugLog.Println("status code ", response.StatusCode, ur, string(webpageBytes))
 		if response.StatusCode == 429 {
@@ -228,7 +318,6 @@ func work(id int64, mode *Option) (i *Illust, err error) { // 按作品id查找
 	strid := urltail
 	err = nil
 	data, err2 := GetWebpageData(urltail, strid, 1)
-
 	if err2 != nil {
 		err = fmt.Errorf("GetWebpageData error %w", err2)
 		DebugLog.Println("GetWebpageData error", err2)
@@ -237,11 +326,10 @@ func work(id int64, mode *Option) (i *Illust, err error) { // 按作品id查找
 	Results := gjson.ParseBytes(data)
 	canbedownload := Results.Get("error").Bool()
 	if canbedownload {
-		// println(strid, len(strid))
 		return nil, &NotGood{}
 	}
+
 	jsonmsg := gjson.ParseBytes(data).Get("body") // 读取json内作品及作者id信息
-	// println(id, jsonmsg.Str)
 	i = &Illust{
 		AgeLimit:    "all-age",
 		Pid:         jsonmsg.Get("illustId").Int(),
@@ -252,13 +340,13 @@ func work(id int64, mode *Option) (i *Illust, err error) { // 按作品id查找
 		Title:       jsonmsg.Get("illustTitle").Str,
 		UserName:    jsonmsg.Get("userName").Str,
 		Likecount:   int(jsonmsg.Get("bookmarkCount").Int()),
+		IllustType:  int(jsonmsg.Get("illustType").Int()),
 	}
 	for _, tag := range jsonmsg.Get("tags.tags.#.tag").Array() {
 		i.Tags = append(i.Tags, tag.Str)
-		if tag.Str == "R-18" {
-			i.AgeLimit = "r18"
-			break
-		}
+	}
+	if Util.HasR18(&i.Tags) {
+		i.AgeLimit = "R-18"
 	}
 	if i.Likecount < mode.Likelimit {
 		err = fmt.Errorf("%w", &NotGood{S: "LikeNotEnough", Err: errors.New("LikeNotEnough")})
@@ -271,26 +359,38 @@ func work(id int64, mode *Option) (i *Illust, err error) { // 按作品id查找
 		// DebugLog.Println(i.PreviewImageUrl)
 		return i, err
 	}
-	pages, err2 := GetWebpageData(urltail+"/pages", strid, 1)
-	if err2 != nil {
-		err = fmt.Errorf("Get illustpage data error %w", err2)
-		DebugLog.Println("get illustpage data error", err2)
-		return nil, err
-	}
-	imagejson := gjson.ParseBytes(pages).Get("body").String()
-	var imagedata []ImageData
-	err2 = json.Unmarshal(util.StringToReadOnlyBytes(imagejson), &imagedata)
-	if err2 != nil {
-		err = fmt.Errorf("error decoding %w", err2)
-		DebugLog.Println("Error decoding", err2)
-		return nil, err
-	}
-	if len(imagedata) == 0 {
-		DebugLog.Println("No images found ", i.Pid)
-		return nil, fmt.Errorf("No images found", i.Pid)
-	}
-	for _, image := range imagedata {
-		i.ImageUrl = append(i.ImageUrl, image.URLs.Original)
+	if i.IllustType <= 1 {
+		pages, err2 := GetWebpageData(urltail+"/pages", strid, IllustInfo)
+		if err2 != nil {
+			DebugLog.Println("get illustpage data error", err2)
+			return nil, err
+		}
+		imagejson := gjson.ParseBytes(pages).Get("body").String()
+		var imagedata []ImageData
+
+		err2 = json.Unmarshal([]byte(imagejson), &imagedata)
+		if err2 != nil {
+			DebugLog.Println("Error decoding", err2, imagejson)
+			return nil, err
+		}
+		if len(imagedata) == 0 {
+			DebugLog.Println("No images found ", i.Pid)
+			return nil, fmt.Errorf("No images found %d", i.Pid)
+		}
+		for _, image := range imagedata {
+			i.ImageUrl = append(i.ImageUrl, image.URLs.Original)
+		}
+	} else {
+		// data, err2 := GetWebpageData(urltail, strid, GifPage)
+		// if err2 != nil {
+		// 	DebugLog.Println("get ugoira data error", err2)
+		// 	return nil, err
+		// }
+		// jsonbody := gjson.ParseBytes(data).Get("body")
+		// i.Source = jsonbody.Get("originalSrc").String()
+		// i.FileType = jsonbody.Get("mime_type").String()
+		// json.Unmarshal([]byte(jsonbody.Get("frames").String()), &i.Frames)
+		//
 	}
 
 	return i, err
@@ -329,11 +429,17 @@ func GetFollow(option *Option) (gjson.Result, error) {
 		return gjson.Result{}, err
 	}
 	arr := gjson.ParseBytes(data).Get("body")
-	// DebugLog.Println(arr.Get("thumbnails"))
-	//for i := range arr {
-	//	println(arr[i].Int())
-	//}
 	return arr, nil
+}
+
+func GetNovel(id string) (gjson.Result, error) {
+	data, err := GetWebpageData(id, id, NovelInfo)
+	if err != nil {
+		DebugLog.Println("get novel html failed: ", err.Error())
+		return gjson.Result{}, err
+	}
+	v := gjson.ParseBytes(data).Get("body")
+	return v, nil
 }
 
 func JustDownload(pid string, mode *Option) (int, bool) {

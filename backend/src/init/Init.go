@@ -33,6 +33,7 @@ func init() {
 	Ctx, Cancel = context.WithCancel(context.Background())
 	ymlfile, _ = os.OpenFile("settings.yml", os.O_RDWR, 0644)
 	defer ymlfile.Close()
+
 	bytevalue, _ := ioutil.ReadAll(ymlfile)
 	yaml.Unmarshal(bytevalue, &Setting)
 	Setting.Prefix = "http://127.0.0.1:"

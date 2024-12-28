@@ -8,3 +8,4 @@ retry429: 5000
 downloadinterval: 200
 retryinterval: 1000
 differauthor: false
+expiredtime: 0

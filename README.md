@@ -1,6 +1,5 @@
 # 使用须知 Read Me First
 
-
 <p align="center">
 
 <img src="./build/appicon.png">
@@ -10,17 +9,17 @@
 <a href="https://wails.io/zh-Hans/docs/gettingstarted/installation"> <img src="https://img.shields.io/badge/wails-v3.0.0--alpha8.3-red"> </a>
 <a href="https://github.com/ManInM00N/Go_Pixiv/blob/master/LICENSE"><img src="https://img.shields.io/github/license/ManInM00N/Go_Pixiv"> </a>
 
-
 </p>
 
- - [x] 升级wails框架版本 :tada:
- - [x] 优化预览缓存机制,设置图片代理 :wave:
- - [ ] 优化下载线程池 :confused:
- - [ ] 以图搜图 :alien:
- - [ ] 托盘化 :zap:
- - [ ] 小说下载功能 :monocle_face:
+- [x] 升级wails框架版本 :tada:
+- [x] 优化预览缓存机制,设置图片代理 :wave:
+- [ ] 优化下载线程池 :confused:
+- [ ] 以图搜图 :alien:
+- [x] 托盘化 :zap:
+- [x] 小说下载功能 :monocle_face:
+- GIF下载暂时无法实现,目前找不到一个比较好的办法将返回的图片制作成GIF :clown_face:
 
-# ！！！不提供代理！！！
+# ！！！不提供代理
 
 代理问题需要自己解决
 关注页面需要有自己的pixiv账号(cookie),若个人行为导致账号封禁概不负责<br>
@@ -29,7 +28,8 @@
 下载速度取决于你的代理，理论上参数可以调很快但是会报429，而且太快会被封443端口，所以不建议下太快，默认设置间隔时间1000ms
 
 ## 制作参考
-https://github.com/daydreamer-json/pixiv-ajax-api-docs/tree/main<br>
+
+<https://github.com/daydreamer-json/pixiv-ajax-api-docs/tree/main><br>
 
 ## 配置设定
 

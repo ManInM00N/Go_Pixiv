@@ -35,6 +35,7 @@ func ServerInit() {
 	Api.GET("/rankpage", RankList)
 	Api.GET("/ws", UpdateProgress)
 	Api.GET("/preview", PreviewUrl)
+	Api.GET("/novel_rproxy", NovelContent)
 	Ws := R.Group("/ws")
 	Ws.GET("/progress", UpdateProgress)
 	Ws.GET("/rank", Transform)

@@ -15,21 +15,47 @@ type ImageData struct {
 	Width  int `json:"width"`
 	Height int `json:"height"`
 }
+type Frame struct {
+	File  string `json:"file"`
+	Delay int    `json:"delay"`
+}
 
+const (
+	IllustType = iota
+	MangaType
+	UgoiraType
+)
+
+type Novel struct {
+	Id          string
+	Content     string
+	UserId      string
+	UserName    string
+	Tags        []string
+	CoverUrl    string
+	SeriesId    int
+	SeriesTitle string
+	Title       string
+	R18         bool
+}
 type Illust struct {
-	Pid             int64     `db:"pid"`
-	Title           string    `db:"title"`
-	Caption         string    `db:"caption"`
-	Tags            []string  `db:"tags"`
-	ImageUrl        []string  `db:"image_url"`
-	PreviewImageUrl string    `db:"preview_image"`
-	AgeLimit        string    `db:"age_limit"`
-	CreatedTime     string    `db:"created_time"`
-	UserID          int64     `db:"userId"`
-	UserName        string    `db:"user_name"`
-	Pages           int       `db:"pages"`
-	Likecount       int       `db:"likecount"`
-	UploadedTime    time.Time `db:"uploaded_time"`
+	Pid             int64
+	Title           string
+	Caption         string
+	Tags            []string
+	ImageUrl        []string
+	Source          string
+	Frames          []Frame
+	FileType        string
+	PreviewImageUrl string
+	AgeLimit        string
+	CreatedTime     string
+	UserID          int64
+	UserName        string
+	Pages           int
+	Likecount       int
+	UploadedTime    time.Time
+	IllustType      int
 }
 
 func (i *Illust) msg() string {

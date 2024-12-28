@@ -27,5 +27,4 @@ func Log_init() {
 	log.SetOutput(logf)
 	InfoLog = log.New(logf, "[Info] - ", log.Ltime)
 	DebugLog = log.New(logf, "[Debug] - ", log.Ltime)
-
 }

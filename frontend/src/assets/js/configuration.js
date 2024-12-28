@@ -12,7 +12,7 @@ export let form = ref({
     downloadinterval: 500,
     retryinterval: 1000,
     differauthor: false,
-
+    expired_time: 7,
 })
 axios.get("http://127.0.0.1:7234/api/getsetting").then(res => {
     console.log(form.value)
@@ -21,13 +21,12 @@ axios.get("http://127.0.0.1:7234/api/getsetting").then(res => {
     form.value.cookie = res.data.setting.cookie.toString()
     form.value.r_18 = res.data.setting.r_18
     form.value.downloadposition = res.data.setting.downloadposition
-    form.value.likelimit = res.data.setting.likelimit
+    form.value.likelimit = Number(res.data.setting.likelimit)
     form.value.retry429 = res.data.setting.retry429
     form.value.downloadinterval = res.data.setting.downloadinterval
     form.value.retryinterval = res.data.setting.retryinterval
     form.value.differauthor = res.data.setting.differauthor
     console.log(res.data)
-    console.log(res.data.setting.cookie.toString(), res.data.setting.cookie)
     console.log(form.value)
     if (form.value.cookie != "") {
         CheckLogin()

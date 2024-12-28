@@ -11,10 +11,14 @@ import (
 
 func UpdateSetting(c *gin.Context) {
 	var set DAO.Settings
+	InfoLog.Println(c.Request.Body)
 	c.BindJSON(&set)
-	DebugLog.Println(set.MsgDetail())
+	DebugLog.Println(set.MsgDetail(), set)
 	Setting.UpdateSettings(set)
 	UpdateSettings()
+	c.JSON(http.StatusOK, gin.H{
+		"setting": Setting,
+	})
 }
 
 func GetSetting(c *gin.Context) {
@@ -87,7 +91,7 @@ func RankList(c *gin.Context) {
 		date = date + v
 	}
 	DebugLog.Println(val, date)
-	data := NewDownloadRankMsg(date, mode, p, content)
+	data := GetRankMsg(date, mode, p, content)
 	if data == nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "获取排行榜数据失败",
@@ -103,7 +107,7 @@ func RankList(c *gin.Context) {
 
 func Followlist(c *gin.Context) {
 	p := c.Query("p")
-	data := NewDownloadFollowMsg(p, "all")
+	data := GetFollowMsg(p, "all")
 	if data == nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "获取关注数据失败",
@@ -114,4 +118,7 @@ func Followlist(c *gin.Context) {
 		"data": data,
 		"num":  len(data),
 	})
+}
+
+func NovelContent(c *gin.Context) {
 }

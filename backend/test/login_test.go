@@ -3,6 +3,7 @@ package test
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"io"
 	. "main/backend/src/init"
 	"net/http"
@@ -12,18 +13,21 @@ import (
 )
 
 func TestLogin(t *testing.T) {
-	url, ref := CheckMode("", "", 0)
+	url, ref := GetUrlRefer("", "", 0)
+	fmt.Println(url, ref)
 	Request, err := http.NewRequest("GET", url, nil)
 	client := GetClient()
 	Request.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0")
 	Request.Header.Set("referer", ref)
-	Cookie := &http.Cookie{
-		Name:  "PHPSESSID",
-		Value: Setting.Cookie,
+	Request.Header.Set("Cookie", "PHPSESSID="+Setting.Cookie)
+	var res *http.Response
+	for i := 0; i < 3; i++ {
+
+		res, err = client.Do(Request)
+		if err == nil {
+			break
+		}
 	}
-	Request.AddCookie(Cookie)
-	Request.Header.Set("PHPSESSID", Setting.Cookie)
-	res, err := client.Do(Request)
 	if err != nil {
 		t.Error("Do request failed", err)
 		return

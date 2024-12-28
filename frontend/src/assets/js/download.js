@@ -1,16 +1,16 @@
 import axios from "axios";
 
-function Download(){
-    axios.post("http://127.0.0.1:7234/api/download",{
+function Download() {
+    axios.post("http://127.0.0.1:7234/api/download", {
         type: "Pid",
 
-    },{
-        headers:{
+    }, {
+        headers: {
             'Content-Type': 'application/json'
         }
-    }).then(response=>{
+    }).then(response => {
 
-    }).catch(error=>{
+    }).catch(error => {
         console.error
     })
 }

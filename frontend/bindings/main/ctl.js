@@ -45,6 +45,15 @@ export function DownloadByFollowPage(page, Type) {
  * @param {string} text
  * @returns {Promise<boolean> & { cancel(): void }}
  */
+export function DownloadByNovelId(text) {
+    let $resultPromise = /** @type {any} */($Call.ByID(1641432437, text));
+    return $resultPromise;
+}
+
+/**
+ * @param {string} text
+ * @returns {Promise<boolean> & { cancel(): void }}
+ */
 export function DownloadByPid(text) {
     let $resultPromise = /** @type {any} */($Call.ByID(3069038031, text));
     return $resultPromise;

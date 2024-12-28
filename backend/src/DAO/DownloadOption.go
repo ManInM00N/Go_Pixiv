@@ -74,8 +74,10 @@ func WithShowSingle(show bool) option {
 }
 
 /*
-*  1指定pid  2
- */
+ByPid    = int64(0)
+ByAuthor = int64(1)
+ByRank   = int64(2)
+*/
 func WithMode(mode int64) option {
 	return func(o *Option) {
 		o.Mode = mode
@@ -87,7 +89,7 @@ func WithMode(mode int64) option {
 Rankmode: Daily 0, Weekly 1, Monthly 2, Male 3, Female 4, Rookie 5
 Original 6, Daily_r18 7, Weekly_r18 8, male_r18 9, Female_r18 10
 */
-func WithRankmode(Type string) option {
+func SufWithRankmode(Type string) option {
 	return func(o *Option) {
 		o.Suffix += "&mode=" + Type
 		o.Rank = Type
@@ -95,14 +97,14 @@ func WithRankmode(Type string) option {
 }
 
 // illust 0  manga 1 ugoira 2
-func WithType(idx int64) option {
+func SufWithType(idx int64) option {
 	return func(o *Option) {
 		o.Suffix += "&content=" + ContentType[idx]
 	}
 }
 
 // 查询日期
-func WithDate(date string) option {
+func SufWithDate(date string) option {
 	return func(o *Option) {
 		o.Suffix += "&date=" + date
 		o.RankDate = date
@@ -110,7 +112,7 @@ func WithDate(date string) option {
 }
 
 // 前缀查询页码
-func WithPage(page string) option {
+func SufWithPage(page string) option {
 	return func(o *Option) {
 		o.Suffix += "&p=" + page
 	}
