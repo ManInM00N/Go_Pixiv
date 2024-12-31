@@ -47,6 +47,45 @@
   background-color: rgba(ff,ff,ff,0.5);
   border: 2px solid @golden;
 }
+
+
+
+/deep/.Xbord {
+  width: 80%;
+  position: relative;
+  text-align: center;
+  font-size: 24px;
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 2px solid rgb(#fdffab);
+    border-image: linear-gradient(to right, #fdffab, #ff0000) 1;
+    /* 渐变颜色 */
+    transition: all .5s;
+    animation: clippath 3s infinite linear;
+  }
+  @keyframes clippath {
+    0%,
+    100% {
+      clip-path: inset(0 0 95% 0);
+    }
+    25% {
+      clip-path: inset(0 95% 0 0);
+    }
+    50% {
+      clip-path: inset(95% 0 0 0);
+    }
+    75% {
+      clip-path: inset(0 0 0 95%);
+    }
+  }
+}
+
+
 @No_Gap: 0px 0px 0px 0px;
 @transition-slow: .6s ease;
 @transition-normal: .4s ease;

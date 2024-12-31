@@ -28,7 +28,6 @@ func AppInit() {
 		Description: "Pivix Crawler",
 
 		Services: []application.Service{
-			application.NewService(&GreetService{}),
 			application.NewService(NewCtl()),
 		},
 		Assets: application.AssetOptions{

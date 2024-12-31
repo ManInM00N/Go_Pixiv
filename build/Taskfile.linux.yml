@@ -46,10 +46,10 @@ tasks:
       - wails3 generate appimage -binary {{.APP_NAME}} -icon {{.ICON}} -desktopfile {{.DESKTOP_FILE}} -outputdir {{.OUTPUT_DIR}} -builddir {{.ROOT_DIR}}/build/appimage
     vars:
       APP_NAME: '{{.APP_NAME}}'
-      APP_BINARY: '../../bin/{{.APP_NAME}}'
+      APP_BINARY: '../bin/{{.APP_NAME}}'
       ICON: '../appicon.png'
       DESKTOP_FILE: '{{.APP_NAME}}.desktop'
-      OUTPUT_DIR: '../../bin'
+      OUTPUT_DIR: '../bin'
 
   create:deb:
     summary: Creates a deb package
@@ -94,7 +94,7 @@ tasks:
   generate:aur:
     summary: Creates a arch linux packager package
     cmds: 
-      - wails3 tool package -name {{.APP_NAME}} -format arch -config ./build/nfpm/nfpm.yaml
+      - wails3 tool package -name {{.APP_NAME}} -format archlinux -config ./build/nfpm/nfpm.yaml
 
   generate:dotdesktop:
     summary: Generates a `.desktop` file

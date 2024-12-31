@@ -6,7 +6,14 @@
         height: 90%;
       ">
             <div style="width: 100%;height: 150px;">
-
+                <el-tabs type="card">
+                    <el-tab-pane label="Pid/AuthorId">
+                    </el-tab-pane>
+                    <el-tab-pane label="Rank">
+                    </el-tab-pane>
+                    <el-tab-pane label="Novel">
+                    </el-tab-pane>
+                </el-tabs>
             </div>
             <el-row>
                 <el-col :span="16" />
@@ -158,12 +165,12 @@ const options = ref([
     {
         value: "daily_r18",
         label: "Daily_R18",
-        disabled: form.r_18,
+        disabled: form.value.r_18,
     },
     {
         value: "weekly_r18",
         label: "Weekly_R18",
-        disabled: form.r_18,
+        disabled: form.value.r_18,
     },
 ]);
 const modes = ref([
@@ -206,7 +213,7 @@ function Download() {
     if (now.value != "Rank" && inputValue.value === '') {
         return
     }
-    props.ws.value.send(
+    ws.value.send(
         JSON.stringify({
             type: now.value,
             id: inputValue.value,
@@ -243,47 +250,6 @@ function Download() {
 .No_Background {
     background: rgba(ff, ff, ff, 0.3);
     border: 2px solid #CD7F32;
-}
-
-/deep/.Xbord {
-    width: 80%;
-    position: relative;
-    text-align: center;
-    font-size: 24px;
-
-    &::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        border: 2px solid rgb(#fdffab);
-        border-image: linear-gradient(to right, #fdffab, #ff0000) 1;
-        /* 渐变颜色 */
-        transition: all .5s;
-        animation: clippath 3s infinite linear;
-    }
-
-    @keyframes clippath {
-
-        0%,
-        100% {
-            clip-path: inset(0 0 95% 0);
-        }
-
-        25% {
-            clip-path: inset(0 95% 0 0);
-        }
-
-        50% {
-            clip-path: inset(95% 0 0 0);
-        }
-
-        75% {
-            clip-path: inset(0 0 0 95%);
-        }
-    }
 }
 
 /deep/ .el-table {
