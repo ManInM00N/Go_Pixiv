@@ -7,3 +7,4 @@ frontend/dist
 /errorlog/
 /.task/
 /build/appimage/*.AppDir
+/build/nfpm/bin/
