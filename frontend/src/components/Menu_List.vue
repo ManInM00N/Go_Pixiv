@@ -4,10 +4,10 @@
             :router="true" @select="handleMenuSelect">
             <section class="top-items" height=240>
                 <el-menu-item v-for="(item, idx) in items" :key="item.key" :id="item.id" :index="item.id"
-                    :route="item.index" class="menu_item" :disabled="!item.logined" :limit="form['r-18']"
-                    style="padding-left: 18px;">
+                    :route="item.index" class="menu_item" :disabled="!item.logined && !form.logined"
+                    :limit="form['r-18']" style="padding-left: 18px;">
 
-                    <el-tooltip :content="item.key" :show-arrow=false placement="bottom-start" offset="2">
+                    <el-tooltip :content="item.key" :show-arrow=false placement="bottom-start" offset=2>
                         <el-container class="item_body">
                             <el-icon size="30" class="item_icon">
                                 <component :is="item.iconmsg" />
@@ -28,14 +28,13 @@
                             </el-icon>
                         </el-container>
                     </el-tooltip>
-
-
                 </el-menu-item>
             </section>
         </el-menu>
 
     </el-aside>
-    <el-main class="View glass" id="View" name="View" style="padding-right: 5px;padding-left: 5px">
+    <el-main class="View glass" id="View" name="View"
+        style="padding-right: 5px;padding-left: 5px;padding-bottom: 0px;padding-top: 0px;">
         <section
             style="width: 100%;height: calc(100% - 40px); margin-left: 15px; margin-right: 15px;margin-top: 20px;margin-bottom: 20px;">
             <section style="width:100%">
@@ -57,11 +56,7 @@
 </template>
 
 <script setup>
-import { defineComponent, onMounted, ref } from "vue";
-import settings from "./settings.vue";
-
-import { CheckLogin, Close } from "../../bindings/main/ctl.js";
-import emitter from "../assets/js/Pub.js"
+import { onMounted, ref } from "vue";
 import { Events } from "@wailsio/runtime";
 import axios from "axios";
 import { ElMessage } from "element-plus";
@@ -81,7 +76,6 @@ const userself = ref({
     // id:6,key: "user",index:"/user"
     id: '4', iconmsg: "Tools", key: "settings", index: "/setting", logined: true
 })
-const Input = ref('')
 const wait = ref(false)
 const route = useRoute()
 const router = useRouter()
@@ -103,7 +97,7 @@ ElNotification({
 Events.On("login", function (msg) {
     console.log(msg, msg.data[0], msg.data)
     if (msg.data[0] === "True") {
-        items.value[1].logined = true
+        form.value.logined = true
         ElNotification({
             title: "Login succeed",
             type: "success",
@@ -112,13 +106,12 @@ Events.On("login", function (msg) {
             duration: 3000,
         })
     } else {
-        items.value[1].logined = false
         ElNotification({
             title: "Login failed",
             type: "warning",
             message: msg.data[1] + " 😭",
             position: 'bottom-right',
-            duration: 3000,
+            duration: 5000,
         })
     }
     console.log("Login state: ", items.value[1].logined, "r18 mod: ", form.value.r_18,)

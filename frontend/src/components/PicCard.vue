@@ -18,9 +18,9 @@
             </div>
         </template>
         <template #default>
-            <el-card :body-style="{ padding: '0px', marginBottom: '1px', width: '100%' }"
-                v-if="!($props.r18 && !form.r_18)">
-                <LazyImg :ref="pic" :onload="load = false" :url="'http://127.0.0.1:7234/api/preview?url=' + $props.img"
+            <el-card :body-style="{ padding: '0px', marginBottom: '1px', width: '100%' }">
+                <LazyImg :ref="pic" :onload="load = false"
+                    :url="!($props.r18 && !form.r_18) ? 'http://127.0.0.1:7234/api/preview?url=' + $props.img : noProfileImg"
                     class="image" />
                 <div style="padding: 14px">
                     <el-row>
@@ -37,6 +37,12 @@
                         <el-col :span="20" style="text-align: left;;">
                             <el-text class="w-250px mb-2" truncated type="success">
                                 Pages:{{ $props.pages }}
+
+                            </el-text>
+                            <br>
+                            <el-text v-if="$props.r18" class="w-250px mb-2" truncated type="danger">
+                                R18
+
                             </el-text>
                         </el-col>
 
@@ -65,13 +71,11 @@
 
 <script lang="ts" setup>
 import { onMounted, ref } from "vue";
-import emitter from "../assets/js/Pub.js";
+import noProfileImg from '../assets/images/NoR18.png';
 import { DownloadByPid } from "../../bindings/main/ctl.js";
 const name = "PicCard"
 import { form } from "../assets/js/configuration.js"
-import axios from 'axios'
 import { LazyImg } from "vue-waterfall-plugin-next";
-import { tr } from "element-plus/es/locale/index.mjs";
 import { sleep } from "../assets/js/Time.js"
 const load = ref(true)
 const props = defineProps({
@@ -113,7 +117,6 @@ async function download() {
         await sleep(1000)
         dis.value = false
     }
-
 }
 onMounted(() => {
 
@@ -122,7 +125,6 @@ function jump(event) {
     console.log("jump", event)
     window.open(event, '_blank')
 }
-// 
 </script>
 
 <style lang="less" scoped>

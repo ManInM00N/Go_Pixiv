@@ -3,95 +3,139 @@
         <el-main style="
       display: flex;
         flex-direction: column;
-        height: 90%;
+        height: 100%;
       ">
-            <div style="width: 100%;height: 150px;">
+            <div style="width: 100%;height: 100px;">
                 <el-tabs type="card">
-                    <el-tab-pane label="Pid/AuthorId">
+                    <el-tab-pane label="Pid">
+                        <el-row>
+                            <el-col :span="6">
+                                <el-input v-model="inputPid" size="large" placeholder="Pid" clearable
+                                    type="number"></el-input>
+                            </el-col>
+                            <el-col :span="2" />
+                            <el-col :span="6">
+                                <el-button style="" id="bt" type="success" size="large"
+                                    @click="() => { DownloadByPid(inputPid) }" :disabled="wait">
+                                    Download
+                                    <el-icon size="large">
+                                        <Download />
+                                    </el-icon>
+                                </el-button>
+                                <el-text class="Tre">
+                                    {{ queuenow }}
+                                </el-text>
+                            </el-col>
+                        </el-row>
+                    </el-tab-pane>
+                    <el-tab-pane label="AuthorId">
+                        <el-row>
+                            <el-col :span="6">
+                                <el-input v-model="inputAuthorId" size="large" placeholder="AuthorId" clearable
+                                    type="number"></el-input>
+                            </el-col>
+                            <el-col :span="2" />
+                            <el-col :span="6">
+                                <el-button style="" id="bt" type="success" size="large"
+                                    @click="() => { DownloadByAuthorId(inputAuthorId) }" :disabled="wait">
+                                    Download
+                                    <el-icon size="large">
+                                        <Download />
+                                    </el-icon>
+                                </el-button>
+                                <el-text class="Tre">
+                                    {{ queuenow }}
+                                </el-text>
+                            </el-col>
+                        </el-row>
                     </el-tab-pane>
                     <el-tab-pane label="Rank">
+                        <el-row>
+                            <el-col :span="5">
+                                <el-select v-model="period" ref="mode2" class="m-2" size="large" style="width:150px"
+                                    @change="changetype2">
+                                    <el-option v-for="(item) in options" :key="item.value" :label="item.label"
+                                        :value="item.value" :disabled="item.disabled && !form.r_18" />
+                                </el-select>
+                            </el-col>
+                            <el-col :span="8">
+                                <date-choose key="main" ref="dateSelect"></date-choose>
+                            </el-col>
+                            <el-col :span="6">
+                                <el-button style="" id="bt" type="success" size="large"
+                                    @click="() => { DownloadByRank(dateSelect.selectedDate, period) }" :disabled="wait">
+                                    Download
+                                    <el-icon size="large">
+                                        <Download />
+                                    </el-icon>
+                                </el-button>
+                                <el-text class="Tre">
+                                    {{ queuenow }}
+                                </el-text>
+                            </el-col>
+                        </el-row>
                     </el-tab-pane>
                     <el-tab-pane label="Novel">
+                        <el-row>
+                            <el-col :span="6">
+                                <el-input v-model="inputNovelId" size="large" placeholder="NovelId" clearable
+                                    type="number"></el-input>
+                            </el-col>
+                            <el-col :span="2" />
+                            <el-col :span="6">
+                                <el-button style="" id="bt" type="success" size="large"
+                                    @click="() => { DownloadByNovelId(inputNovelId) }" :disabled="wait">
+                                    Download
+                                    <el-icon size="large">
+                                        <Download />
+                                    </el-icon>
+                                </el-button>
+                                <el-text class="Tre">
+                                    {{ queuenow }}
+                                </el-text>
+                            </el-col>
+                        </el-row>
                     </el-tab-pane>
                 </el-tabs>
             </div>
-            <el-row>
-                <el-col :span="16" />
-                <el-col :span="8">
-                    下载模式
-                    <el-select v-model="now" ref="mode" class="m-2" size="default" @change="changetype"
-                        style="width:150px">
-                        <el-option v-for="(item) in modes" :key="item.value" :label="item.label" :value="item.value" />
-                    </el-select>
-                </el-col>
-            </el-row>
-            <el-divider class="Divide_Line" style="color:#52616b" />
-            <el-row>
-                <el-col :span="6">
-                    <el-input v-model="inputValue" size="large" placeholder="Pid/AuthorId" clearable
-                        type="number"></el-input>
-                </el-col>
-                <el-col :span="2" />
-                <el-col :span="8">
-                    <el-select v-model="period" ref="mode2" class="m-2" size="large" style="width:150px"
-                        @change="changetype2">
-                        <el-option v-for="(item) in options" :key="item.value" :label="item.label" :value="item.value"
-                            :disabled="!item.disabled" />
-                    </el-select>
-                </el-col>
-                <el-col :span="8">
-                    <date-choose key="main" ref="dateSelect"></date-choose>
-                </el-col>
-            </el-row>
-            <el-row style="height: 20px" />
-            <el-row>
-                <el-col :span="1" />
-                <el-col :span="15" class="Tre">
-                    <el-progress stroke-width="28" striped striped-flow :duration="10" :percentage="percent"
-                        text-inside="true" style="color:black">
-                        <span style="font-size:16px;color:#c9d6df" v-if="queue.length > 0">{{ queue[0].value }} {{
-                            percent
-                            }}%</span>
-                    </el-progress>
-                </el-col>
-                <el-col :span="2" />
-                <el-col :span="6">
-                    <el-button style="" id="bt" type="success" size="large" @click="Download" :disabled="wait">
-                        Download
-                        <el-icon size="large">
-                            <Download />
-                        </el-icon>
-                    </el-button>
-                    <el-text class="Tre">
-                        {{ queuenow }}
-                    </el-text>
-                </el-col>
-            </el-row>
-            <br>
-            <el-row class="Get_Remain">
-                <el-col :span="1" />
-                <el-col :span="15" class="terminal-text">
-                    <el-scrollbar class="text Micro" style="height:500px">
-                        <p v-for="item in logs">
-                            {{ item }}
-                        </p>
-                    </el-scrollbar>
-                </el-col>
-                <el-col :span="1" />
-                <el-col :span="7">
-                    <el-table :data="queue" :cell-class-name="cellStyle" class="Half_light Tre queueTable"
-                        style="height:490px">
-                        <template #empty>
-                            No Task
-                        </template>
-                        <el-table-column label="TaskQueue" prop="value" style="height:60px;">
-                            <template #default="scope">
-                                <span style="color:#c9d6df">{{ scope.row.value }}</span>
+            <div style="width: 100%;height: calc(100%- 10px - 120px);">
+
+
+                <el-row>
+                    <el-col :span="1" />
+                    <el-col :span="15" class="Tre">
+                        <el-progress stroke-width="28" striped striped-flow :duration="10" :percentage="percent"
+                            text-inside="true" style="color:black">
+                            <span style="font-size:16px;color:#c9d6df" v-if="queue.length > 0">
+                                {{ queue[0].value }} {{ percent }}%</span>
+                        </el-progress>
+                        <br>
+                        <el-scrollbar class="text Micro" style="height:500px">
+                            <p v-for="item in logs">
+                                {{ item }}
+                            </p>
+                        </el-scrollbar>
+                    </el-col>
+                    <el-col :span="1" />
+                    <el-col :span="7">
+                        <el-table :data="queue" :cell-class-name="({ rowIndex }) => {
+                            if (rowIndex === 0) {
+                                return 'Xbord'
+                            }
+                        }" class="Half_light Tre queueTable" style="height:550px">
+                            <template #empty>
+                                No Task
                             </template>
-                        </el-table-column>
-                    </el-table>
-                </el-col>
-            </el-row>
+                            <el-table-column label="TaskQueue" prop="value" style="height:60px;">
+                                <template #default="scope">
+                                    <span style="color:#c9d6df">{{ scope.row.value }}</span>
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </el-col>
+                </el-row>
+            </div>
+
         </el-main>
         <el-footer style="height: 10%;">
             <el-text type="danger" id="time">
@@ -104,26 +148,20 @@
 <script lang="ts" setup>
 import DateChoose from "./DateChoose.vue";
 import { onMounted, ref } from "vue";
-import { ElMessage } from "element-plus";
+import { ElNotification } from "element-plus";
 import axios from "axios";
 import { timeElement } from "../assets/js/Time.js"
 import { Events } from "@wailsio/runtime"
 const dateSelect = ref(null)
 import { ws, form } from "../assets/js/configuration.js";
-
+import { DownloadByPid, DownloadByRank, DownloadByNovelId, DownloadByAuthorId } from "../../bindings/main/ctl.js";
 onMounted(() => {
     ws.value.onmessage = (event) => {
-        // res.value = event.data;
         handleMessage(JSON.parse(event.data));
     };
 })
 const logs = ref([]);
 const rows = ref(10); // 可根据需要调整展示的行数
-const cellStyle = ({ rowIndex }) => {
-    if (rowIndex === 0) {
-        return 'Xbord'
-    }
-}
 function handleMessage(data) {
     if (data.type == 1) {
         percent.value = data.newnum
@@ -150,46 +188,40 @@ const options = ref([
     {
         value: "daily",
         label: "Daily",
-        disabled: true
+        disabled: false
     },
     {
         value: "weekly",
         label: "Weekly",
-        disabled: true
+        disabled: false
     },
     {
         value: "monthly",
         label: "Monthly",
-        disabled: true
+        disabled: false
     },
     {
         value: "daily_r18",
         label: "Daily_R18",
-        disabled: form.value.r_18,
+        disabled: true,
     },
     {
         value: "weekly_r18",
         label: "Weekly_R18",
-        disabled: form.value.r_18,
+        disabled: true,
     },
 ]);
-const modes = ref([
-    {
-        value: "Pid",
-        label: "By Pid",
-    },
-    {
-        value: "Author",
-        label: "By AuthorId",
-    },
-    {
-        value: "Rank",
-        label: "By Rank",
-    },
-]);
-const inputValue = ref('');
+const inputPid = ref(''), inputAuthorId = ref(''), inputNovelId = ref('');
 const period = ref("daily");
-
+Events.On("NotFound", (msg) => {
+    ElNotification({
+        title: "Error",
+        type: "error",
+        message: msg.data[0][0],
+        position: 'bottom-right',
+        duration: 3000,
+    })
+})
 Events.On("UpdateProcess", function (newnum) {
     // console.log(newnum, newnum.data[0][0])
     percent.value = newnum.data[0][0];
@@ -210,18 +242,7 @@ Events.On("UpdateTerminal", function (newmsg) {
 })
 function Download() {
     console.log("Downloading ", now.value)
-    if (now.value != "Rank" && inputValue.value === '') {
-        return
-    }
-    ws.value.send(
-        JSON.stringify({
-            type: now.value,
-            id: inputValue.value,
-            period: period.value,
-            time: dateSelect.value.selectedDate
-        })
-    )
-    inputValue.value = ''
+
     return
 }
 

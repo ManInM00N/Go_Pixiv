@@ -13,6 +13,8 @@ export let form = ref({
     retryinterval: 1000,
     differauthor: false,
     expired_time: 7,
+    useproxy: false,
+    logined: false,
 })
 axios.get("http://127.0.0.1:7234/api/getsetting").then(res => {
     console.log(form.value)
@@ -26,6 +28,7 @@ axios.get("http://127.0.0.1:7234/api/getsetting").then(res => {
     form.value.downloadinterval = res.data.setting.downloadinterval
     form.value.retryinterval = res.data.setting.retryinterval
     form.value.differauthor = res.data.setting.differauthor
+    form.value.useproxy = res.data.setting.useproxy
     console.log(res.data)
     console.log(form.value)
     if (form.value.cookie != "") {

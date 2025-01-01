@@ -2,6 +2,8 @@ package DAO
 
 import "errors"
 
+var NotFound = errors.New("Illust Not Found")
+
 type MyError interface {
 	error
 	GetS() string
@@ -15,9 +17,11 @@ type NotGood struct {
 func (i *NotGood) Error() string {
 	return i.S
 }
+
 func (i *NotGood) Unwrap() error {
 	return i.Err
 }
+
 func (i *NotGood) GetS() string {
 	return i.S
 }
@@ -30,6 +34,7 @@ type AgeLimit struct {
 func (i *AgeLimit) Error() string {
 	return i.S
 }
+
 func (i *AgeLimit) Unwrap() error {
 	return i.Err
 }
@@ -46,9 +51,11 @@ type TooFastRequest struct {
 func (i *TooFastRequest) Error() string {
 	return i.S
 }
+
 func (i *TooFastRequest) Unwrap() error {
 	return i.Err
 }
+
 func ContainMyerror(err error) bool {
 	var check MyError
 	check = new(AgeLimit)

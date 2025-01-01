@@ -15,9 +15,10 @@ type Settings struct {
 	LikeLimit        int    `yml:"likelimit" json:"likelimit"`
 	Retry429         int    `yml:"retry429" json:"retry429"`
 	Downloadinterval int    `yml:"downloadinterval" json:"downloadinterval"`
-	Retryinterval    int    `yml:"retryinterval"json:"retryinterval"`
+	Retryinterval    int    `yml:"retryinterval" json:"retryinterval"`
 	DifferAuthor     bool   `yml:"differauthor" json:"differauthor"`
 	ExpiredTime      int    `yml:"expiretime" json:"expired_time"`
+	UseProxy         bool   `yml:"useProxy" json:"useproxy"`
 }
 
 var rwl sync.RWMutex

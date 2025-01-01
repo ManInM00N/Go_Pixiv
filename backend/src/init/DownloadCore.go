@@ -26,7 +26,7 @@ var (
 	FollowLoadingNow = false
 )
 
-func Download_By_Pid(text string) {
+func Download_By_Pid(text string, callEvent func(name string, data ...interface{})) {
 	text = statics.CatchNumber(text)
 	println(text)
 	if text == "" {
@@ -34,7 +34,7 @@ func Download_By_Pid(text string) {
 	}
 	SinglePool.AddTask(func() (interface{}, error) {
 		op := NewOption(WithMode(ByPid), WithLikeLimit(0), WithR18(true), WithShowSingle(true), WithDiffAuthor(false))
-		JustDownload(text, op)
+		JustDownload(text, op, callEvent)
 		return nil, nil
 	})
 }
@@ -73,11 +73,18 @@ func Download_By_Author(text string, callEvent func(name string, data ...interfa
 		InfoLog.Println(text + "'s artworks Start download")
 		satisfy := 0
 		options := NewOption(WithMode(ByAuthor), WithR18(Setting.Agelimit), WithLikeLimit(Setting.LikeLimit))
-
+		var cnt int64
 		for key := range all {
 			k := key
 			if IsClosed {
 				return
+			}
+
+			if Db.Model(&Cache{}).Where("download_id = ?", k).Count(&cnt); cnt == 1 {
+				satisfy++
+				ProcessNow++
+				callEvent("UpdateProcess", 100*ProcessNow/max(ProcessMax, 1))
+				continue
 			}
 			P.AddTask(func() (interface{}, error) {
 				// time.Sleep(1 * time.Second)
@@ -115,7 +122,7 @@ func Download_By_Author(text string, callEvent func(name string, data ...interfa
 			ss := <-c
 			// log.Println(ss, " Download failed Now retrying")
 			P.AddTask(func() (interface{}, error) {
-				if a, b := JustDownload(ss, options); b {
+				if a, b := JustDownload(ss, options, callEvent); b {
 					satisfy += a
 				}
 				return nil, nil
@@ -124,13 +131,13 @@ func Download_By_Author(text string, callEvent func(name string, data ...interfa
 		P.Wait()
 		InfoLog.Println(text+"'s artworks -> Satisfied and Successfully downloaded illusts: ", satisfy, "in all: ", len(all))
 
-		satisfy = 0
 		close(c)
 		NowTaskMsg = "No Task in queue"
-		ProcessNow = 0
 		callEvent("UpdateTerminal", fmt.Sprintln(text+"'s artworks -> Satisfied and Successfully downloaded illusts: ", satisfy, "in all: ", len(all)))
+		ProcessNow = 0
 		callEvent("UpdateProcess", 100*ProcessNow/max(ProcessMax, 1))
 		callEvent("Pop")
+		satisfy = 0
 	})
 }
 
@@ -160,11 +167,9 @@ func Download_By_Rank(text, Type string, callEvent func(name string, data ...int
 			dd := date
 			op := NewOption(SufWithType(0), SufWithRankmode(Type), SufWithDate(dd), WithMode(ByRank), WithR18(true), WithLikeLimit(Setting.LikeLimit), SufWithPage(strconv.FormatInt(page, 10)))
 			InfoLog.Println(op.RankDate+" page", page, " "+op.Rank+"Rank pushed queue")
-
-			// println(page)
 			c := make(chan string, 2000)
 			tmp, err := GetRank(op)
-			DebugLog.Println(tmp.Get("#.illust_id"))
+			// DebugLog.Println(tmp.Get("#.illust_id"))
 			all := tmp.Get("#.illust_id").Array()
 			WaitingTasks--
 			if err != nil {
@@ -180,10 +185,18 @@ func Download_By_Rank(text, Type string, callEvent func(name string, data ...int
 			InfoLog.Println(op.RankDate + " " + op.Rank + "'s artworks Start download")
 			satisfy := 0
 			options := NewOption(WithMode(ByRank), WithR18(Setting.Agelimit), WithLikeLimit(Setting.LikeLimit), WithDiffAuthor(false), SufWithDate(op.RankDate), SufWithRankmode(Type))
+
+			var cnt int64
 			for _, key := range all {
 				k := key
 				if IsClosed {
 					return
+				}
+				if Db.Model(&Cache{}).Where("download_id = ?", k.String()).Count(&cnt); cnt == 1 {
+					satisfy++
+					ProcessNow++
+					callEvent("UpdateProcess", 100*ProcessNow/max(ProcessMax, 1))
+					continue
 				}
 				P.AddTask(func() (interface{}, error) {
 					// time.Sleep(1 * time.Second)
@@ -217,7 +230,7 @@ func Download_By_Rank(text, Type string, callEvent func(name string, data ...int
 				ss := <-c
 				// log.Println(ss, " Download failed Now retrying")
 				P.AddTask(func() (interface{}, error) {
-					if a, b := JustDownload(ss, options); b {
+					if a, b := JustDownload(ss, options, callEvent); b {
 						satisfy += a
 					}
 					return nil, nil
@@ -265,10 +278,18 @@ func Download_By_FollowPage(page, Type string, callEvent func(name string, data 
 		InfoLog.Println("follow page", page, " "+Type+" Start download")
 		satisfy := 0
 		options := NewOption(WithMode(ByPid), WithR18(Setting.Agelimit), WithLikeLimit(0), WithDiffAuthor(false), SufWithRankmode(Type))
+		var cnt int64
 		for _, key := range all {
 			k := key
 			if IsClosed {
 				return
+			}
+
+			if Db.Model(&Cache{}).Where("download_id = ?", k.String()).Count(&cnt); cnt == 1 {
+				satisfy++
+				ProcessNow++
+				callEvent("UpdateProcess", 100*ProcessNow/max(ProcessMax, 1))
+				continue
 			}
 			P.AddTask(func() (interface{}, error) {
 				// time.Sleep(1 * time.Second)
@@ -303,7 +324,7 @@ func Download_By_FollowPage(page, Type string, callEvent func(name string, data 
 			ss := <-c
 			// log.Println(ss, " Download failed Now retrying")
 			P.AddTask(func() (interface{}, error) {
-				if a, b := JustDownload(ss, options); b {
+				if a, b := JustDownload(ss, options, callEvent); b {
 					satisfy += a
 				}
 				return nil, nil

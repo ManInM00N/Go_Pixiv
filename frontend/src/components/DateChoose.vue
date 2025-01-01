@@ -11,7 +11,6 @@
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue'
 import { padStart } from "../assets/js/Time.js"
-import emitter from "../assets/js/Pub.js";
 
 const props = defineProps({
     re: {

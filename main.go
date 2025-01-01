@@ -24,6 +24,7 @@ var assets embed.FS
 // logs any error that might occur.
 func main() {
 	ServerInit()
+	CacheInit()
 	go func() {
 		R.Run(":7234")
 	}()

@@ -8,6 +8,7 @@ import (
 	"io"
 	. "main/backend/src/init"
 	"net/http"
+	"time"
 
 	"github.com/tidwall/gjson"
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -112,7 +113,9 @@ func (a *Ctl) startup(ctx context.Context) {
 
 func (a *Ctl) DownloadByPid(text string) bool {
 	InfoLog.Println("Download illust ", text)
-	Download_By_Pid(text)
+	Download_By_Pid(text, func(name string, data ...interface{}) {
+		App.EmitEvent(name, data)
+	})
 	return true
 }
 
@@ -170,14 +173,27 @@ func (a *Ctl) CheckLogin() bool {
 	Request.Header.Set("referer", ref)
 	Request.Header.Set("Cookie", "PHPSESSID="+Setting.Cookie)
 	var res *http.Response
-	for i := 0; i < 3; i++ {
-		res, err = client.Do(Request)
-		if err == nil {
-			break
+	done := make(chan bool)
+	go func() {
+		for i := 0; i < 3; i++ {
+			res, err = client.Do(Request)
+			if err == nil {
+				done <- true
+				return
+			}
 		}
+		done <- false
+	}()
+	select {
+	case <-done:
+		break
+	case <-time.After(15 * time.Second):
+
+		App.EmitEvent("login", "False", "Can't Connect to Pixiv.com timed out. Check your Proxy")
+		return false
 	}
 	if err != nil {
-		App.EmitEvent("login", "False")
+		App.EmitEvent("login", "False", "Can't Connect to Pixiv.com . Check your Proxy")
 		return false
 	}
 	var buffer bytes.Buffer

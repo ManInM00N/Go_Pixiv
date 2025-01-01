@@ -5,10 +5,13 @@ import (
 	"io/ioutil"
 	. "main/backend/src/DAO"
 	"os"
+	"time"
 
 	"github.com/ManInM00N/go-tool/goruntine"
 	"github.com/devchat-ai/gopool"
 	"gopkg.in/yaml.v3"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 var (
@@ -57,4 +60,26 @@ func init() {
 	RankloadPool = gopool.NewGoPool(2, gopool.WithTaskQueueSize(5000))
 	SinglePool = gopool.NewGoPool(1, gopool.WithTaskQueueSize(100))
 	P = gopool.NewGoPool(4, gopool.WithTaskQueueSize(5000))
+}
+
+func CacheInit() {
+	var err error
+	Db, err = gorm.Open(sqlite.Open("cache.db"), &gorm.Config{})
+	if err != nil {
+		DebugLog.Fatalln(err)
+	}
+	err = Db.AutoMigrate(&Cache{})
+	Clean()
+}
+
+func Clean() {
+	tx := Db.Begin()
+	expireDuration := time.Duration(Setting.ExpiredTime) * 24 * time.Hour
+	if err := tx.Where("created_at <= ?", time.Now().Add(-expireDuration)).Delete(&Cache{}).Error; err != nil {
+		tx.Rollback()
+		DebugLog.Println(err)
+	}
+	if err := tx.Commit().Error; err != nil {
+		DebugLog.Println(err)
+	}
 }

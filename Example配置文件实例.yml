@@ -1,9 +1,13 @@
 #使用本地代理
-proxy: "http://127.0.0.1:xxx"
+prefix: "http://127.0.0.1:"
+proxy: "7897"
 #根据本地代理修改: "http://127.0.0.1:xxxxx"   xxxx为你代理使用的端口
 cookie: xxxxxxxxxxxxxx
-minlikelimit: 3500
-r-18: true
+
+useproxy: true
+#是否启用代理
+agelimit: true
+
 downloadposition: Download
 
 # ms(毫秒) & > 1000(After revision)
@@ -14,3 +18,10 @@ downloadinterval: 1000
 
 # ms(毫秒) & > 200(After revision)
 retryinterval: 3000
+
+likelimit: 2000
+# 收藏数限制 ,低于的不下载
+differauthor: false
+# 下载是否以作者id单独区分
+expiredtime: 7
+# 缓存超时时间

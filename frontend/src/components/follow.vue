@@ -76,37 +76,23 @@
 
 <script lang="ts" setup>
 import { ref, onMounted, defineComponent } from "vue";
-import { Events } from "@wailsio/runtime";
-import { PopFollowPool, DownloadByFollowPage } from "../../bindings/main/ctl.js";
-import { LazyImg, Waterfall } from 'vue-waterfall-plugin-next';
+import { DownloadByFollowPage } from "../../bindings/main/ctl.js";
+import { Waterfall } from 'vue-waterfall-plugin-next';
 import axios from 'axios'
 import 'vue-waterfall-plugin-next/dist/style.css'
 import 'animate.css';
 import PicCard from './PicCard.vue';
-import { Picture as IconPicture } from '@element-plus/icons-vue'
 import "../assets/style/variable.less"
 const waterfall = ref(null)
-
-const download = () => {
-    console.log("trying to download", props.pid, props.pid.value)
-    emitter.emit("DownloadByPid", { pid: props.pid })
-}
 defineComponent({
     PicCard,
 })
-
-const props = defineProps([
-    'limit',
-    'form',
-])
 const picitem = ref([])
 const currentPage = ref(1)
 const name = ref("follow")
 const mode = ref("all")
 const wait = ref("falise")
 const loading = ref(true)
-function Download() {
-}
 function FollowMsg() {
     wait.value = true
     loading.value = true
@@ -122,7 +108,6 @@ function FollowMsg() {
         let tmp = []
         for (var i = 0; i < res.data.data.length; i++) {
             picitem.value.push({ pid: res.data.data[i].id, Title: res.data.data[i].title, Author: res.data.data[i].userName, src: res.data.data[i].url, pages: res.data.data[i].countPage, authorId: res.data.data[i].userId, r18: res.data.data[i].r18 })
-
         }
         waterfall.value.renderer()
     }).catch((error) => {
@@ -133,14 +118,6 @@ function FollowMsg() {
         wait.value = false
     })
 }
-Events.On("PopUp", function () {
-    console.log("114514")
-})
-Events.On("UpdateLoadFollow", function (msg) {
-    console.log(msg.data[0], msg, msg.data[0][1])
-})
-Events.On("FollowLoadOk", function () {
-})
 function handlePageChange(Page) {
     console.log("Page changed")
     currentPage.value = Page

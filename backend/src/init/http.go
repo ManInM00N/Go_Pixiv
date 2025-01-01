@@ -134,7 +134,12 @@ func Download(i *Illust, op *Option) bool {
 		}
 	} else {
 	}
-
+	cache := Cache{
+		DownloadID: statics.Int64ToString(i.Pid),
+		Type:       "Illust",
+		CreatedAt:  time.Now(),
+	}
+	Db.FirstOrCreate(&cache, Cache{DownloadID: cache.DownloadID})
 	return true
 }
 
@@ -313,6 +318,7 @@ func GetWebpageData(url, id string, num int) ([]byte, error) { // 请求得到�
 
 // TODO: 作品信息json请求   OK
 // TODO: 多页下载 OK
+
 func work(id int64, mode *Option) (i *Illust, err error) { // 按作品id查找
 	urltail := strconv.FormatInt(id, 10)
 	strid := urltail
@@ -326,7 +332,7 @@ func work(id int64, mode *Option) (i *Illust, err error) { // 按作品id查找
 	Results := gjson.ParseBytes(data)
 	canbedownload := Results.Get("error").Bool()
 	if canbedownload {
-		return nil, &NotGood{}
+		return nil, NotFound
 	}
 
 	jsonmsg := gjson.ParseBytes(data).Get("body") // 读取json内作品及作者id信息
@@ -442,13 +448,18 @@ func GetNovel(id string) (gjson.Result, error) {
 	return v, nil
 }
 
-func JustDownload(pid string, mode *Option) (int, bool) {
+func JustDownload(pid string, mode *Option, callEvent func(name string, data ...interface{})) (int, bool) {
 	illust, err := work(statics.StringToInt64(pid), mode)
 	if ContainMyerror(err) {
 		DebugLog.Println(err)
 		if !mode.OnlyPreview {
 			return 0, true
 		}
+	}
+	if errors.Is(err, NotFound) {
+		InfoLog.Println(pid, err.Error())
+		callEvent("NotFound", pid+" "+err.Error())
+		return 0, false
 	}
 	if illust == nil {
 		DebugLog.Println(pid, " Download failed")
