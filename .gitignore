@@ -6,3 +6,4 @@ frontend/dist
 .task/
 /errorlog/
 /.task/
+/build/appimage/*.AppDir
