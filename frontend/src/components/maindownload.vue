@@ -1,9 +1,11 @@
 <template>
-    <el-container style="margin-left: 15px;">
+    <el-container style="margin-left: 15px;margin-top: 0px">
         <el-main style="
       display: flex;
         flex-direction: column;
         height: 100%;
+        padding-top: 0px;
+        padding-bottom: 10px;
       ">
             <div style="width: 100%;height: 100px;">
                 <el-tabs type="card">
@@ -137,7 +139,7 @@
             </div>
 
         </el-main>
-        <el-footer style="height: 10%;">
+        <el-footer style="height: 20px;">
             <el-text type="danger" id="time">
                 此软件为免费开源，如果是购买获得请退款举报 {{ timeElement }}
             </el-text>

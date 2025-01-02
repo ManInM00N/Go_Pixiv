@@ -52,9 +52,12 @@ func AppInit() {
 			Backdrop:                application.MacBackdropTranslucent,
 			TitleBar:                application.MacTitleBarHiddenInset,
 		},
-		// Windows: application.WindowsWindow{
-		// 	ExStyle: w32.WS_EX_NOREDIRECTIONBITMAP | w32.WS_EX_TOOLWINDOW | w32.WS_EX_TOPMOST,
-		// },
+		//Windows: application.WindowsWindow{
+		//	ExStyle: w32.WS_EX_NOREDIRECTIONBITMAP | w32.WS_EX_TOOLWINDOW | w32.WS_EX_TOPMOST,
+		//},
+		AlwaysOnTop:         false,
+		MinimiseButtonState: application.ButtonEnabled,
+		MaximiseButtonState: application.ButtonDisabled,
 		// Frameless:        true,
 		Width:            1024,
 		Height:           768,
@@ -76,16 +79,21 @@ func AppInit() {
 		fmt.Println(err)
 	}
 	Tray.SetTemplateIcon(b)
+	Tray.SetIcon(b)
 	TrayMenu := App.NewMenu()
 	TrayShow := TrayMenu.Add("显示主界面")
 	TrayShow.OnClick(func(*application.Context) {
 		App.Show()
+		Window.Show()
 	})
 	TrayShutDown := TrayMenu.Add("退出")
 	TrayShutDown.OnClick(func(*application.Context) {
 		App.Quit()
 	})
 	Tray.OnClick(func() {
+		Window.Show()
+	})
+	Tray.OnRightClick(func() {
 		Tray.OpenMenu()
 	})
 	Tray.SetMenu(TrayMenu)

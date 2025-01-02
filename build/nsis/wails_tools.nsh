@@ -5,13 +5,13 @@
 !include "FileFunc.nsh"
 
 !ifndef INFO_PROJECTNAME
-    !define INFO_PROJECTNAME "ManInM00N"
+    !define INFO_PROJECTNAME "GoPixiv"
 !endif
 !ifndef INFO_COMPANYNAME
-    !define INFO_COMPANYNAME ""
+    !define INFO_COMPANYNAME "Go"
 !endif
 !ifndef INFO_PRODUCTNAME
-    !define INFO_PRODUCTNAME "ManInM00N"
+    !define INFO_PRODUCTNAME "GoPixiv"
 !endif
 !ifndef INFO_PRODUCTVERSION
     !define INFO_PRODUCTVERSION "1.1.0"

@@ -11,19 +11,19 @@ Unicode true
 ## > wails build --target windows/amd64 --nsis
 ## Then you can call makensis on this file with specifying the path to your binary:
 ## For a AMD64 only installer:
-## > makensis -DARG_WAILS_AMD64_BINARY=..\..\bin\app.exe
+## > makensis -DARG_WAILS_AMD64_BINARY=..\..\build\bin\app.exe
 ## For a ARM64 only installer:
-## > makensis -DARG_WAILS_ARM64_BINARY=..\..\bin\app.exe
+## > makensis -DARG_WAILS_ARM64_BINARY=..\..\build\bin\app.exe
 ## For a installer with both architectures:
-## > makensis -DARG_WAILS_AMD64_BINARY=..\..\bin\app-amd64.exe -DARG_WAILS_ARM64_BINARY=..\..\bin\app-arm64.exe
+## > makensis -DARG_WAILS_AMD64_BINARY=..\..\build\bin\app-amd64.exe -DARG_WAILS_ARM64_BINARY=..\..\bin\app-arm64.exe
 ####
 ## The following information is taken from the wails_tools.nsh file, but they can be overwritten here.
 ####
-## !define INFO_PROJECTNAME    "my-project" # Default "GoPixiv"
-## !define INFO_COMPANYNAME    "My Company" # Default "ManInM00N"
-## !define INFO_PRODUCTNAME    "My Product Name" # Default "GoPixiv"
-## !define INFO_PRODUCTVERSION "1.0.0"     # Default "1.1.0"
-## !define INFO_COPYRIGHT      "(c) Now, My Company" # Default "© now, ManInM00N"
+## !define INFO_PROJECTNAME    "GoPixiv" # Default "GoPixiv"
+## !define INFO_COMPANYNAME    "ManInM00N" # Default "ManInM00N"
+## !define INFO_PRODUCTNAME    "GoPixiv" # Default "GoPixiv"
+## !define INFO_PRODUCTVERSION "1.1.0"     # Default "1.1.0"
+## !define INFO_COPYRIGHT      "(c) Now, ManInM00N" # Default "© now, ManInM00N"
 ###
 ## !define PRODUCT_EXECUTABLE  "Application.exe"      # Default "${INFO_PROJECTNAME}.exe"
 ## !define UNINST_KEY_NAME     "UninstKeyInRegistry"  # Default "${INFO_COMPANYNAME}${INFO_PRODUCTNAME}"
@@ -71,8 +71,8 @@ ManifestDPIAware true
 #!finalize 'signtool --file "%1"'
 
 Name "${INFO_PRODUCTNAME}"
-OutFile "..\..\bin\${INFO_PROJECTNAME}-${ARCH}-installer.exe" # Name of the installer's file.
-InstallDir "$PROGRAMFILES64\${INFO_COMPANYNAME}\${INFO_PRODUCTNAME}" # Default installing folder ($PROGRAMFILES is Program Files folder).
+OutFile "..\..\build\bin\${INFO_PROJECTNAME}-${ARCH}-installer.exe" # Name of the installer's file.
+InstallDir "$PROGRAMFILES64\${INFO_PRODUCTNAME}" # Default installing folder ($PROGRAMFILES is Program Files folder).
 ShowInstDetails show # This will always show the installation details.
 
 Function .onInit
@@ -98,11 +98,11 @@ SectionEnd
 
 Section "uninstall" 
     !insertmacro wails.setShellContext
-
+    nsExec::ExecToStack "taskkill /F /IM ${PRODUCT_EXECUTABLE}"
+    POP $0
     RMDir /r "$AppData\${PRODUCT_EXECUTABLE}" # Remove the WebView2 DataPath
-
+    # 删除全部
     RMDir /r $INSTDIR
-
     Delete "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk"
     Delete "$DESKTOP\${INFO_PRODUCTNAME}.lnk"
 

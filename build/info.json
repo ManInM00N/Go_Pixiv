@@ -6,7 +6,7 @@
 		"0000": {
 			"ProductVersion": "1.1.0",
 			"CompanyName": "ManInM00N",
-			"FileDescription": "A Go-based crawler for Pixiv",
+			"FileDescription": "GoPixiv Main",
 			"LegalCopyright": "© now, ManInM00N",
 			"ProductName": "GoPixiv",
 			"Comments": "Go编写的Pixiv爬虫"
