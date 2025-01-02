@@ -126,9 +126,9 @@ func Download(i *Illust, op *Option) bool {
 				DebugLog.Println(i.Pid, " Write Failed", err)
 				return false
 			}
-			f.Close()
-			Response.Body.Close()
 			bufWriter.Flush()
+			Response.Body.Close()
+			f.Close()
 			total++
 			time.Sleep(time.Millisecond * time.Duration(Setting.Downloadinterval))
 		}

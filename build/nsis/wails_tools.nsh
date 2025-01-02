@@ -8,7 +8,7 @@
     !define INFO_PROJECTNAME "GoPixiv"
 !endif
 !ifndef INFO_COMPANYNAME
-    !define INFO_COMPANYNAME "Go"
+    !define INFO_COMPANYNAME "ManInM00N"
 !endif
 !ifndef INFO_PRODUCTNAME
     !define INFO_PRODUCTNAME "GoPixiv"
