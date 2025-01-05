@@ -25,7 +25,8 @@ func Cors() gin.HandlerFunc {
 }
 
 func ServerInit() {
-	gin.SetMode(gin.DebugMode)
+	//gin.SetMode(gin.DebugMode)
+	gin.SetMode(gin.ReleaseMode)
 	R = gin.Default()
 	R.Use(Cors())
 	Api := R.Group("/api")

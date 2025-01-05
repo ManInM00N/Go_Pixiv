@@ -232,23 +232,24 @@ Events.On("NotFound", (msg) => {
 Events.On("UpdateProcess", function (newnum) {
     // console.log(newnum, newnum.data[0][0])
     percent.value = newnum.data[0][0];
+    newnum = null
 });
 Events.On("Push", function (newmsg) {
-    console.log(newmsg, newmsg.data[0][0])
+    // console.log(newmsg, newmsg.data[0][0])
     queue.value.push({ value: newmsg.data[0][0] })
 });
 Events.On("Pop", function () {
     queue.value.shift()
 });
 Events.On("UpdateTerminal", function (newmsg) {
-    console.log(newmsg)
+    // console.log(newmsg)
     logs.value.push(newmsg.data[0][0])
     if (logs.value.length > 50) {
         logs.value.pop()
     }
 })
 function Download() {
-    console.log("Downloading ", now.value)
+    // console.log("Downloading ", now.value)
 
     return
 }
