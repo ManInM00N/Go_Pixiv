@@ -30,6 +30,7 @@ func (s *Settings) MsgDetail() string {
 
 func (s *Settings) UpdateSettings(NewSetting Settings) {
 	rwl.Lock()
+	NewSetting.UseProxy = s.UseProxy
 	*s = NewSetting
 	s.LikeLimit = max(s.LikeLimit, 0)
 	_, err := os.Stat(s.Downloadposition)
@@ -39,6 +40,6 @@ func (s *Settings) UpdateSettings(NewSetting Settings) {
 	s.Retry429 = max(s.Retry429, 5000)
 	s.Retryinterval = max(s.Retryinterval, 400)
 	s.Downloadinterval = max(s.Downloadinterval, 400)
-	s.ExpiredTime = max(1, min(366, s.ExpiredTime))
+	s.ExpiredTime = max(7, min(366, s.ExpiredTime))
 	rwl.Unlock()
 }

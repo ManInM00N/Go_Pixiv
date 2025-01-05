@@ -63,6 +63,7 @@ import { ElMessage } from "element-plus";
 import { ElNotification } from 'element-plus'
 import { form, ws } from "../assets/js/configuration.js"
 import { useRoute, useRouter } from "vue-router";
+import {DownloadGIF} from "../assets/js/download.js";
 const theme = ref('dark')
 const set = ref(null)
 const items = ref([
@@ -93,6 +94,10 @@ ElNotification({
     message: "Login ......",
     position: 'bottom-right',
     duration: 3000,
+})
+Events.On("downloadugoira",function(msg){
+  console.log(msg, msg.data[0], msg.data)
+  DownloadGIF(msg.data[0][0],msg.data[0][1],msg.data[0][2],msg.data[0][3],msg.data[0][4])
 })
 Events.On("login", function (msg) {
     console.log(msg, msg.data[0], msg.data)

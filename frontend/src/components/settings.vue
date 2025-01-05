@@ -36,6 +36,11 @@
             <el-form-item label="作品收藏数限制" label-width=150>
                 <el-input type="number" oninput="value=value.replace(/[-]/g,'')" v-model="form.likelimit" />
             </el-form-item>
+          <el-form-item label="缓存过期时间" label-width=150>
+            <el-input type="number" v-model="form.expired_time" >
+              <template #append>day(s)</template>
+            </el-input>
+          </el-form-item>
             <el-form-item>
                 <el-checkbox label="是否启用R-18" v-model="form.r_18" />
                 <el-checkbox label="下载图片对作者分类" v-model="form.differauthor" />
@@ -53,9 +58,7 @@
 <script lang="ts" setup>
 import { Events } from "@wailsio/runtime";
 import { ElNotification } from "element-plus";
-import { form } from "../assets/js/configuration.js"
-import { defineComponent, onMounted, ref, reactive } from "vue";
-import emitter from "../assets/js/Pub.js"
+import {form, updateSettings} from "../assets/js/configuration.js"
 import axios from "axios";
 import { CheckLogin } from "../../bindings/main/ctl.js";
 
@@ -69,42 +72,8 @@ function UpLoad() {
         position: 'bottom-right',
         duration: 3000,
     })
-    axios.post("/apis/api/update", {
-        prefix: form.value.prefix,
-        proxy: form.value.proxy,
-        cookie: form.value.cookie,
-        r_18: form.value.r_18,
-        downloadposition: form.value.downloadposition,
-        likelimit: Number(form.value.likelimit),
-        retry429: form.value.retry429,
-        downloadinterval: form.value.downloadinterval,
-        retryinterval: form.value.retryinterval,
-        differauthor: form.value.differauthor,
-        expired_time: form.value.expired_time,
-        useproxy: form.value.useproxy,
-    }, {
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    }).then(res => {
-        form.value.prefix = res.data.setting.prefix
-        form.value.proxy = res.data.setting.proxy
-        form.value.cookie = res.data.setting.cookie.toString()
-        form.value.r_18 = res.data.setting.r_18
-        form.value.downloadposition = res.data.setting.downloadposition
-        form.value.likelimit = res.data.setting.likelimit
-        form.value.retry429 = res.data.setting.retry429
-        form.value.downloadinterval = res.data.setting.downloadinterval
-        form.value.retryinterval = res.data.setting.retryinterval
-        form.value.differauthor = res.data.setting.differauthor
-        form.value.expired_time = res.data.setting.expired_time
-        form.value.expired_time = res.data.setting.useproxy
-    }).catch(error => {
+    updateSettings()
 
-    }).finally(() => {
-
-        CheckLogin()
-    })
 }
 </script>
 

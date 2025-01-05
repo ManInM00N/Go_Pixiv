@@ -16,6 +16,7 @@ export let form = ref({
     useproxy: false,
     logined: false,
 })
+
 axios.get("http://127.0.0.1:7234/api/getsetting").then(res => {
     console.log(form.value)
     form.value.prefix = res.data.setting.prefix
@@ -59,3 +60,41 @@ const startWebSocket = () => {
     };
 };
 startWebSocket()
+export async function updateSettings(){
+    await axios.post("http://127.0.0.1:7234/api/update", {
+        prefix: form.value.prefix,
+        proxy: form.value.proxy,
+        cookie: form.value.cookie,
+        r_18: form.value.r_18,
+        downloadposition: form.value.downloadposition,
+        likelimit: Number(form.value.likelimit),
+        retry429: form.value.retry429,
+        downloadinterval: form.value.downloadinterval,
+        retryinterval: form.value.retryinterval,
+        differauthor: form.value.differauthor,
+        expired_time: form.value.expired_time,
+        useproxy: form.value.useproxy,
+    }, {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }).then(res => {
+        form.value.prefix = res.data.setting.prefix
+        form.value.proxy = res.data.setting.proxy
+        form.value.cookie = res.data.setting.cookie.toString()
+        form.value.r_18 = res.data.setting.r_18
+        form.value.downloadposition = res.data.setting.downloadposition
+        form.value.likelimit = res.data.setting.likelimit
+        form.value.retry429 = res.data.setting.retry429
+        form.value.downloadinterval = res.data.setting.downloadinterval
+        form.value.retryinterval = res.data.setting.retryinterval
+        form.value.differauthor = res.data.setting.differauthor
+        form.value.expired_time = res.data.setting.expired_time
+        form.value.useproxy = res.data.setting.useproxy
+    }).catch(error => {
+
+    }).finally(() => {
+
+        CheckLogin()
+    })
+}

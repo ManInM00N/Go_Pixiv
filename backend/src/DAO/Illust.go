@@ -56,6 +56,9 @@ type Illust struct {
 	Likecount       int
 	UploadedTime    time.Time
 	IllustType      int
+	Callback        func(name string, data ...interface{})
+	Width           int64
+	Height          int64
 }
 
 func (i *Illust) msg() string {

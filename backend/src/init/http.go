@@ -155,7 +155,7 @@ func GetUrlRefer(url, id string, num int) (string, string) {
 	case FollowInfo:
 		return Base + "ajax/follow_latest/illust?" + url, Base
 	case GifPage:
-		return Base + "ajax/illust/" + id + "ugoira_meta", Base
+		return Base + "ajax/illust/" + id + "/ugoira_meta", Base
 	case NovelInfo:
 		return Base + "ajax/novel/" + id, Base
 	case NovelSeries:
@@ -323,7 +323,7 @@ func work(id int64, mode *Option) (i *Illust, err error) { // 按作品id查找
 	urltail := strconv.FormatInt(id, 10)
 	strid := urltail
 	err = nil
-	data, err2 := GetWebpageData(urltail, strid, 1)
+	data, err2 := GetWebpageData(urltail, strid, IllustInfo)
 	if err2 != nil {
 		err = fmt.Errorf("GetWebpageData error %w", err2)
 		DebugLog.Println("GetWebpageData error", err2)
@@ -347,6 +347,8 @@ func work(id int64, mode *Option) (i *Illust, err error) { // 按作品id查找
 		UserName:    jsonmsg.Get("userName").Str,
 		Likecount:   int(jsonmsg.Get("bookmarkCount").Int()),
 		IllustType:  int(jsonmsg.Get("illustType").Int()),
+		Width:       jsonmsg.Get("width").Int(),
+		Height:      jsonmsg.Get("height").Int(),
 	}
 	for _, tag := range jsonmsg.Get("tags.tags.#.tag").Array() {
 		i.Tags = append(i.Tags, tag.Str)
@@ -387,16 +389,18 @@ func work(id int64, mode *Option) (i *Illust, err error) { // 按作品id查找
 			i.ImageUrl = append(i.ImageUrl, image.URLs.Original)
 		}
 	} else {
-		// data, err2 := GetWebpageData(urltail, strid, GifPage)
-		// if err2 != nil {
-		// 	DebugLog.Println("get ugoira data error", err2)
-		// 	return nil, err
-		// }
-		// jsonbody := gjson.ParseBytes(data).Get("body")
-		// i.Source = jsonbody.Get("originalSrc").String()
-		// i.FileType = jsonbody.Get("mime_type").String()
-		// json.Unmarshal([]byte(jsonbody.Get("frames").String()), &i.Frames)
-		//
+		data, err2 := GetWebpageData(urltail, strid, GifPage)
+		if err2 != nil {
+			DebugLog.Println("get ugoira data error", err2)
+			return nil, err
+		}
+		jsonbody := gjson.ParseBytes(data).Get("body")
+		i.Source = jsonbody.Get("originalSrc").String()
+		i.FileType = jsonbody.Get("mime_type").String()
+		if err2 = json.Unmarshal([]byte(jsonbody.Get("frames").String()), &i.Frames); err2 != nil {
+			return nil, err2
+		}
+
 	}
 
 	return i, err
@@ -464,6 +468,10 @@ func JustDownload(pid string, mode *Option, callEvent func(name string, data ...
 	if illust == nil {
 		DebugLog.Println(pid, " Download failed")
 		return 0, false
+	} else if illust.IllustType == UgoiraType {
+		callEvent("downloadugoira", illust.Pid, illust.Width, illust.Height, illust.Frames, illust.Source)
+		time.Sleep(2 * time.Second)
+		return 1, true
 	}
 	if mode.ShowSingle {
 		InfoLog.Println(pid + " Start download")

@@ -94,22 +94,27 @@ func Download_By_Author(text string, callEvent func(name string, data ...interfa
 
 				temp := k
 				illust, err := work(statics.StringToInt64(temp), options)
+				defer func() {
+					ProcessNow++
+					callEvent("UpdateProcess", 100*ProcessNow/max(ProcessMax, 1))
+				}()
 				if err != nil {
-					// continue
 					if !ContainMyerror(err) {
 						c <- temp
 					}
-					ProcessNow++
+					return nil, nil
+				}
+
+				if illust.IllustType == UgoiraType {
+					callEvent("downloadugoira", illust.Pid, illust.Width, illust.Height, illust.Frames, illust.Source)
+					time.Sleep(10 * time.Second)
 					return nil, nil
 				}
 				if !Download(illust, options) {
 					c <- temp
-					ProcessNow++
 					return nil, nil
 				}
 				satisfy++
-				ProcessNow++
-				callEvent("UpdateProcess", 100*ProcessNow/max(ProcessMax, 1))
 				return nil, nil
 			})
 		}
@@ -205,19 +210,24 @@ func Download_By_Rank(text, Type string, callEvent func(name string, data ...int
 					}
 					temp := k
 					illust, err := work(statics.StringToInt64(temp.String()), options)
+					defer func() {
+						ProcessNow++
+						callEvent("UpdateProcess", 100*ProcessNow/max(ProcessMax, 1))
+					}()
 					if err != nil {
-						// continue
 						if !ContainMyerror(err) {
 							c <- temp.Str
 						}
-						ProcessNow++
-						callEvent("UpdateProcess", 100*ProcessNow/max(ProcessMax, 1))
+						return nil, nil
+					}
+
+					if illust.IllustType == UgoiraType {
+						callEvent("downloadugoira", illust.Pid, illust.Width, illust.Height, illust.Frames, illust.Source)
+						time.Sleep(10 * time.Second)
 						return nil, nil
 					}
 					Download(illust, options)
 					satisfy++
-					ProcessNow++
-					callEvent("UpdateProcess", 100*ProcessNow/max(ProcessMax, 1))
 					return nil, nil
 				})
 			}
@@ -298,20 +308,24 @@ func Download_By_FollowPage(page, Type string, callEvent func(name string, data 
 				}
 				temp := k
 				illust, err := work(statics.StringToInt64(temp.String()), options)
-				if err != nil {
-					// continue
-					if !ContainMyerror(err) {
-						c <- temp.Str
-					}
+				defer func() {
+
 					satisfy++
 					ProcessNow++
 					callEvent("UpdateProcess", 100*ProcessNow/max(ProcessMax, 1))
+				}()
+				if err != nil {
+					if !ContainMyerror(err) {
+						c <- temp.Str
+					}
+					return nil, nil
+				}
+				if illust.IllustType == UgoiraType {
+					callEvent("downloadugoira", illust.Pid, illust.Width, illust.Height, illust.Frames, illust.Source)
+					time.Sleep(10 * time.Second)
 					return nil, nil
 				}
 				Download(illust, options)
-				satisfy++
-				ProcessNow++
-				callEvent("UpdateProcess", 100*ProcessNow/max(ProcessMax, 1))
 				return nil, nil
 			})
 		}

@@ -113,24 +113,29 @@
                         </el-progress>
                         <br>
                         <el-scrollbar class="text Micro" style="height:500px">
-                            <p v-for="item in logs">
-                                {{ item }}
-                            </p>
+                          <div style="height: 60px;margin-left: 10px;justify-items: center;display: flex"  v-for="item in logs">
+
+                          <span style="width: 100%;color:#c9d6df">
+                               {{ item }}
+                          </span>
+                          </div>
                         </el-scrollbar>
                     </el-col>
                     <el-col :span="1" />
                     <el-col :span="7">
                         <el-table :data="queue" :cell-class-name="({ rowIndex }) => {
                             if (rowIndex === 0) {
-                                return 'Xbord'
+                                return 'Xboard'
+                            }else{
+                              return 'WaitBoard'
                             }
-                        }" class="Half_light Tre queueTable" style="height:550px">
+                        }" class="Half_light Tre queueTable" style="height:550px;display: flex">
                             <template #empty>
                                 No Task
                             </template>
-                            <el-table-column label="TaskQueue" prop="value" style="height:60px;">
+                            <el-table-column label="TaskQueue" height="40" prop="value" style="padding-top: 4px;padding-bottom: 4px;" align="center" >
                                 <template #default="scope">
-                                    <span style="color:#c9d6df">{{ scope.row.value }}</span>
+                                    <span style="color:#c9d6df;height:85px;">{{ scope.row.value }}</span>
                                 </template>
                             </el-table-column>
                         </el-table>

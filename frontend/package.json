@@ -23,6 +23,8 @@
         "vue-router": "^4.5.0",
         "axios": "^1.7.9",
         "vue-waterfall-plugin-next": "^2.6.4",
-        "animate.css": "^4.1.1"
+        "animate.css": "^4.1.1",
+        "gif.js":"^0.2.0",
+        "jszip": "^3.10.1"
     }
 }
