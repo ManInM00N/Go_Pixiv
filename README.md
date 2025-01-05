@@ -17,9 +17,10 @@
 - [ ] 以图搜图 :alien:
 - [x] 托盘化 :zap:
 - [x] 小说下载功能 :monocle_face:
-- GIF下载暂时无法实现,目前找不到一个比较好的办法将返回的图片制作成GIF :clown_face:
+- [ ] 小说系列下载功能 :wheelchair:
+- [x] GIF下载功能 :tada:
 
-# ！！！不提供代理
+## ！！！不提供代理
 
 代理问题需要自己解决
 关注页面需要有自己的pixiv账号(cookie),若个人行为导致账号封禁概不负责<br>
@@ -37,6 +38,8 @@
 
 **proxy**:代理ip后面的端口，可以从你vpn的配置中得到，这个不会配的话我无能为力
 
+**useproxy** ：是否使用代理
+
 **cookie**:打开登录后的pixiv网页，在电脑网页按F12，从应用程序一栏中Cookie的PHPSESSID的值
 
 **r-18**:true启用，false禁用   懂得都懂，不启用是无法看到r-18的图片的
@@ -50,3 +53,19 @@
 **downloadinterval**: 下载间隔时间
 
 **retryinterval**: 请求重试间隔
+
+**expired_time**: 缓存过期时间
+
+## Development
+You should Install Go >= 1.23.1 and Nodejs 
+
+For wails3 dependencies
+```sh
+    go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+```
+
+Run
+```sh
+    wails3 task dev
+```
+for more details see Taskfile.yml

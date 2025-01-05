@@ -22,7 +22,7 @@ Unicode true
 ## !define INFO_PROJECTNAME    "GoPixiv" # Default "GoPixiv"
 ## !define INFO_COMPANYNAME    "ManInM00N" # Default "ManInM00N"
 ## !define INFO_PRODUCTNAME    "GoPixiv" # Default "GoPixiv"
-## !define INFO_PRODUCTVERSION "1.1.0"     # Default "1.1.0"
+## !define INFO_PRODUCTVERSION "1.2.0"     # Default "1.2.0"
 ## !define INFO_COPYRIGHT      "(c) Now, ManInM00N" # Default "© now, ManInM00N"
 ###
 ## !define PRODUCT_EXECUTABLE  "Application.exe"      # Default "${INFO_PROJECTNAME}.exe"
