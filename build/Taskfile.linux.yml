@@ -105,7 +105,7 @@ tasks:
     vars:
       APP_NAME: '{{.APP_NAME}}'
       EXEC: '{{.APP_NAME}}'
-      ICON: 'appicon'
+      ICON: '{{.APP_NAME}}'
       CATEGORIES: 'Development;'
       OUTPUTFILE: '{{.ROOT_DIR}}/build/appimage/{{.APP_NAME}}.desktop'
 
