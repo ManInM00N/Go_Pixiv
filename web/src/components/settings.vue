@@ -60,7 +60,7 @@ import { Events } from "@wailsio/runtime";
 import { ElNotification } from "element-plus";
 import {form, updateSettings} from "../assets/js/configuration.js"
 import axios from "axios";
-import { CheckLogin } from "../../bindings/main/internal/pixiv/ctl.js";
+import { CheckLogin } from "../../bindings/main/internal/pixivlib/ctl.js";
 
 function UpLoad() {
     console.log(form, form.value)

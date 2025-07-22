@@ -1,6 +1,6 @@
 import axios from "axios";
 import { ref } from "vue"
-import { CheckLogin } from "../../../bindings/main/internal/pixiv/ctl.js";
+import { CheckLogin } from "../../../bindings/main/internal/pixivlib/ctl.js";
 export let form = ref({
     prefix: '',
     proxy: '',

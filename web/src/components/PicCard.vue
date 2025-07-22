@@ -72,7 +72,7 @@
 <script lang="ts" setup>
 import { onMounted, ref } from "vue";
 import noProfileImg from '../assets/images/NoR18.png';
-import { DownloadByPid } from "../../bindings/main/internal/pixiv/ctl.js";
+import { DownloadByPid } from "../../bindings/main/internal/pixivlib/ctl.js";
 const name = "PicCard"
 import { form } from "../assets/js/configuration.js"
 import { LazyImg } from "vue-waterfall-plugin-next";

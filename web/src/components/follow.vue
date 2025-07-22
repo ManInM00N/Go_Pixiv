@@ -102,7 +102,7 @@
 
 <script lang="ts" setup>
 import { ref, onMounted, defineComponent } from "vue";
-import { DownloadByFollowPage } from "../../bindings/main/internal/pixiv/ctl.js";
+import { DownloadByFollowPage } from "../../bindings/main/internal/pixivlib/ctl.js";
 import {DownloadFollow} from "../assets/js/download.js"
 import { Waterfall } from 'vue-waterfall-plugin-next';
 import axios from 'axios'

@@ -1,5 +1,5 @@
 import axios from "axios";
-import {DownloadByFollowPage} from "../../../bindings/main/internal/pixiv/ctl.js";
+import {DownloadByFollowPage} from "../../../bindings/main/internal/pixivlib/ctl.js";
 import GIF from "gif.js"
 import JSZip from "jszip"
 import {ElNotification} from "element-plus";

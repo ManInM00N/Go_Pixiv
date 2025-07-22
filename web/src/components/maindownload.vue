@@ -161,7 +161,7 @@ import { timeElement } from "../assets/js/Time.js"
 import { Events } from "@wailsio/runtime"
 const dateSelect = ref(null)
 import { ws, form } from "../assets/js/configuration.js";
-import { DownloadByPid, DownloadByRank, DownloadByNovelId, DownloadByAuthorId } from "../../bindings/main/internal/pixiv/ctl.js";
+import { DownloadByPid, DownloadByRank, DownloadByNovelId, DownloadByAuthorId } from "../../bindings/main/internal/pixivlib/ctl.js";
 onMounted(() => {
     ws.value.onmessage = (event) => {
         handleMessage(JSON.parse(event.data));

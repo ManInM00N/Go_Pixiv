@@ -14,7 +14,7 @@ import * as application$0 from "../../../github.com/wailsapp/wails/v3/pkg/applic
  * @returns {$CancellablePromise<boolean>}
  */
 export function CheckLogin() {
-    return $Call.ByID(1845094449);
+    return $Call.ByID(2311033350);
 }
 
 /**
@@ -22,7 +22,7 @@ export function CheckLogin() {
  * @returns {$CancellablePromise<boolean>}
  */
 export function DownloadByAuthorId(text) {
-    return $Call.ByID(1758799759, text);
+    return $Call.ByID(898696052, text);
 }
 
 /**
@@ -31,7 +31,7 @@ export function DownloadByAuthorId(text) {
  * @returns {$CancellablePromise<boolean>}
  */
 export function DownloadByFollowPage(page, Type) {
-    return $Call.ByID(2349293743, page, Type);
+    return $Call.ByID(3071205656, page, Type);
 }
 
 /**
@@ -39,7 +39,7 @@ export function DownloadByFollowPage(page, Type) {
  * @returns {$CancellablePromise<boolean>}
  */
 export function DownloadByNovelId(text) {
-    return $Call.ByID(2868232004, text);
+    return $Call.ByID(2543971205, text);
 }
 
 /**
@@ -47,7 +47,7 @@ export function DownloadByNovelId(text) {
  * @returns {$CancellablePromise<boolean>}
  */
 export function DownloadByPid(text) {
-    return $Call.ByID(65836758, text);
+    return $Call.ByID(2568205727, text);
 }
 
 /**
@@ -56,7 +56,7 @@ export function DownloadByPid(text) {
  * @returns {$CancellablePromise<boolean>}
  */
 export function DownloadByRank(text, Type) {
-    return $Call.ByID(718473779, text, Type);
+    return $Call.ByID(1546644368, text, Type);
 }
 
 /**
@@ -64,12 +64,12 @@ export function DownloadByRank(text, Type) {
  * @returns {$CancellablePromise<void>}
  */
 export function RegisterService(app) {
-    return $Call.ByID(115466956, app);
+    return $Call.ByID(4158062649, app);
 }
 
 /**
  * @returns {$CancellablePromise<string>}
  */
 export function ReturnString() {
-    return $Call.ByID(2374973363);
+    return $Call.ByID(3037929488);
 }

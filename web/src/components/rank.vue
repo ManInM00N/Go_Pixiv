@@ -74,7 +74,7 @@
 import DateChoose from "./DateChoose.vue";
 import PicCard from "./PicCard.vue";
 import { defineComponent, onMounted, ref } from "vue";
-import { DownloadByRank } from "../../bindings/main/internal/pixiv/ctl.js";
+import { DownloadByRank } from "../../bindings/main/internal/pixivlib/ctl.js";
 import emitter from "../assets/js/Pub.js";
 import { Download } from "@element-plus/icons-vue";
 import { LazyImg, Waterfall } from 'vue-waterfall-plugin-next'
