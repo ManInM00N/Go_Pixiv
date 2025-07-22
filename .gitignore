@@ -1,6 +1,6 @@
 build/bin
 node_modules
-frontend/dist
+web/dist
 *.log
 /.idea/
 .task/

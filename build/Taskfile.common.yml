@@ -11,9 +11,9 @@ tasks:
     cmds:
       - go mod tidy
 
-  install:frontend:deps:
-    summary: Install frontend dependencies
-    dir: frontend
+  install:web:deps:
+    summary: Install web dependencies
+    dir: web
     sources:
       - package.json
       - package-lock.json
@@ -25,29 +25,29 @@ tasks:
     cmds:
       - npm install
 
-  build:frontend:
-    summary: Build the frontend project
-    dir: frontend
+  build:web:
+    summary: Build the web project
+    dir: web
     sources:
       - "**/*"
     generates:
       - dist/*
     deps:
-      - task: install:frontend:deps
+      - task: install:web:deps
       - task: generate:bindings
     cmds:
       - npm run build -q
 
   generate:bindings:
-    summary: Generates bindings for the frontend
+    summary: Generates bindings for the web
     sources:
       - "**/*.go"
       - go.mod
       - go.sum
     generates:
-      - "frontend/bindings/**/*"
+      - "web/bindings/**/*"
     cmds:
-      - wails3 generate bindings -f '{{.BUILD_FLAGS}}'{{if .UseTypescript}} -ts{{end}}
+      - wails3 generate bindings -f '{{.BUILD_FLAGS}}'{{if .UseTypescript}} -ts{{end}} -d './web/bindings'
 
   generate:icons:
     summary: Generates Windows `.ico` and Mac `.icns` files from an image
@@ -60,11 +60,11 @@ tasks:
     cmds:
       - wails3 generate icons -input appicon.png
 
-  dev:frontend:
-    summary: Runs the frontend in development mode
-    dir: frontend
+  dev:web:
+    summary: Runs the web in development mode
+    dir: web
     deps:
-      - task: install:frontend:deps
+      - task: install:web:deps
     cmds:
       - npm run dev -- --port {{.VITE_PORT}} --strictPort
 

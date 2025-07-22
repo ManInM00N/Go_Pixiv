@@ -1,0 +1,12 @@
+prefix: 'http://127.0.0.1:'
+proxy: "7897"
+cookie: 26338360_GmxXe7TDfo1iNmsa05iI07EhxLNWiCTr
+agelimit: true
+downloadposition: Download
+likelimit: 4444
+retry429: 5444
+downloadinterval: 555
+retryinterval: 1022
+differauthor: false
+expiredtime: 15
+useproxy: true

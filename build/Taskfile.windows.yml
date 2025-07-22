@@ -8,7 +8,7 @@ tasks:
     summary: Builds the application for Windows
     deps:
       - task: common:go:mod:tidy
-      - task: common:build:frontend
+      - task: common:build:web
       - task: common:generate:icons
       - task: generate:syso
     cmds:

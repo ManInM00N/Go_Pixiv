@@ -8,7 +8,7 @@ tasks:
     summary: Creates a production build of the application
     deps:
       - task: common:go:mod:tidy
-      - task: common:build:frontend
+      - task: common:build:web
       - task: common:generate:icons
     cmds:
       - go build {{.BUILD_FLAGS}} -o {{.BIN_DIR}}/{{.APP_NAME}}
