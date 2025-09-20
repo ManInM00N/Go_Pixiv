@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/events"
-	"main/pkg/utils"
 )
 
 var (
@@ -67,12 +66,9 @@ func AppInit(fs *embed.FS) {
 		//	return false
 		//},
 	})
-	Window.OnWindowEvent(events.Windows.WindowClosing, func(e *application.WindowEvent) {
-		fmt.Println(123456)
-		utils.DebugLog.Println(114514)
+	Window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
 		Window.Hide()
 		e.Cancel()
-
 	})
 	Tray := App.SystemTray.New()
 	b, err := fs.ReadFile("web/dist/appicon.png")
