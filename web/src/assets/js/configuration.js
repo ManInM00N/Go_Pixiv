@@ -1,6 +1,7 @@
 import axios from "axios";
 import { ref } from "vue"
 import { CheckLogin } from "../../../bindings/main/internal/pixivlib/ctl.js";
+import {ElNotification} from "element-plus";
 export let form = ref({
     prefix: '',
     proxy: '',
@@ -95,8 +96,15 @@ export async function updateSettings(){
         console.log(res)
     }).catch(error => {
         console.log(error)
+        ElNotification({
+            type: "error",
+            title: "保存失败",
+            message: "error",
+            position: 'bottom-right',
+            duration: 5000,
+        })
     }).finally(() => {
 
-        CheckLogin()
+        // CheckLogin()
     })
 }

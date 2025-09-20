@@ -1,153 +1,258 @@
 <template>
-    <el-aside name="menu" id="menu" class="asidemenu" width="60px">
-        <el-menu default-active="0" background-color="#626369" :theme="theme" class="vertical-menu" mode="vertical"
-            :router="true" @select="handleMenuSelect">
-            <section class="top-items" height=240>
-                <el-menu-item v-for="(item, idx) in items" :key="item.key" :id="item.id" :index="item.id"
-                    :route="item.index" class="menu_item" :disabled="!item.logined && !form.logined"
-                    :limit="form['r-18']" style="padding-left: 18px;">
+  <div class="app-container">
+    <!-- 左侧导航栏 -->
+    <aside class="sidebar-container">
+      <div class="sidebar-content">
+        <!-- Logo区域 -->
+        <div class="logo-section">
+          <div class="logo-icon">
+            <el-icon><img src="../assets/images/icon.ico" width="40" height="40"/></el-icon>
+          </div>
+          <div class="logo-text">Pixiv</div>
+        </div>
 
-                    <el-tooltip :content="item.key" :show-arrow=false placement="bottom-start" offset=2>
-                        <el-container class="item_body">
-                            <el-icon size="30" class="item_icon">
-                                <component :is="item.iconmsg" />
-                            </el-icon>
-                        </el-container>
-                    </el-tooltip>
-                </el-menu-item>
-            </section>
-            <section class="placeholder-item "></section>
-            <section class="bottom-items">
-                <el-menu-item :key="userself.key" :id="userself.id" :index="userself.id" :route="userself.index"
-                    class="menu_item" style="padding-left: 18px;">
+        <!-- 主要导航 -->
+        <nav class="main-navigation">
+          <el-menu
+              :default-active="activeIndex"
+              class="sidebar-menu"
+              mode="vertical"
+              :router="true"
+              @select="handleMenuSelect"
+              :collapse="false"
+              text-color="#e2e8f0"
+              active-text-color="#ffffff"
+              background-color="transparent"
+          >
+            <el-menu-item
+                v-for="item in items"
+                :key="item.id"
+                :index="item.id"
+                :route="item.index"
+                :disabled="!item.logined && !form.logined"
+                class="nav-item"
+            >
+              <div class="nav-item-content">
+                <div class="nav-icon">
+                  <el-icon :size="22">
+                    <component :is="item.iconmsg" />
+                  </el-icon>
+                </div>
+                <span class="nav-text">{{ item.key }}</span>
+                <div v-if="!item.logined && !form.logined" class="lock-indicator">
+                  <el-icon :size="14"><Lock /></el-icon>
+                </div>
+              </div>
+            </el-menu-item>
+          </el-menu>
+        </nav>
 
-                    <el-tooltip :content="userself.key" :show-arrow=false placement="bottom-start" offset='2'>
-                        <el-container class="item_body">
-                            <el-icon size="30" class="item_icon">
-                                <Tools />
-                            </el-icon>
-                        </el-container>
-                    </el-tooltip>
-                </el-menu-item>
-            </section>
-        </el-menu>
+        <!-- 用户状态指示 -->
+        <div class="user-status">
+          <div class="status-indicator" :class="{ 'online': form.logined }">
+            <div class="status-dot"></div>
+            <span class="status-text">
+                {{ form.logined ? '已登录' : '未登录' }}
+            </span>
+          </div>
+        </div>
 
-    </el-aside>
-    <el-main class="View glass" id="View" name="View"
-        style="padding-right: 5px;padding-left: 5px;padding-bottom: 0px;padding-top: 0px;">
-        <section
-            style="width: 100%;height: calc(100% - 40px); margin-left: 15px; margin-right: 15px;margin-top: 20px;margin-bottom: 20px;">
-            <section style="width:100%">
+        <!-- 底部设置 -->
+        <div class="bottom-section">
+          <el-menu
+              class="bottom-menu"
+              mode="vertical"
+              :router="true"
+              text-color="#94a3b8"
+              active-text-color="#ffffff"
+              background-color="transparent"
+          >
+            <el-menu-item
+                :index="userself.id"
+                :route="userself.index"
+                class="settings-item"
+            >
+              <div class="nav-item-content">
+                <div class="nav-icon">
+                  <el-icon :size="22">
+                    <Setting />
+                  </el-icon>
+                </div>
+                <span class="nav-text">设置</span>
+              </div>
+            </el-menu-item>
+          </el-menu>
 
-                <router-view v-slot="{ Component, route, Path }">
-                    <keep-alive v-if="route.meta.keepAlive">
-                        <component :is="Component" :form="form" :ws="ws" />
-                    </keep-alive>
-                    <component v-else :is="Component" />
+          <!-- 版本信息 -->
+          <div class="version-info">
+            <a href="https://github.com/ManInM00N/Go_Pixiv/releases" target="_blank">v1.3.0</a>
+          </div>
+        </div>
+      </div>
+    </aside>
 
-                </router-view>
-            </section>
-        </section>
-        <!--    <keep-alive>-->
-        <!--      <router-view v-if="$route.meta.keepAlive"></router-view>-->
-        <!--    </keep-alive>-->
-        <!--    <router-view v-if="!$route.meta.keepAlive"></router-view>-->
-    </el-main>
+    <!-- 主内容区域 -->
+    <main class="main-content">
+      <div class="content-wrapper">
+        <router-view v-slot="{ Component, route }">
+          <transition name="fade-slide" mode="out-in">
+            <keep-alive v-if="route.meta.keepAlive">
+              <component
+                  :is="Component"
+                  :form="form"
+                  :ws="ws"
+                  :key="route.path"
+              />
+            </keep-alive>
+            <component
+                v-else
+                :is="Component"
+                :key="route.path"
+            />
+          </transition>
+        </router-view>
+      </div>
+    </main>
+    <el-backtop
+        target=".main-content"
+        :bottom="30"
+        :right="30"
+        :visibility-height="300"
+    >
+      <div class="back-to-top-btn">
+        <el-icon :size="18"><ArrowUp /></el-icon>
+      </div>
+    </el-backtop>
+
+    <div class="notification-container" id="notification-container"></div>
+    <PicMask/>
+  </div>
 </template>
-
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import { Events } from "@wailsio/runtime";
-import axios from "axios";
-import { ElMessage } from "element-plus";
-import { ElNotification } from 'element-plus'
+import { ElMessage, ElNotification } from "element-plus";
+import {
+  HomeFilled,
+  StarFilled,
+  Histogram,
+  Search,
+  Setting,
+  PictureFilled,
+  Lock,
+  ArrowUp
+} from "@element-plus/icons-vue";
 import { form, ws } from "../assets/js/configuration.js"
 import { useRoute, useRouter } from "vue-router";
-import {DownloadGIF} from "../assets/js/download.js";
+import { DownloadGIF } from "../assets/js/download.js";
+import axios from "axios";
+import PicMask from "./PicMask.vue";
+
+// 响应式数据
+const activeIndex = ref('0')
+const route = useRoute()
+const router = useRouter()
 const theme = ref('dark')
 const set = ref(null)
 const items = ref([
-    { id: '0', iconmsg: "HomeFilled", key: "maindownload", index: "/", logined: true },
-    { id: '1', iconmsg: "StarFilled", key: "follow", index: "/follow", logined: false },
-    { id: '2', iconmsg: "Histogram", key: "rank", index: "/rank", logined: true },
-    { id: '3', iconmsg: "Search", key: "search", index: "/search", logined: true },
+    { id: '0', iconmsg: "HomeFilled", key: "下载中心", index: "/", logined: true, description: "管理下载任务"},
+    { id: '1', iconmsg: "StarFilled", key: "关注作品", index: "/follow", logined: false,description: "已关注用户的作品" },
+    { id: '2', iconmsg: "Histogram", key: "排行榜", index: "/rank", logined: true,description: "热门作品排行" },
+    { id: '3', iconmsg: "Search", key: "搜索", index: "/search", logined: true, description: "搜索作品和作者" },
 ])
-const activeIndex = ref('0')
 const userself = ref({
     // id:6,key: "user",index:"/user"
-    id: '4', iconmsg: "Tools", key: "settings", index: "/setting", logined: true
+    id: '4', iconmsg: "Setting", key: "设置", index: "/setting", logined: true
 })
 const wait = ref(false)
-const route = useRoute()
-const router = useRouter()
+
+// 计算当前路由对应的菜单项
+const currentMenuItem = computed(() => {
+  return items.value.find(item => item.index === route.path) || userself.value
+})
+
+// 菜单选择处理
+function handleMenuSelect(index) {
+  activeIndex.value = index
+  console.log("菜单切换:", index)
+}
+
 function waitchange(val) {
     wait.value = val
 }
-function handleMenuSelect(index) {
-    activeIndex.value = index
-    console.log("ee", index, activeIndex.value)
 
-}
-ElNotification({
-    type: "info",
-    title: "INFO",
-    message: "Login ......",
-    position: 'bottom-right',
-    duration: 3000,
-})
 Events.On("downloadugoira",function(msg){
-  console.log(msg, msg.data[0], msg.data)
+  console.log("GIF下载事件:", msg.data)
   DownloadGIF(msg.data[0][0],msg.data[0][1],msg.data[0][2],msg.data[0][3],msg.data[0][4])
 })
 Events.On("login", function (msg) {
-    console.log(msg, msg.data[0], msg.data)
-    if (msg.data[0] === "True") {
-        form.value.logined = true
-        ElNotification({
-            title: "Login succeed",
-            type: "success",
-            message: "Enjoy 🥳",
-            position: 'bottom-right',
-            duration: 3000,
-        })
-    } else {
-        ElNotification({
-            title: "Login failed",
-            type: "warning",
-            message: msg.data[1] + " 😭",
-            position: 'bottom-right',
-            duration: 5000,
-        })
-    }
-    console.log("Login state: ", msg.data[0], "r18 mod: ", form.value.r_18,)
+  console.log("登录事件:", msg.data)
+  if (msg.data[0] === "True") {
+    form.value.logined = true
+    ElNotification({
+      title: "登录成功",
+      type: "success",
+      message: "欢迎回来！现在可以访问所有功能",
+      position: 'bottom-right',
+      duration: 3000,
+    })
+  } else {
+    form.value.logined = false
+    ElNotification({
+      title: "登录失败",
+      type: "warning",
+      message: msg.data[1] || "请检查Cookie配置",
+      position: 'bottom-right',
+      duration: 5000,
+    })
+  }
 })
 onMounted(function () {
-    console.log(route.path)
+
+    console.log("当前路径:", route.path)
     localStorage.setItem("cookie", form.value.cookie)
     console.log(localStorage.getItem("cookie"))
-    // activeIndex.value = 1
-    // startWebSocket()
+    // 根据当前路由设置活跃菜单项
+    const currentItem = items.value.find(item => item.index === route.path)
+    if (currentItem) {
+      activeIndex.value = currentItem.id
+    } else if (route.path === userself.value.index) {
+      activeIndex.value = userself.value.id
+    }
 
+    // 初始登录检查通知
+    ElNotification({
+      type: "info",
+      title: "系统启动",
+      message: "正在检查登录状态...",
+      position: 'bottom-right',
+      duration: 2000,
+    })
 })
 
 </script>
 
-<style lang="less" scoped>
-@import "src/assets/style/color.less";
-@import "src/assets/style/menu.less";
 
-.tempheight {
-    height: 60px
+<style lang="less" scoped>
+@import "../assets/style/color.less";
+@import "../assets/style/menu.less";
+
+:deep(.el-menu-item) {
+  border-radius: 12px !important;
+  margin-bottom: 4px;
+
+  &:hover {
+    background-color: rgba(100, 116, 139, 0.1) !important;
+  }
+
+  &.is-active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: #ffffff !important;
+  }
 }
 
-.glass {
-    background-color: rgba(89, 89, 89, 0.15);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    box-shadow: rgba(14, 14, 14, 0.19) 0px 6px 15px 0px;
-    -webkit-box-shadow: rgba(14, 14, 14, 0.19) 0px 6px 15px 0px;
-    border-radius: 0px;
-    -webkit-border-radius: 0px;
-    color: rgb(128, 128, 128);
+:deep(.el-backtop) {
+  background: transparent !important;
+  box-shadow: none !important;
 }
 </style>
