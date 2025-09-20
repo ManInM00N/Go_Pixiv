@@ -1,7 +1,8 @@
 package test
 
 import (
-	. "main/init"
+	_ "main/init"
+	. "main/internal/pixivlib/handler"
 	"testing"
 )
 

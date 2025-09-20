@@ -59,9 +59,10 @@ func PreviewUrl(c *gin.Context) {
 		utils.DebugLog.Println("request failed")
 		return
 	}
-
-	// 设置 Referer 头
+	set := configs.NowSetting()
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0")
 	req.Header.Set("Referer", "https://www.pixiv.net")
+	req.Header.Set("Cookie", "PHPSESSID="+set.Cookie)
 	var resp *http.Response
 	ok = false
 	for i := 0; i < 5; i++ {
@@ -82,7 +83,57 @@ func PreviewUrl(c *gin.Context) {
 		return
 	}
 
-	// 将目标图片的内容和 Content-Type 返回给前端
+	c.Header("Content-Type", resp.Header.Get("Content-Type"))
+	c.Status(resp.StatusCode)
+	_, err = io.Copy(c.Writer, resp.Body)
+	if err != nil {
+		utils.DebugLog.Println(err.Error())
+		return
+	}
+}
+
+func GetIllustPage(c *gin.Context) {
+	pid, ok := c.GetQuery("pid")
+	if !ok && pid != "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
+		utils.DebugLog.Println("param error")
+		return
+	}
+	client := GetClient()
+
+	req, err := http.NewRequest("GET", "https://www.pixiv.net/ajax/illust/"+pid+"/pages", nil)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create request"})
+		utils.DebugLog.Println(req.URL.String())
+		utils.DebugLog.Println("request failed", err)
+		return
+	}
+
+	// 设置 Referer 头
+	set := configs.NowSetting()
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0")
+	req.Header.Set("Referer", "https://www.pixiv.net")
+	req.Header.Set("Cookie", "PHPSESSID="+set.Cookie)
+	var resp *http.Response
+	ok = false
+	for i := 0; i < 5; i++ {
+		resp, err = client.Do(req)
+		if err == nil {
+			ok = true
+			break
+		}
+	}
+	defer func() {
+		if resp != nil && resp.Body != nil {
+			resp.Body.Close()
+		}
+	}()
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch image"})
+		utils.DebugLog.Println("request failed")
+		return
+	}
+
 	c.Header("Content-Type", resp.Header.Get("Content-Type"))
 	c.Status(resp.StatusCode)
 	_, err = io.Copy(c.Writer, resp.Body)

@@ -57,11 +57,11 @@
 **expired_time**: 缓存过期时间
 
 ## Development
-You should Install Go >= 1.23.1 and Nodejs 
+You should Install Go >= 1.24.5 and Node.js 
 
 For wails3 dependencies
 ```sh
-    go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+    go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-alpha.12
 ```
 
 Run

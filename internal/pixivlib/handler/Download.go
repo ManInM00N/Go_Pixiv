@@ -24,7 +24,8 @@ import (
 )
 
 const (
-	IllustInfo = 1 << iota
+	IllustInfo  = 1
+	IllustPages = iota + 1
 	AuthorInfo
 	RankInfo
 	FollowInfo
@@ -149,6 +150,8 @@ func GetUrlRefer(url, id string, num int) (string, string) {
 	switch num {
 	case IllustInfo:
 		return Base + "ajax/illust/" + url, Base + "artworks/" + id
+	case IllustPages:
+		return Base + "ajax/illust/" + url + "/pages", Base + "artworks/" + id
 	case AuthorInfo:
 		return Base + "ajax/user/" + url + "/profile/all", Base + "member.php?id=" + id
 	case RankInfo:
@@ -407,7 +410,7 @@ func work(id int64, mode *Option) (i *Illust, err error) { // 按作品id查找
 }
 
 func GetAuthor(id int64) (map[string]gjson.Result, error) {
-	data, err := GetWebpageData(strconv.FormatInt(id, 10), strconv.FormatInt(id, 10), 2)
+	data, err := GetWebpageData(strconv.FormatInt(id, 10), strconv.FormatInt(id, 10), AuthorInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -419,13 +422,14 @@ func GetAuthor(id int64) (map[string]gjson.Result, error) {
 func GetRank(option *Option) (gjson.Result, error) {
 	option.Msg()
 	// DebugLog.Println("https://www.pixiv.net/ranking.php?format=json" + option.Suffix)
-	data, err := GetWebpageData(option.Suffix, "", 4)
+	data, err := GetWebpageData(option.Suffix, "", RankInfo)
 	if err != nil {
 		// println("get failed: ", err.Error())
 		return gjson.Result{}, err
 	}
 	// arr := gjson.ParseBytes(data).Get("contents.#.illust_id")
 	arr := gjson.ParseBytes(data).Get("contents")
+	utils.DebugLog.Println(arr)
 	return arr, nil
 }
 
@@ -433,7 +437,7 @@ func GetFollow(option *Option) (gjson.Result, error) {
 	option.Msg()
 	// https://www.pixiv.net/ajax/follow_latest/illust?&mode=all&p=1
 	utils.InfoLog.Println("https://www.pixiv.net/ajax/follow_latest/illust?" + option.Suffix)
-	data, err := GetWebpageData(option.Suffix, "", 8)
+	data, err := GetWebpageData(option.Suffix, "", FollowInfo)
 	if err != nil {
 		utils.DebugLog.Println("get failed: ", err.Error())
 		return gjson.Result{}, err

@@ -4,6 +4,8 @@ import (
 	"embed"
 	"fmt"
 	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/wailsapp/wails/v3/pkg/events"
+	"main/pkg/utils"
 )
 
 var (
@@ -26,7 +28,7 @@ func AppInit(fs *embed.FS) {
 			Handler: application.AssetFileServerFS(fs),
 		},
 		Mac: application.MacOptions{
-			ApplicationShouldTerminateAfterLastWindowClosed: true,
+			ApplicationShouldTerminateAfterLastWindowClosed: false,
 		},
 		Windows: application.WindowsOptions{
 			WebviewUserDataPath: "",
@@ -55,14 +57,22 @@ func AppInit(fs *embed.FS) {
 		Height:           768,
 		MinWidth:         1024,
 		MinHeight:        768,
-		MaxWidth:         768,
+		MaxWidth:         1024,
 		MaxHeight:        768,
 		BackgroundColour: application.NewRGBA(233, 233, 233, 128),
 		URL:              "/",
+
 		//ShouldClose: func(window *application.WebviewWindow) bool {
 		//	window.Hide()
 		//	return false
 		//},
+	})
+	Window.OnWindowEvent(events.Windows.WindowClosing, func(e *application.WindowEvent) {
+		fmt.Println(123456)
+		utils.DebugLog.Println(114514)
+		Window.Hide()
+		e.Cancel()
+
 	})
 	Tray := App.SystemTray.New()
 	b, err := fs.ReadFile("web/dist/appicon.png")
@@ -88,4 +98,5 @@ func AppInit(fs *embed.FS) {
 		Tray.OpenMenu()
 	})
 	Tray.SetMenu(TrayMenu)
+
 }

@@ -37,7 +37,8 @@ func (s *Settings) UpdateSettings(NewSetting Settings) {
 	rwl.Lock()
 	defer rwl.Unlock()
 	tmp := *s
-	tmp.UseProxy = s.UseProxy
+	tmp.UseProxy = NewSetting.UseProxy
+	tmp.Proxy = NewSetting.Proxy
 	tmp.LikeLimit = max(NewSetting.LikeLimit, 0)
 	_, err := os.Stat(NewSetting.Downloadposition)
 	if err != nil {
@@ -48,13 +49,14 @@ func (s *Settings) UpdateSettings(NewSetting Settings) {
 	tmp.LikeLimit = NewSetting.LikeLimit
 	tmp.Cookie = NewSetting.Cookie
 	tmp.Retry429 = max(NewSetting.Retry429, 5000)
-	tmp.Retryinterval = max(NewSetting.Retryinterval, 400)
-	tmp.Downloadinterval = max(NewSetting.Downloadinterval, 400)
+	tmp.Retryinterval = max(NewSetting.Retryinterval, 800)
+	tmp.Downloadinterval = max(NewSetting.Downloadinterval, 500)
 	tmp.ExpiredTime = max(7, min(366, NewSetting.ExpiredTime))
 	*s = tmp
 }
 
 func UpdateSettings() {
 	out, _ := yaml.Marshal(Setting)
+	os.MkdirAll("configs", os.ModePerm)
 	ioutil.WriteFile("configs/settings.yml", out, 0644)
 }

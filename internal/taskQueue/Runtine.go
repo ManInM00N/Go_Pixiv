@@ -13,7 +13,7 @@ var (
 	RankloadPool   gopool.GoPool
 	FollowLoadPool gopool.GoPool
 	FollowPool     *goruntine.GoPool
-	TaskPool       *goruntine.GoPool
+	TaskPool       *goruntine.TaskPool
 	RankPool       *goruntine.GoPool
 	Ctx            context.Context
 	Cancel         context.CancelFunc

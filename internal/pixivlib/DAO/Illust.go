@@ -78,13 +78,28 @@ type FollowData struct {
 	R18        bool     `json:"r18"`
 }
 type RankData struct {
-	ID         int64    `json:"illust_id"`
-	Title      string   `json:"title"`
-	PreviewUrl string   `json:"url"`
-	UserID     int64    `json:"user_id"`
-	UserName   string   `json:"user_name"`
-	PageCount  string   `json:"illust_page_count"`
-	Tags       []string `json:"tags"`
-	R18        bool     `json:"illust_content_type.sexual"`
-	Type       string   `json:"illust_type"`
+	ID                int64    `json:"illust_id"`
+	Title             string   `json:"title"`
+	PreviewUrl        string   `json:"url"`
+	UserID            int64    `json:"user_id"`
+	Date              string   `json:"date"`
+	UserName          string   `json:"user_name"`
+	PageCount         string   `json:"illust_page_count"`
+	Tags              []string `json:"tags"`
+	IllustContentType struct {
+		Sexual     int  `json:"sexual"`
+		Lo         bool `json:"lo"`
+		Grotesque  bool `json:"grotesque"`
+		Violent    bool `json:"violent"`
+		Homosexual bool `json:"homosexual"`
+		Drug       bool `json:"drug"`
+		Thoughts   bool `json:"thoughts"`
+		Antisocial bool `json:"antisocial"`
+		Religion   bool `json:"religion"`
+		Original   bool `json:"original"`
+		Furry      bool `json:"furry"`
+		BL         bool `json:"bl"`
+		Yuri       bool `json:"yuri"`
+	} `json:"illust_content_type"`
+	Type string `json:"illust_type"`
 }

@@ -4,29 +4,49 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"fmt"
 	"github.com/tidwall/gjson"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"io"
 	"main/configs"
 	"main/internal/pixivlib/DAO"
 	. "main/internal/pixivlib/handler"
+	"main/internal/taskQueue"
 	. "main/pkg/utils"
 	"net/http"
 	"time"
 )
 
 type Ctl struct {
-	ctx context.Context
-	App *application.App
+	ctx    context.Context
+	App    *application.App
+	cancel func()
 }
 
 func NewCtl() *Ctl {
-
-	return &Ctl{}
+	ctx, cancel := context.WithCancel(context.Background())
+	return &Ctl{ctx: ctx, cancel: cancel}
 }
 func (a *Ctl) RegisterService(app *application.App) {
 	a.App = app
 	app.RegisterService(application.NewService(a))
+	t := time.NewTicker(time.Second)
+	go func() {
+		for {
+			select {
+			case <-a.ctx.Done():
+				t.Stop()
+				goto end
+				//break
+			case <-t.C:
+				arr, worker := taskQueue.TaskPool.GetTaskStatistic()
+				a.App.Event.Emit("taskPoolInfos", arr, worker)
+			}
+		}
+	end:
+		DebugLog.Println("Infos end")
+		fmt.Println("Ticker End", time.Now())
+	}()
 }
 
 // startup is called when the app starts. The context is saved
@@ -102,7 +122,6 @@ func (a *Ctl) CheckLogin() bool {
 	case <-done:
 		break
 	case <-time.After(15 * time.Second):
-
 		a.App.Event.Emit("login", "False", "Can't Connect to Pixiv.com timed out. Check your Proxy")
 		return false
 	}

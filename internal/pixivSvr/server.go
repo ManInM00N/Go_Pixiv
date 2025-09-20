@@ -39,6 +39,7 @@ func ServerInit() {
 	Api.GET("/novel_rproxy", NovelContent)
 	Api.GET("/getugoira", GIFResource)
 	Api.POST("/saveugoira", FetchGIF)
+	Api.GET("/get_illust_page", GetIllustPage)
 	Ws := R.Group("/ws")
 	Ws.GET("/progress", UpdateProgress)
 	Ws.GET("/rank", Transform)

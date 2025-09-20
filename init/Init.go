@@ -42,16 +42,20 @@ func init() {
 		Setting.Downloadposition = "Download"
 	}
 	Setting.Retry429 = max(Setting.Retry429, 5000)
-	Setting.Retryinterval = max(Setting.Retryinterval, 1000)
-	Setting.Downloadinterval = max(Setting.Downloadinterval, 200)
+	Setting.Retryinterval = max(Setting.Retryinterval, 1500)
+	Setting.Downloadinterval = max(Setting.Downloadinterval, 700)
 	utils.DebugLog.Println("Check settings:"+Setting.Proxy, "PHPSESSID="+Setting.Cookie, "Download Position=", Setting.Downloadposition)
 	UpdateSettings()
+
 	taskQueue.RankPool = goruntine.NewGoPool(200, 1)
-	taskQueue.TaskPool = goruntine.NewGoPool(200, 1)
-	taskQueue.FollowPool = goruntine.NewGoPool(200, 1)
-	taskQueue.TaskPool.Run()
 	taskQueue.RankPool.Run()
+
+	taskQueue.TaskPool = goruntine.NewTaskPool(1, 1)
+	taskQueue.TaskPool.Run()
+
+	taskQueue.FollowPool = goruntine.NewGoPool(200, 1)
 	taskQueue.FollowPool.Run()
+
 	taskQueue.FollowLoadPool = gopool.NewGoPool(2, gopool.WithTaskQueueSize(400))
 	taskQueue.RankloadPool = gopool.NewGoPool(2, gopool.WithTaskQueueSize(5000))
 	taskQueue.SinglePool = gopool.NewGoPool(1, gopool.WithTaskQueueSize(100))

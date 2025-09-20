@@ -7,6 +7,7 @@ import (
 	"io"
 	. "main/configs"
 	. "main/internal/pixivlib/DAO"
+	. "main/internal/pixivlib/handler"
 	"net/http"
 	"testing"
 
