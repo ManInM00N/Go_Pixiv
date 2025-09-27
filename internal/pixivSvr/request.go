@@ -170,7 +170,8 @@ func RankList(c *gin.Context) {
 
 func Followlist(c *gin.Context) {
 	p := c.Query("p")
-	data := handler.GetFollowMsg(p, "all")
+	types := c.Query("type")
+	data := handler.GetFollowMsg(types, p, "all")
 	if data == nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "获取关注数据失败",

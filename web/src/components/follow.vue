@@ -236,6 +236,7 @@ function fetchFollowData() {
   axios.get("http://127.0.0.1:7234/api/followpage", {
     params: {
       p: currentPage.value.toString(),
+      types: "illust",
       mode: mode.value,
     }
   }).then((res) => {

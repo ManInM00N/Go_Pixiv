@@ -14,15 +14,15 @@ import (
 	"time"
 )
 
-func GetFollowMsg(page, Type string) []FollowData {
-	op := NewOption(WithR18(true), SufWithRankmode(Type), SufWithPage(page))
+func GetFollowMsg(followType, page, Type string) []FollowData {
+	op := NewOption(WithR18(true), SufWithRankmode(Type), SufWithPage(page), WithFollowType(followType))
 	data, err := GetFollow(op)
 	if err != nil {
 		utils.DebugLog.Println("Error getting Follow")
 		return nil
 	}
 	list := make([]FollowData, 0, 100)
-	all := data.Get("thumbnails").Get("illust").Array()
+	all := data.Get("thumbnails").Get(followType).Array()
 	for _, value := range all {
 		var tmp FollowData
 		err := json.Unmarshal([]byte(value.Raw), &tmp)

@@ -159,10 +159,11 @@ const items = ref([
     { id: '1', iconmsg: "StarFilled", key: "关注作品", index: "/follow", logined: false,description: "已关注用户的作品" },
     { id: '2', iconmsg: "Histogram", key: "排行榜", index: "/rank", logined: true,description: "热门作品排行" },
     { id: '3', iconmsg: "Search", key: "搜索", index: "/search", logined: true, description: "搜索作品和作者" },
+    {id : '4', iconmsg:"Reading" ,key:"小说",index: 'novel',logined: true , description: "小说"},
 ])
 const userself = ref({
     // id:6,key: "user",index:"/user"
-    id: '4', iconmsg: "Setting", key: "设置", index: "/setting", logined: true
+    id: '10086', iconmsg: "Setting", key: "设置", index: "/setting", logined: true
 })
 const wait = ref(false)
 

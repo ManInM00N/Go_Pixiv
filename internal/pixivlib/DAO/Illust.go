@@ -67,16 +67,26 @@ func (i *Illust) msg() string {
 }
 
 type FollowData struct {
-	ID         string   `json:"id"`
-	Title      string   `json:"title"`
-	PreviewUrl string   `json:"url"`
-	UserID     string   `json:"userId"`
-	UserName   string   `json:"userName"`
-	PageCount  int      `json:"pageCount"`
-	AiType     int      `json:"aiType"`
-	Tags       []string `json:"tags"`
-	R18        bool     `json:"r18"`
+	ID              string   `json:"id"`
+	Title           string   `json:"title"`
+	UserID          string   `json:"userId"`
+	UserName        string   `json:"userName"`
+	PageCount       int      `json:"pageCount"`
+	AiType          int      `json:"aiType"`
+	Tags            []string `json:"tags"`
+	R18             bool     `json:"r18"`
+	ProfileImageUrl string   `json:"profileImageUrl"`
+	PreviewUrl      string   `json:"url"`
+
+	// illust
+
+	// novel
+	Genre       string `json:"genre"`
+	Description string `json:"description"`
+	SeriesId    string `json:"seriesId"`
+	SeriesTitle string `json:"seriesTitle"`
 }
+
 type RankData struct {
 	ID                int64    `json:"illust_id"`
 	Title             string   `json:"title"`

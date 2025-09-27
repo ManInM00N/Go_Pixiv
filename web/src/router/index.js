@@ -4,6 +4,7 @@ import rank from "../components/rank.vue";
 import maindownload from "../components/maindownload.vue";
 import search from "../components/search.vue";
 import setting from "../components/settings.vue";
+import novelPage from '../components/NovelPage.vue';
 const router = createRouter({
     history: createWebHashHistory(),
     routes: [
@@ -43,6 +44,15 @@ const router = createRouter({
         {
             path: '/setting',
             component: setting,
+            meta: {
+                keepAlive: true,
+                refresh: false,
+            },
+        },
+        {
+            path: '/novel',
+            name: 'Novel',
+            component: novelPage ,
             meta: {
                 keepAlive: true,
                 refresh: false,

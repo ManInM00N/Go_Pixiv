@@ -9,9 +9,9 @@ info:
   productName: "GoPixiv" # The name of the application
   productIdentifier: "com.maninmoon.gopixiv" # The unique product identifier
   description: "A Go-based crawler for Pixiv" # The application description
-  copyright: "(c) 2024, ManInM00N" # Copyright text
+  copyright: "(c) 2025, ManInM00N" # Copyright text
   comments: "A personal project to explore web crawling in Go" # Comments
-  version: "v1.1.0" # The application version
+  version: "v1.3.0" # The application version
 
 # Dev mode configuration
 dev_mode:

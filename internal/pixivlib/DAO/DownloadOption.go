@@ -16,6 +16,7 @@ type Option struct {
 	RankDate    string
 	DiffAuthor  bool
 	OnlyPreview bool
+	FollowType  string
 }
 
 const (
@@ -48,6 +49,7 @@ func NewOption(op ...option) *Option {
 		RankDate:    fmt.Sprintf("%04d%02d%02d", time.Now().Year(), time.Now().Month(), time.Now().Day()),
 		DiffAuthor:  true,
 		OnlyPreview: false,
+		FollowType:  "illust",
 	}
 	for _, O := range op {
 		O(Op)
@@ -133,3 +135,10 @@ func WithOnlyPreview(is bool) option {
 }
 
 // func WithMinDate
+
+// 关注类型
+func WithFollowType(Type string) option {
+	return func(o *Option) {
+		o.FollowType = Type
+	}
+}

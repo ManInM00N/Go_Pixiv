@@ -35,6 +35,7 @@ const (
 	NovelText
 	UserDashboard
 	PicSource
+	FollowNovelInfo
 	Base = "https://www.pixiv.net/"
 )
 
@@ -158,6 +159,8 @@ func GetUrlRefer(url, id string, num int) (string, string) {
 		return Base + "ranking.php?format=json" + url, Base
 	case FollowInfo:
 		return Base + "ajax/follow_latest/illust?" + url, Base
+	case FollowNovelInfo:
+		return Base + "ajax/follow_latest/novel?" + url, Base
 	case GifPage:
 		return Base + "ajax/illust/" + id + "/ugoira_meta", Base
 	case NovelInfo:
