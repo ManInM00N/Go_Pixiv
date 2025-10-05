@@ -8,3 +8,4 @@ web/dist
 /.task/
 /build/appimage/*.AppDir
 /build/nfpm/bin/
+/configs/settings.yml

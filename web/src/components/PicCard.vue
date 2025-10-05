@@ -102,7 +102,7 @@ import {
   Loading,
   Check
 } from "@element-plus/icons-vue";
-import { useImageViewerStore } from "../assets/stores/preview.js"
+import { useImageViewerStore } from "../assets/stores/PicPreview.js"
 const store = useImageViewerStore()
 
 

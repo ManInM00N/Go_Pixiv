@@ -6,17 +6,19 @@
 <br>
 <a href="https://github.com/ManInM00N/Go_Pixiv/releases"> <img src="https://img.shields.io/github/v/release/ManInM00N/Go_Pixiv" alt=""/> </a>
 <a href="https://golang.google.cn/dl/"> <img src="https://img.shields.io/github/go-mod/go-version/ManInM00N/Go_Pixiv"> </a>
-<a href="https://wails.io/zh-Hans/docs/gettingstarted/installation"> <img src="https://img.shields.io/badge/wails-v3.0.0--alpha8.3-red"> </a>
+<a href="https://wails.io/zh-Hans/docs/gettingstarted/installation"> <img src="https://img.shields.io/badge/wails-v3.0.0--alpha12-red"> </a>
 <a href="https://github.com/ManInM00N/Go_Pixiv/blob/master/LICENSE"><img src="https://img.shields.io/github/license/ManInM00N/Go_Pixiv"> </a>
 
 </p>
 
 - [x] 升级wails框架版本 :tada:
 - [x] 优化预览缓存机制,设置图片代理 :wave:
-- [ ] 优化下载线程池 :confused:
+  - [x] 图片详细展示 
+- [x] 优化下载线程池 :confused:
 - [ ] 以图搜图 :alien:
 - [x] 托盘化 :zap:
 - [x] 小说下载功能 :monocle_face:
+  - [x] 小说查看功能
 - [ ] 小说系列下载功能 :wheelchair:
 - [x] GIF下载功能 :tada:
 

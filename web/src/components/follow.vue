@@ -236,7 +236,7 @@ function fetchFollowData() {
   axios.get("http://127.0.0.1:7234/api/followpage", {
     params: {
       p: currentPage.value.toString(),
-      types: "illust",
+      type: "illust",
       mode: mode.value,
     }
   }).then((res) => {
@@ -406,14 +406,12 @@ function downloadMultiplePages() {
 // 分页容器
 .pagination-container {
   display: flex;
-  //justify-content: space-between;
   align-items: center;
   margin-bottom: 25px;
   padding: 20px;
   background: black;
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  //width:100%;
   .stats-info {
     display: flex;
     gap: 10px;

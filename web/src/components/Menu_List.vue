@@ -126,6 +126,7 @@
 
     <div class="notification-container" id="notification-container"></div>
     <PicMask/>
+    <NovelMask/>
   </div>
 </template>
 <script setup>
@@ -147,6 +148,7 @@ import { useRoute, useRouter } from "vue-router";
 import { DownloadGIF } from "../assets/js/download.js";
 import axios from "axios";
 import PicMask from "./PicMask.vue";
+import NovelMask from "./NovelMask.vue";
 
 // 响应式数据
 const activeIndex = ref('0')
@@ -158,8 +160,8 @@ const items = ref([
     { id: '0', iconmsg: "HomeFilled", key: "下载中心", index: "/", logined: true, description: "管理下载任务"},
     { id: '1', iconmsg: "StarFilled", key: "关注作品", index: "/follow", logined: false,description: "已关注用户的作品" },
     { id: '2', iconmsg: "Histogram", key: "排行榜", index: "/rank", logined: true,description: "热门作品排行" },
-    { id: '3', iconmsg: "Search", key: "搜索", index: "/search", logined: true, description: "搜索作品和作者" },
-    {id : '4', iconmsg:"Reading" ,key:"小说",index: 'novel',logined: true , description: "小说"},
+    {id : '3', iconmsg:"Reading" ,key:"小说",index: '/novel',logined: false , description: "小说"},
+    { id: '4', iconmsg: "Search", key: "搜索", index: "/search", logined: true, description: "搜索作品和作者" },
 ])
 const userself = ref({
     // id:6,key: "user",index:"/user"

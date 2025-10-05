@@ -282,7 +282,7 @@ import {
   FullScreen
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import { useImageViewerStore } from '../assets/stores/preview.js'
+import { useImageViewerStore } from '../assets/stores/PicPreview.js'
 import { DownloadByPid } from "../../bindings/main/internal/pixivlib/ctl.js"
 import axios from "axios";
 

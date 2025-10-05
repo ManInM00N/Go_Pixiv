@@ -19,38 +19,21 @@
       </template>
 
       <template #default>
-        <el-card
+        <el-card :body-style="{ padding: '0px', marginBottom: '1px', width: '100%' }"
             class="novel-card"
             :class="{ 'login-required': props.isLoginOnly }"
             shadow="hover"
-            :body-style="{ padding: '0' }"
             @click="openNovelViewer"
         >
           <!-- 封面区域 -->
           <div class="cover-container">
-            <el-image
-                :src="getImageUrl()"
-                fit="cover"
-                class="novel-cover"
-                :loading="coverLoading"
-                @load="onCoverLoad"
-                @error="onCoverError"
-            >
-              <template #placeholder>
-                <div class="cover-loading">
-                  <el-icon class="loading-icon">
-                    <Loading />
-                  </el-icon>
-                </div>
-              </template>
-              <template #error>
-                <div class="cover-error">
-                  <el-icon class="error-icon">
-                    <Document />
-                  </el-icon>
-                </div>
-              </template>
-            </el-image>
+            <LazyImg
+                :ref="pic"
+                :onload="load = false"
+                :url="getImageUrl()"
+                class="image"
+
+            />
 
             <!-- 遮罩层 -->
             <div class="cover-overlay">
@@ -70,9 +53,16 @@
               >
                 登录可见
               </el-tag>
-
               <el-tag
-                  v-if="props.aiType"
+                  v-if="props.genre"
+                  type="danger"
+                  size="small"
+                  class="login-badge"
+              >
+                R18
+              </el-tag>
+              <el-tag
+                  v-if="props.aiType === 0"
                   type="info"
                   size="small"
                   class="ai-badge"
@@ -96,10 +86,12 @@
             <!-- 标题 -->
             <div class="novel-title">
               <el-tooltip
-                  :content="props.title"
                   placement="top"
                   :disabled="!isTitleLong"
               >
+                <template #content>
+                  <p style="max-width:500px;">{{props.title}}</p>
+                </template>
                 <h3 class="title-text">{{ props.title }}</h3>
               </el-tooltip>
             </div>
@@ -111,7 +103,14 @@
                   class="author-avatar"
                   @click.stop="openAuthor"
               >
-                <el-icon><User /></el-icon>
+<!--                <el-icon>-->
+                  <LazyImg
+                      :onload="load = false"
+                      :url="getProfileUrl()"
+                  >
+
+                  </LazyImg>
+<!--                </el-icon>-->
               </el-avatar>
               <span
                   class="author-name"
@@ -124,10 +123,12 @@
             <!-- 简介 -->
             <div class="novel-description">
               <el-tooltip
-                  :content="props.description"
                   placement="top"
                   :disabled="!isDescriptionLong"
               >
+                <template #content>
+                  <p style="max-width:500px;">{{props.description}}</p>
+                </template>
                 <p class="description-text">{{ props.description }}</p>
               </el-tooltip>
             </div>
@@ -136,22 +137,19 @@
             <div class="novel-stats">
               <div class="stat-item">
                 <el-icon class="stat-icon"><Reading /></el-icon>
-                <span class="stat-text">{{ formatCount(props.characterCount) }} 字</span>
+                <span class="stat-text">{{ formatCount(props.textCount) }} 字</span>
               </div>
               <div class="stat-item">
                 <el-icon class="stat-icon"><Star /></el-icon>
-                <span class="stat-text">{{ formatCount(props.likeCount) }}</span>
-              </div>
-              <div class="stat-item">
-                <el-icon class="stat-icon"><Document /></el-icon>
-                <span class="stat-text">{{ props.page }} 页</span>
+                <span class="stat-text">{{ formatCount(props.bookmarkCount) }}</span>
               </div>
             </div>
 
             <!-- 类型标签 -->
-            <div class="novel-genre" v-if="props.genre">
-              <el-tag type="primary" size="small" class="genre-tag">
-                {{ props.genre }}
+            <div class="novel-genre">
+
+              <el-tag v-for="item in props.tags" type="primary" size="small" class="genre-tag">
+                {{ item }}
               </el-tag>
             </div>
 
@@ -160,9 +158,6 @@
               <div class="series-title">
                 <el-icon><Collection /></el-icon>
                 <span>{{ props.seriesNavData.title }}</span>
-              </div>
-              <div class="series-order">
-                第 {{ props.seriesNavData.order }} 话
               </div>
             </div>
 
@@ -222,14 +217,46 @@ import {
 import { ElMessage } from 'element-plus'
 import {form} from "../assets/js/configuration.js";
 import noProfileImg from "../assets/images/NoR18.png";
+import {LazyImg} from "vue-waterfall-plugin-next";
+import { useNovelViewerStore } from '../assets/stores/novelViewer.js'
 
+const novelViewerStore = useNovelViewerStore()
 const name = "NovelCard"
+const pic = ref(null)
+
+
+const openNovelViewer = () => {
+  // 构建小说数据对象
+  const novelData = {
+    id: props.id,
+    title: props.title,
+    userName: props.userName,
+    userId: props.userId,
+    genre: props.genre,
+    aiType: props.aiType,
+    seriesNavData: props.seriesNavData,
+    description: props.description,
+    cover: props.cover,
+    bookmarkCount: props.bookmarkCount,
+    textCount: props.textCount,
+    tags : props.tags,
+
+    
+  }
+
+  // 使用 store 打开查看器
+  novelViewerStore.openViewer(novelData)
+}
 
 // Props 定义
 const props = defineProps({
   content: {
     type: String,
     default: ""
+  },
+  profileImageUrl:{
+     type: String,
+    default: "",
   },
   cover: {
     type: String,
@@ -259,11 +286,11 @@ const props = defineProps({
     type: Number,
     default: 1
   },
-  likeCount: {
+  bookmarkCount: {
     type: Number,
     default: 0
   },
-  characterCount: {
+  textCount: {
     type: Number,
     default: 0
   },
@@ -292,7 +319,6 @@ const props = defineProps({
     default: null
   }
 })
-
 // 响应式数据
 const loading = ref(false)
 const coverLoading = ref(true)
@@ -310,6 +336,10 @@ const getImageUrl = () => {
   return `http://127.0.0.1:7234/api/preview?url=${props.cover}`
 }
 
+const getProfileUrl = () => {
+  return `http://127.0.0.1:7234/api/preview?url=${props.profileImageUrl}`
+}
+
 // 事件处理
 const onCoverLoad = () => {
   coverLoading.value = false
@@ -317,11 +347,6 @@ const onCoverLoad = () => {
 
 const onCoverError = () => {
   coverLoading.value = false
-}
-
-const openNovelViewer = () => {
-  // 打开小说阅读器或跳转到小说页面
-  window.open(`https://www.pixiv.net/novel/show.php?id=${props.id}`, '_blank')
 }
 
 const openAuthor = () => {
@@ -390,7 +415,7 @@ const formatCount = (count) => {
   transition: all 0.3s ease;
   border: 2px solid transparent;
   cursor: pointer;
-
+  position: relative;
   &:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
@@ -409,7 +434,7 @@ const formatCount = (count) => {
 .cover-container {
   position: relative;
   width: 100%;
-  height: 120px;
+  //height: 120px;
   overflow: hidden;
 
   .novel-cover {
@@ -473,9 +498,9 @@ const formatCount = (count) => {
   }
 
   &:hover {
-    .novel-cover {
-      transform: scale(1.1);
-    }
+    //.novel-cover {
+    //  transform: scale(1.1);
+    //}
 
     .cover-overlay {
       opacity: 1;
@@ -520,7 +545,7 @@ const formatCount = (count) => {
     margin: 0;
     font-size: 16px;
     font-weight: 600;
-    color: #303133;
+    color: #e6efff;
     line-height: 1.4;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -546,9 +571,9 @@ const formatCount = (count) => {
     transition: transform 0.2s ease;
     background: #409EFF;
 
-    &:hover {
-      transform: scale(1.1);
-    }
+    //&:hover {
+    //  transform: scale(1.1);
+    //}
   }
 
   .author-name {
@@ -610,6 +635,8 @@ const formatCount = (count) => {
     font-size: 11px;
     padding: 2px 8px;
     border-radius: 10px;
+    white-space: normal;
+    height: auto;
   }
 }
 
@@ -694,5 +721,12 @@ const formatCount = (count) => {
       height: 28px;
     }
   }
+}
+</style>
+
+<style lang="less">
+.el-tag{
+  white-space: normal;
+  height: auto;
 }
 </style>

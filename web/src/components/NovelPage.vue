@@ -23,18 +23,12 @@
             <div class="tab-label">
               <el-icon><StarFilled /></el-icon>
               <span>关注作者</span>
-              <el-badge
-                  v-if="followNovels.length > 0"
-                  :value="followNovels.length"
-                  :max="99"
-                  class="tab-badge"
-              />
             </div>
           </template>
         </el-tab-pane>
 
         <!-- 排行榜 -->
-        <el-tab-pane label="排行榜" name="ranking">
+        <el-tab-pane v-if="false" label="排行榜" name="ranking">
           <template #label>
             <div class="tab-label">
               <el-icon><Trophy /></el-icon>
@@ -71,10 +65,9 @@
                   class="filter-select"
               >
                 <el-option label="每日排行" value="daily" />
+                <el-option label="每日排行R18" value="daily_r18" />
                 <el-option label="每周排行" value="weekly" />
-                <el-option label="每月排行" value="monthly" />
-                <el-option label="新人排行" value="rookie" />
-                <el-option label="完结排行" value="complete" />
+                <el-option label="每周排行R18" value="weekly_r18" />
               </el-select>
             </div>
           </el-col>
@@ -91,13 +84,9 @@
                   clearable
               >
                 <el-option label="全部" value="" />
-                <el-option label="恋爱" value="恋爱" />
-                <el-option label="幻想" value="幻想" />
-                <el-option label="现实" value="现实" />
-                <el-option label="科幻" value="科幻" />
-                <el-option label="历史" value="历史" />
-                <el-option label="悬疑" value="悬疑" />
-                <el-option label="同人" value="同人" />
+                <el-option v-for="tag in all_tags" :label="tag" :value="tag">
+
+                </el-option>
               </el-select>
             </div>
           </el-col>
@@ -122,25 +111,6 @@
             </div>
           </el-col>
 
-          <!-- 状态筛选 -->
-          <el-col :xs="24" :sm="12" :md="6">
-            <div class="filter-item">
-              <label class="filter-label">作品状态</label>
-              <el-select
-                  v-model="selectedStatus"
-                  placeholder="全部状态"
-                  @change="applyFilters"
-                  class="filter-select"
-                  clearable
-              >
-                <el-option label="全部" value="" />
-                <el-option label="连载中" value="ongoing" />
-                <el-option label="已完结" value="completed" />
-                <el-option label="AI创作" value="ai" />
-                <el-option label="需要登录" value="login" />
-              </el-select>
-            </div>
-          </el-col>
         </el-row>
 
         <!-- 搜索框 -->
@@ -163,22 +133,37 @@
     <!-- 内容区域 -->
     <div class="content-area">
       <!-- 统计信息 -->
-      <div class="stats-info">
-        <el-tag type="info" size="large">
-          <el-icon><DataLine /></el-icon>
-          共找到 {{ filteredNovels.length }} 部小说
-        </el-tag>
-
-        <div class="view-options">
-          <el-radio-group v-model="viewMode" size="small">
-            <el-radio-button value="waterfall">瀑布流</el-radio-button>
-            <el-radio-button value="list">列表</el-radio-button>
-          </el-radio-group>
+      <div class="pagination-container">
+        <el-pagination
+            background
+            layout="prev, pager, next, jumper"
+            :total="1000"
+            :page-count="activeTab === 'ranking'? 2 : 7"
+            :current-page="currentPage"
+            @current-change="handlePageChange"
+            :disabled="loading"
+            class="main-pagination"
+        />
+        <div class="floating-actions">
+          <el-button
+              type="primary"
+              circle
+              size="large"
+              @click="refreshData"
+              :loading="loading"
+              class="refresh-fab"
+              v-tooltip="{ content: '刷新页面', placement: 'left' }"
+          >
+            <el-icon><Refresh /></el-icon>
+          </el-button>
+          <el-tag type="info" size="large">
+            <el-icon><DataLine /></el-icon>
+            共找到 {{ filteredNovels.length }} 部小说
+          </el-tag>
         </div>
       </div>
-
       <!-- 瀑布流展示 -->
-      <div v-if="viewMode === 'waterfall'" class="waterfall-container">
+      <div  class="waterfall-container">
         <Waterfall
             ref="waterfall"
             :list="filteredNovels"
@@ -198,30 +183,6 @@
         </Waterfall>
       </div>
 
-      <!-- 列表展示 -->
-      <div v-else class="list-container">
-        <div
-            v-for="novel in filteredNovels"
-            :key="novel.id"
-            class="list-item"
-        >
-          <NovelCard v-bind="novel" />
-        </div>
-      </div>
-
-      <!-- 加载更多 -->
-      <div class="load-more-section" v-if="hasMore">
-        <el-button
-            type="primary"
-            size="large"
-            @click="loadMore"
-            :loading="loading"
-            class="load-more-btn"
-        >
-          <el-icon><ArrowDown /></el-icon>
-          加载更多
-        </el-button>
-      </div>
 
       <!-- 空状态 -->
       <el-empty
@@ -282,6 +243,7 @@ const selectedStatus = ref('')
 const searchKeyword = ref('')
 
 // 数据
+const all_tags = ref(null)
 const followNovels = ref([])
 const rankingNovels = ref([])
 const hasMore = ref(true)
@@ -292,18 +254,19 @@ const currentNovels = computed(() => {
   return activeTab.value === 'follow' ? followNovels.value : rankingNovels.value
 })
 
+
+
 const filteredNovels = computed(() => {
   let novels = [...currentNovels.value]
-
   // 分类筛选
   if (selectedGenre.value) {
-    novels = novels.filter(novel => novel.genre === selectedGenre.value)
+    novels = novels.filter(novel => novel.tags.includes(selectedGenre.value))
   }
 
   // 字数筛选
   if (selectedWordCount.value) {
     novels = novels.filter(novel => {
-      const count = novel.characterCount
+      const count = novel.textCount
       switch (selectedWordCount.value) {
         case 'short': return count < 10000
         case 'medium': return count >= 10000 && count < 50000
@@ -314,18 +277,6 @@ const filteredNovels = computed(() => {
     })
   }
 
-  // 状态筛选
-  if (selectedStatus.value) {
-    novels = novels.filter(novel => {
-      switch (selectedStatus.value) {
-        case 'ongoing': return novel.seriesNavData && novel.seriesNavData.next
-        case 'completed': return !novel.seriesNavData || !novel.seriesNavData.next
-        case 'ai': return novel.aiType
-        case 'login': return novel.isLoginOnly
-        default: return true
-      }
-    })
-  }
 
   // 搜索筛选
   if (searchKeyword.value) {
@@ -336,15 +287,24 @@ const filteredNovels = computed(() => {
         novel.description.toLowerCase().includes(keyword)
     )
   }
-
   return novels
 })
+
+const handlePageChange = (page) =>{
+  currentPage.value = page
+  if(activeTab.value === "follow"){
+    fetchFollowNovels()
+  }else{
+    fetchRankingNovels()
+  }
+}
 
 // 方法
 const handleTabChange = (tabName) => {
   if (tabName === 'follow') {
     fetchFollowNovels()
   } else if (tabName === 'ranking') {
+    currentPage.value = Math.min(currentPage.value,2)
     fetchRankingNovels()
   }
 }
@@ -353,14 +313,8 @@ const fetchFollowNovels = async () => {
   try {
     loading.value = true
     // 调用获取关注作者小说的函数
-    const novels = await fetchNovel('follow', currentPage.value)
-
-    if (currentPage.value === 1) {
-      followNovels.value = novels
-    } else {
-      followNovels.value.push(...novels)
-    }
-
+    let novels = await fetchNovel('follow', currentPage.value)
+    followNovels.value = novels
     hasMore.value = novels.length > 0
 
     // 重新渲染瀑布流
@@ -386,13 +340,9 @@ const fetchRankingNovels = async () => {
     // 获取小说数组
     const novels = await fetchNovel('ranking', currentPage.value, { type: rankingType.value })
 
-    if (currentPage.value === 1) {
-      rankingNovels.value = novels
-    } else {
-      rankingNovels.value.push(...novels)
-    }
+    rankingNovels.value = novels
 
-    hasMore.value = novels.length > 0
+    // hasMore.value = novels.length > 0
 
     // 重新渲染瀑布流
     await nextTick()
@@ -410,38 +360,84 @@ const fetchRankingNovels = async () => {
 const mode = ref("all")
 const novelItems = ref([])
 
-// 模拟 fetchNovel 函数（实际使用时替换为真实的API调用）
 const fetchNovel = async (type, page = 1, options = {}) => {
-  // 模拟网络延迟
-  await new Promise(resolve => setTimeout(resolve, 1000))
-  axios.get("http://127.0.0.1:7234/api/followpage", {
-    params: {
-      p: currentPage.value.toString(),
-      types: "novel",
-      mode: mode.value,
-    }
-  }).then((res) => {
-    console.log(res, res.data.data.length)
-    let tmp = []
-    for (var i = 0; i < res.data.data.length; i++) {
-      tmp.push({ pid: res.data.data[i].id, Title: res.data.data[i].title, Author: res.data.data[i].userName, src: res.data.data[i].url, pages: res.data.data[i].countPage, authorId: res.data.data[i].userId, r18: res.data.data[i].r18,seriesId:res.data.data[i].seriesId,SeriesTitle:res.data.data[i].SeriesTitle,Description: res.data.data[i].description })
-    }
-    novelItems.value = tmp
-    waterfall.value.renderer()
-  }).catch((error) => {
-    console.log(error, error)
-  }).finally(() => {
-    console.log("ok")
-    loading.value = false
-    wait.value = false
-  })
 
-  // 根据类型和页数返回不同数据
-  if (type === 'follow') {
-    return page === 1 ? novelItems.value : []
-  } else {
-    return page === 1 ? novelItems.value.reverse() : []
+  try {
+    let url = ''
+    let params = {
+      p: page.toString(),
+      type: 'novel'
+    }
+
+    if (type === 'follow') {
+      url = 'http://127.0.0.1:7234/api/followpage'
+      params.mode = 'all' // 或根据需要设置
+    } else if (type === 'ranking') {
+      url = 'http://127.0.0.1:7234/api/rankpage'
+      params.mode = options.type || 'daily' // 使用排行榜类型
+    }
+
+    const response = await axios.get(url, { params })
+    let tmp_tags = []
+    console.log(response)
+    // 映射 API 返回的数据到组件需要的格式
+    const novels = response.data.data.map(item => ({
+      // 基础信息
+      id: item.id,
+      title: item.title,
+      content: item.content || '',
+      cover: item.url || item.cover || '', // 封面图片
+
+      // 作者信息
+      userId: item.userId,
+      userName: item.userName,
+      profileImageUrl: item.profileImageUrl,
+
+      // 详细信息
+      description: item.description || '',
+      page: item.countPage || 1,
+      bookmarkCount: item.bookmarkCount || 0,
+      textCount: item.textCount || 0,
+      wordCount: item.wordCount || 0,
+
+      // 状态和类型
+      isLoginOnly: item.isLoginOnly || false,
+      genre: item.genre || '',
+      aiType: item.aiType || false,
+
+      // 系列信息
+      seriesNavData: item.seriesId ? {
+        seriesType: 'novel',
+        seriesId: item.seriesId,
+        title: item.SeriesTitle || item.seriesTitle || '',
+        order: item.seriesOrder || 1,
+        prev: item.prevId ? {
+          title: item.prevTitle || '',
+          order: item.prevOrder || 0,
+          id: item.prevId
+        } : null,
+        next: item.nextId ? {
+          title: item.nextTitle || '',
+          order: item.nextOrder || 0,
+          id: item.nextId
+        } : null
+      } : null,
+
+      // 标签信息
+      tags:  item.tags || []
+    }))
+    for(let it in novels){
+      tmp_tags = tmp_tags.concat(novels[it].tags)
+    }
+    all_tags.value = Array.from(new Set(tmp_tags))
+    return novels
+
+  } catch (error) {
+    console.error('获取小说数据失败:', error)
+    throw error
   }
+
+
 }
 
 const applyFilters = () => {
@@ -609,6 +605,36 @@ onMounted(() => {
   }
 }
 
+
+.pagination-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 25px;
+  padding: 20px;
+  background: black;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  .stats-info {
+    display: flex;
+    gap: 10px;
+
+    .el-tag {
+      padding: 8px 12px;
+      border-radius: 20px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    //flex-direction: column;
+    gap: 15px;
+
+    .stats-info {
+      flex-wrap: wrap;
+      //justify-content: center;
+    }
+  }
+}
+
 // 内容区域
 .content-area {
   .stats-info {
@@ -640,9 +666,6 @@ onMounted(() => {
       overflow: hidden;
       transition: all 0.3s ease;
 
-      &:hover {
-        transform: translateY(-3px);
-      }
     }
   }
 
@@ -678,26 +701,6 @@ onMounted(() => {
   // 空状态
   .empty-state {
     margin: 60px 0;
-  }
-}
-
-// 回到顶部
-.back-to-top {
-  width: 45px;
-  height: 45px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-
-  &:hover {
-    transform: scale(1.1);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
   }
 }
 
