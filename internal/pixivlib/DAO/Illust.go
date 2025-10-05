@@ -81,10 +81,13 @@ type FollowData struct {
 	// illust
 
 	// novel
-	Genre       string `json:"genre"`
-	Description string `json:"description"`
-	SeriesId    string `json:"seriesId"`
-	SeriesTitle string `json:"seriesTitle"`
+	Genre         string `json:"genre"`
+	Description   string `json:"description"`
+	SeriesId      string `json:"seriesId"`
+	SeriesTitle   string `json:"seriesTitle"`
+	TextCount     int    `json:"textCount"`
+	WordCount     int    `json:"wordCount"`
+	BookMarkCount int    `json:"bookmarkCount"`
 }
 
 type RankData struct {

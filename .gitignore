@@ -9,3 +9,4 @@ web/dist
 /build/appimage/*.AppDir
 /build/nfpm/bin/
 /configs/settings.yml
+/web/bindings/

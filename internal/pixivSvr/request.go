@@ -185,12 +185,24 @@ func Followlist(c *gin.Context) {
 }
 
 func NovelContent(c *gin.Context) {
+	novelId := c.Query("novelId")
+	if novelId == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing 'id' query parameter"})
+		return
+	}
+	res, err := handler.GetNovel(novelId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "request failed checkout your cookie"})
+		return
+	}
+	c.JSON(200, gin.H{
+		"data": res.String(),
+	})
 }
 func GIFResource(c *gin.Context) {
 	url := c.Query("url")
 	if url == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing 'url' query parameter"})
-		utils.DebugLog.Println("Missing url")
 		return
 	}
 	// 发起请求到目标图片地址

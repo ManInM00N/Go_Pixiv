@@ -440,7 +440,15 @@ func GetFollow(option *Option) (gjson.Result, error) {
 	option.Msg()
 	// https://www.pixiv.net/ajax/follow_latest/illust?&mode=all&p=1
 	utils.InfoLog.Println("https://www.pixiv.net/ajax/follow_latest/illust?" + option.Suffix)
-	data, err := GetWebpageData(option.Suffix, "", FollowInfo)
+	var data []byte
+	var err error
+	if option.FollowType == "illust" {
+		data, err = GetWebpageData(option.Suffix, "", FollowInfo)
+	} else if option.FollowType == "novel" {
+		data, err = GetWebpageData(option.Suffix, "", FollowNovelInfo)
+	} else {
+
+	}
 	if err != nil {
 		utils.DebugLog.Println("get failed: ", err.Error())
 		return gjson.Result{}, err

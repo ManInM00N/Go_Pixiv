@@ -29,7 +29,7 @@
 
           <el-row :gutter="20">
             <el-col :xs="24" :sm="12">
-              <el-form-item label="本地服务地址" prop="prefix">
+              <el-form-item label="本地代理服务地址" prop="prefix">
                 <el-input
                     v-model="form.prefix"
                     disabled
@@ -39,7 +39,7 @@
                     <el-icon><Link /></el-icon>
                   </template>
                 </el-input>
-                <div class="form-help">当前服务运行地址</div>
+                <div class="form-help">代理服务端口</div>
               </el-form-item>
             </el-col>
 
