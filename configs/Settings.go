@@ -2,6 +2,7 @@ package configs
 
 import (
 	"encoding/json"
+	"fmt"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"os"
@@ -43,6 +44,9 @@ func (s *Settings) UpdateSettings(NewSetting Settings) {
 	_, err := os.Stat(NewSetting.Downloadposition)
 	if err != nil {
 		tmp.Downloadposition = "Download"
+		fmt.Println(NewSetting.Downloadposition)
+	} else {
+		tmp.Downloadposition = NewSetting.Downloadposition
 	}
 	tmp.DifferAuthor = NewSetting.DifferAuthor
 	tmp.Agelimit = NewSetting.Agelimit

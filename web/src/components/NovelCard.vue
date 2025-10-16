@@ -498,13 +498,8 @@ const formatCount = (count) => {
   }
 
   &:hover {
-    //.novel-cover {
-    //  transform: scale(1.1);
-    //}
-
     .cover-overlay {
       opacity: 1;
-
       .overlay-content {
         transform: translateY(0);
       }
@@ -570,10 +565,6 @@ const formatCount = (count) => {
     cursor: pointer;
     transition: transform 0.2s ease;
     background: #409EFF;
-
-    //&:hover {
-    //  transform: scale(1.1);
-    //}
   }
 
   .author-name {

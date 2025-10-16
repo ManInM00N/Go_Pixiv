@@ -41,6 +41,7 @@ func ServerInit() {
 	Api.POST("/saveugoira", FetchGIF)
 	Api.GET("/get_illust_page", GetIllustPage)
 	Api.GET("/get_novel", NovelContent)
+	Api.GET("/get_author", FetchAuthorInfo)
 	Ws := R.Group("/ws")
 	Ws.GET("/progress", UpdateProgress)
 	Ws.GET("/rank", Transform)

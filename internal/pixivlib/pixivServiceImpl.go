@@ -63,9 +63,13 @@ func (a *Ctl) DownloadByPid(text string) bool {
 	return true
 }
 
-func (a *Ctl) DownloadByNovelId(text string) bool {
+func (a *Ctl) DownloadByNovelId(text string, isSeries bool) bool {
 	InfoLog.Println("Download Novel ", text)
-	Download_By_NovelId(text)
+	if isSeries {
+
+	} else {
+		Download_By_NovelId(text)
+	}
 	return true
 }
 

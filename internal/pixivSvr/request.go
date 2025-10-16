@@ -3,8 +3,10 @@ package pixivSvr
 import (
 	"bufio"
 	"fmt"
+	"github.com/ManInM00N/go-tool/statics"
 	"io"
 	"main/configs"
+	"main/internal/cache/DAO"
 	. "main/internal/pixivlib/DAO"
 	"main/internal/pixivlib/handler"
 	"main/pkg/utils"
@@ -12,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -275,7 +278,30 @@ func FetchGIF(c *gin.Context) {
 
 		return
 	}
-
+	cache := DAO.Cache{
+		DownloadID: Pid,
+		Type:       "Illust",
+		CreatedAt:  time.Now(),
+	}
+	DAO.Db.FirstOrCreate(&cache, DAO.Cache{DownloadID: cache.DownloadID})
 	// 返回成功消息
 	c.JSON(http.StatusOK, gin.H{"message": "File uploaded successfully"})
+}
+
+func FetchAuthorInfo(c *gin.Context) {
+	Pid := c.Query("pid")
+	if Pid == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "pid empty",
+		})
+		return
+	}
+	data, err := handler.GetAuthorInfo(statics.StringToInt64(Pid))
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"message": fmt.Sprintf("author %s not found", Pid),
+		})
+	} else {
+		c.JSON(http.StatusOK, data)
+	}
 }
