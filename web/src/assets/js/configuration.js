@@ -68,7 +68,7 @@ export async function updateSettings(){
         proxy: form.value.proxy,
         cookie: form.value.cookie,
         r_18: Boolean(form.value.r_18),
-        downloadposition: Number(form.value.downloadposition),
+        downloadposition: form.value.downloadposition,
         likelimit: Number(form.value.likelimit),
         retry429: Number(form.value.retry429),
         downloadinterval: Number(form.value.downloadinterval),
