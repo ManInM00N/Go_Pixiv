@@ -102,8 +102,7 @@ func Download_By_FollowPage(page, Type string, callEvent func(name string, data 
 				}
 				if illust.IllustType == UgoiraType {
 					callEvent("downloadugoira", illust.Pid, illust.Width, illust.Height, illust.Frames, illust.Source)
-					time.Sleep(10 * time.Second)
-					return nil, nil
+					time.Sleep(time.Second * 15)
 				}
 				Download(illust, options)
 				time.Sleep(time.Second * 10)
@@ -127,8 +126,7 @@ func Download_By_FollowPage(page, Type string, callEvent func(name string, data 
 		}
 		taskQueue.P.Wait()
 		utils.InfoLog.Println("follow page", page, " "+Type, "Satisfied and Successfully downloaded illusts: ", satisfy, "in all: ", len(all))
-		callEvent("UpdateTerminal", fmt.Sprintln("follow page", page, " "+Type, "Satisfied and Successfully downloaded illusts: ", satisfy, "in all: ", len(all)))
-		satisfy = 0
+		callEvent("UpdateTerminal", fmt.Sprintf("follow page %s type %s Satisfied %d in %d\n", page, Type, satisfy, len(all)))
 		close(c)
 		progressInfo.EndTime = time.Now()
 		progressInfo.Status = "Done"

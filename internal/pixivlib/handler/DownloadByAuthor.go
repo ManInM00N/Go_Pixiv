@@ -21,11 +21,13 @@ func Download_By_Author(text string, callEvent func(name string, data ...interfa
 	taskQueue.WaitingTasks++
 	callEvent("Push", text)
 	id, _ := shortid.Generate()
+	authorMsg, _ := GetAuthorInfo(statics.StringToInt64(text))
 	progressInfo := &TaskInfo{
 		Status: "Waiting",
 		ID:     id,
-		Name:   "Author artworks " + text,
+		Name:   fmt.Sprintf("%s(%s) artworks ", text, authorMsg["name"].String()),
 	}
+	Setting := NowSetting()
 	task, _ := taskQueue.TaskPool.NewTask(
 		func() {
 			if taskQueue.IsClosed {
@@ -33,14 +35,14 @@ func Download_By_Author(text string, callEvent func(name string, data ...interfa
 				return
 			}
 			c := make(chan string, 2000)
-			all, err := GetAuthor(statics.StringToInt64(text))
+			all, err := GetAuthorArtworks(statics.StringToInt64(text))
 			taskQueue.WaitingTasks--
 			progressInfo.Status = "Running"
 			progressInfo.BeginTime = time.Now()
 			progressInfo.Total = uint64(len(all))
 			if err != nil {
 				utils.DebugLog.Println("Error getting author", err)
-				callEvent("UpdateTerminal", fmt.Sprintln("Error getting author", text, err))
+				callEvent("UpdateTerminal", fmt.Sprintf("Error getting author %s %s\n", text, err.Error()))
 				//callEvent("Pop")
 				return
 			}
@@ -82,7 +84,6 @@ func Download_By_Author(text string, callEvent func(name string, data ...interfa
 					if illust.IllustType == UgoiraType {
 						callEvent("downloadugoira", illust.Pid, illust.Width, illust.Height, illust.Frames, illust.Source)
 						time.Sleep(10 * time.Second)
-						return nil, nil
 					}
 					if !Download(illust, options) {
 						c <- temp
@@ -110,7 +111,7 @@ func Download_By_Author(text string, callEvent func(name string, data ...interfa
 			taskQueue.P.Wait()
 			utils.InfoLog.Println(text+"'s artworks -> Satisfied and Successfully downloaded illusts: ", satisfy, "in all: ", len(all))
 			close(c)
-			callEvent("UpdateTerminal", fmt.Sprintln(text+"'s artworks -> Satisfied and Successfully downloaded illusts: ", satisfy, "in all: ", len(all)))
+			callEvent("UpdateTerminal", fmt.Sprintf("%s(%s)'s artworks -> Satisfied %d in %d", authorMsg["name"], text, satisfy, len(all)))
 			satisfy = 0
 			progressInfo.EndTime = time.Now()
 			progressInfo.Status = "Done"

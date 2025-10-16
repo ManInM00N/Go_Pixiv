@@ -14,3 +14,7 @@ func Download_By_NovelId(id string) {
 		return nil, nil
 	})
 }
+
+func Download_By_SeriesId(id string) {
+
+}

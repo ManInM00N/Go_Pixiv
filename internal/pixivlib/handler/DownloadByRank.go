@@ -153,7 +153,7 @@ func Download_By_Rank(text, Type string, callEvent func(name string, data ...int
 			}
 			taskQueue.P.Wait()
 			utils.InfoLog.Println(op.RankDate+" "+op.Rank+"'s artworks -> Satisfied and Successfully downloaded illusts: ", satisfy, "in all: ", len(all))
-			callEvent("UpdateTerminal", fmt.Sprintln(op.RankDate+" "+op.Rank+"'s artworks -> Satisfied and Successfully downloaded illusts: ", satisfy, "in all: ", len(all)))
+			callEvent("UpdateTerminal", fmt.Sprintf("%s %s's artworks -> Satisfied %d in %d \n", op.RankDate, op.Rank, satisfy, len(all)))
 			satisfy = 0
 			close(c)
 			progressInfo.EndTime = time.Now()

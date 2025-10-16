@@ -56,8 +56,8 @@ func AppInit(fs *embed.FS) {
 		Height:           768,
 		MinWidth:         1024,
 		MinHeight:        768,
-		MaxWidth:         1024,
-		MaxHeight:        768,
+		MaxWidth:         1920,
+		MaxHeight:        1280,
 		BackgroundColour: application.NewRGBA(233, 233, 233, 128),
 		URL:              "/",
 

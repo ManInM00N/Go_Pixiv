@@ -26,6 +26,7 @@ import (
 const (
 	IllustInfo  = 1
 	IllustPages = iota + 1
+	AuthorArtworks
 	AuthorInfo
 	RankInfo
 	FollowInfo
@@ -153,8 +154,10 @@ func GetUrlRefer(url, id string, num int) (string, string) {
 		return Base + "ajax/illust/" + url, Base + "artworks/" + id
 	case IllustPages:
 		return Base + "ajax/illust/" + url + "/pages", Base + "artworks/" + id
-	case AuthorInfo:
+	case AuthorArtworks:
 		return Base + "ajax/user/" + url + "/profile/all", Base + "member.php?id=" + id
+	case AuthorInfo:
+		return Base + "ajax/user/" + url + "?full=1", Base
 	case RankInfo:
 		return Base + "ranking.php?format=json" + url, Base
 	case FollowInfo:
@@ -412,14 +415,23 @@ func work(id int64, mode *Option) (i *Illust, err error) { // 按作品id查找
 	return i, err
 }
 
-func GetAuthor(id int64) (map[string]gjson.Result, error) {
-	data, err := GetWebpageData(strconv.FormatInt(id, 10), strconv.FormatInt(id, 10), AuthorInfo)
+func GetAuthorArtworks(id int64) (map[string]gjson.Result, error) {
+	data, err := GetWebpageData(strconv.FormatInt(id, 10), strconv.FormatInt(id, 10), AuthorArtworks)
 	if err != nil {
 		return nil, err
 	}
 	jsonmsg := gjson.ParseBytes(data).Get("body")
 	ss := jsonmsg.Get("illusts").Map()
 	return ss, nil
+}
+
+func GetAuthorInfo(id int64) (map[string]gjson.Result, error) {
+	data, err := GetWebpageData(strconv.FormatInt(id, 10), strconv.FormatInt(id, 10), AuthorInfo)
+	if err != nil {
+		return nil, err
+	}
+	jsonmsg := gjson.ParseBytes(data).Get("body").Map()
+	return jsonmsg, nil
 }
 
 func GetRank(option *Option) (gjson.Result, error) {
