@@ -32,7 +32,8 @@ const (
 	FollowInfo
 	GifPage
 	NovelInfo
-	NovelSeries
+	SeriesInfo
+	NovelSeriesList
 	NovelText
 	UserDashboard
 	PicSource
@@ -168,7 +169,9 @@ func GetUrlRefer(url, id string, num int) (string, string) {
 		return Base + "ajax/illust/" + id + "/ugoira_meta", Base
 	case NovelInfo:
 		return Base + "ajax/novel/" + id, Base
-	case NovelSeries:
+	case SeriesInfo:
+		return Base + "ajax/novel/series/" + id, Base
+	case NovelSeriesList:
 		return Base + "ajax/novel/series_content/" + id, Base
 	case NovelText:
 		return Base + "novel/show.php?id=" + id, Base
@@ -204,6 +207,9 @@ func DownloadNovel(id string) bool {
 		Path = filepath.Join(Path, "r18")
 	} else {
 		Path = filepath.Join(Path, "all-age")
+	}
+	if novel.SeriesId != 0 {
+		Path = filepath.Join(Path, statics.IntToString(novel.SeriesId))
 	}
 	os.MkdirAll(Path, os.ModePerm)
 	title := utils.Cut(novel.Id + novel.Title)
@@ -476,6 +482,26 @@ func GetNovel(id string) (gjson.Result, error) {
 		return gjson.Result{}, err
 	}
 	v := gjson.ParseBytes(data).Get("body")
+	return v, nil
+}
+
+func GetSeriesInfo(id string) (gjson.Result, error) {
+	data, err := GetWebpageData(id, id, SeriesInfo)
+	if err != nil {
+		utils.DebugLog.Println("get novel html failed: ", err.Error())
+		return gjson.Result{}, err
+	}
+	v := gjson.ParseBytes(data).Get("body")
+	return v, nil
+}
+
+func GetNovelSeries(id string) (gjson.Result, error) {
+	data, err := GetWebpageData(id, id, NovelSeriesList)
+	if err != nil {
+		utils.DebugLog.Println("get novel html failed: ", err.Error())
+		return gjson.Result{}, err
+	}
+	v := gjson.ParseBytes(data).Get("body").Get("page").Get("seriesContents")
 	return v, nil
 }
 

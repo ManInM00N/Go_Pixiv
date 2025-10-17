@@ -67,27 +67,41 @@ func (i *Illust) msg() string {
 }
 
 type FollowData struct {
-	ID              string   `json:"id"`
-	Title           string   `json:"title"`
-	UserID          string   `json:"userId"`
-	UserName        string   `json:"userName"`
+	ID       string `json:"id"`
+	Title    string `json:"title"`
+	UserID   string `json:"userId"`
+	UserName string `json:"userName"`
+
+	// artwork
 	PageCount       int      `json:"pageCount"`
 	AiType          int      `json:"aiType"`
 	Tags            []string `json:"tags"`
 	R18             bool     `json:"r18"`
 	ProfileImageUrl string   `json:"profileImageUrl"`
 	PreviewUrl      string   `json:"url"`
+	XRestrict       int      `json:"xRestrict"` // 1 R18 0 All
 
 	// illust
 
 	// novel
-	Genre         string `json:"genre"`
-	Description   string `json:"description"`
-	SeriesId      string `json:"seriesId"`
-	SeriesTitle   string `json:"seriesTitle"`
-	TextCount     int    `json:"textCount"`
-	WordCount     int    `json:"wordCount"`
-	BookMarkCount int    `json:"bookmarkCount"`
+	Genre       string `json:"genre"`
+	Description string `json:"description"`
+	SeriesId    string `json:"seriesId"`
+	SeriesTitle string `json:"seriesTitle"`
+
+	TextCount      int `json:"textCount"`      // thumbnail
+	CharacterCount int `json:"characterCount"` // seriesContent
+	WordCount      int `json:"wordCount"`
+	BookMarkCount  int `json:"bookmarkCount"`
+
+	//
+	SeriesContents SeriesContent `json:"series"`
+}
+
+type SeriesContent struct {
+	ID           int `json:"id"`
+	ViewableType int `json:"viewableType"`
+	ContentOrder int `json:"contentOrder"`
 }
 
 type RankData struct {

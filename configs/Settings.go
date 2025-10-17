@@ -41,7 +41,7 @@ func (s *Settings) UpdateSettings(NewSetting Settings) {
 	tmp.UseProxy = NewSetting.UseProxy
 	tmp.Proxy = NewSetting.Proxy
 	tmp.LikeLimit = max(NewSetting.LikeLimit, 0)
-	_, err := os.Stat(NewSetting.Downloadposition)
+	err := os.MkdirAll(NewSetting.Downloadposition, os.ModePerm)
 	if err != nil {
 		tmp.Downloadposition = "Download"
 		fmt.Println(NewSetting.Downloadposition)

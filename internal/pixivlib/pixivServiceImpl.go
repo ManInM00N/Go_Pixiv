@@ -66,7 +66,9 @@ func (a *Ctl) DownloadByPid(text string) bool {
 func (a *Ctl) DownloadByNovelId(text string, isSeries bool) bool {
 	InfoLog.Println("Download Novel ", text)
 	if isSeries {
-
+		Download_By_SeriesId(text, func(name string, data ...interface{}) {
+			a.App.Event.Emit(name, data)
+		})
 	} else {
 		Download_By_NovelId(text)
 	}

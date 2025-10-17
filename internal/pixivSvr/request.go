@@ -202,6 +202,23 @@ func NovelContent(c *gin.Context) {
 		"data": res.String(),
 	})
 }
+
+func SeriesList(c *gin.Context) {
+	seriesId := c.Query("id")
+	if seriesId == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing 'id' query parameter"})
+		return
+	}
+	res, err := handler.GetNovelSeries(seriesId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "request failed checkout your cookie"})
+		return
+	}
+	c.JSON(200, gin.H{
+		"data": res.String(),
+	})
+}
+
 func GIFResource(c *gin.Context) {
 	url := c.Query("url")
 	if url == "" {
