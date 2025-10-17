@@ -22,6 +22,11 @@ export const useNovelViewerStore = defineStore('novelViewer', () => {
 
     const isLoading = ref(false)
 
+    // 新增：系列章节列表
+    const seriesList = ref([])
+    const seriesId = ref('')
+    const seriesTitle = ref('')
+
     // 字体和样式设置
     const fontSize = ref(18)
     const minFontSize = ref(12)
@@ -41,6 +46,13 @@ export const useNovelViewerStore = defineStore('novelViewer', () => {
         return seriesData.value && seriesData.value.next
     })
 
+    // 新增：是否有系列
+    const hasSeries = computed(() => {
+        return seriesId.value !== '' && seriesList.value.length > 0
+    })
+
+
+
     // 方法
     const openViewer = async (novelData) => {
         console.log(novelData)
@@ -55,6 +67,11 @@ export const useNovelViewerStore = defineStore('novelViewer', () => {
         tags.value = novelData.tags || []
         description.value = novelData.description || ""
         cover.value = novelData.cover || ""
+        seriesId.value = ""
+        seriesTitle.value = ""
+        seriesList.value = []
+
+
 
         // 如果有系列信息,计算总页数
         if (seriesData.value) {
@@ -67,6 +84,11 @@ export const useNovelViewerStore = defineStore('novelViewer', () => {
             isVisible.value = true
             // 获取小说内容
             await loadNovelContent()
+            if (seriesData.value){
+                seriesId.value = seriesData.value.seriesId
+                seriesTitle.value = seriesData.value.title || ''
+                await loadSeriesList()
+            }
 
             // 禁用页面滚动
             document.body.style.overflow = 'hidden'
@@ -97,13 +119,15 @@ export const useNovelViewerStore = defineStore('novelViewer', () => {
         tags.value = []
         description.value = ""
         cover.value = ""
+        seriesList.value = []
+        seriesId.value = ''
+        seriesTitle.value = ''
 
         // 恢复页面滚动
         document.body.style.overflow = ''
     }
 
     const loadNovelContent = async () => {
-
         isLoading.value = true
         try {
             const response = await axios.get("http://127.0.0.1:7234/api/get_novel", {
@@ -124,12 +148,57 @@ export const useNovelViewerStore = defineStore('novelViewer', () => {
                 tmp.push(it.tag)
             })
             tags.value = tmp
-            console.log(data)
+            if (data.seriesNavData !== null){
+                seriesId.value = data.seriesNavData.seriesId
+                seriesTitle.value = data.seriesNavData.title
+            }else{
+                seriesId.value = ""
+                seriesTitle.value = ""
+            }
+            console.log(data.seriesNavData)
         } catch (error) {
             console.error('加载小说内容失败:', error)
             throw new Error('加载内容失败,请稍后重试')
         } finally {
             isLoading.value = false
+        }
+    }
+
+    const loadSeriesList = async () => {
+        if (!seriesId.value) return
+
+        try {
+            const response = await axios.get("http://127.0.0.1:7234/api/get_series_list", {
+                params: {
+                    id: seriesId.value.toString(),
+                }
+            })
+
+            const data = JSON.parse(response.data.data)
+            seriesList.value = data || []
+            console.log(seriesList.value)
+        } catch (error) {
+
+            console.error('加载系列列表失败:', error)
+            seriesList.value = []
+        }
+    }
+
+    const goToChapter = async (novelId) => {
+        if (novelId === currentNovelId.value) return
+
+        try {
+            currentNovelId.value = novelId
+            await loadNovelContent()
+        } catch (error) {
+            console.error('跳转章节失败:', error)
+            ElNotification({
+                title: "加载失败",
+                type: "error",
+                message: "无法加载该章节",
+                position: 'bottom-right',
+                duration: 3000,
+            })
         }
     }
 
@@ -259,6 +328,12 @@ export const useNovelViewerStore = defineStore('novelViewer', () => {
         cover,
         isLoading,
 
+        // 新增状态
+        seriesList,
+        seriesId,
+        seriesTitle,
+
+
         // 字体设置
         fontSize,
         minFontSize,
@@ -269,6 +344,7 @@ export const useNovelViewerStore = defineStore('novelViewer', () => {
         hasMultiplePages,
         canGoPrevious,
         canGoNext,
+        hasSeries,
 
         // 方法
         openViewer,
@@ -277,6 +353,7 @@ export const useNovelViewerStore = defineStore('novelViewer', () => {
         goToPrevious,
         goToNext,
         goToPage,
+        goToChapter,
         handleKeyPress,
 
         // 字体方法

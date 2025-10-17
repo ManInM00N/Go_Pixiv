@@ -219,6 +219,7 @@ import {form} from "../assets/js/configuration.js";
 import noProfileImg from "../assets/images/NoR18.png";
 import {LazyImg} from "vue-waterfall-plugin-next";
 import { useNovelViewerStore } from '../assets/stores/novelViewer.js'
+import {DownloadByNovelId} from "../../bindings/main/internal/pixivlib/ctl.js";
 
 const novelViewerStore = useNovelViewerStore()
 const name = "NovelCard"
@@ -307,7 +308,7 @@ const props = defineProps({
     default: ""
   },
   aiType: {
-    type: Boolean,
+    type: Number,
     default: false
   },
   seriesNavData: {
@@ -357,7 +358,7 @@ const downloadNovel = async () => {
   try {
     downloading.value = true
     // 这里调用小说下载函数
-    // await DownloadNovel(props.id)
+    await DownloadByNovelId(props.id.toString(),false)
     ElMessage.success(`开始下载小说: ${props.title}`)
   } catch (error) {
     console.error('下载失败:', error)

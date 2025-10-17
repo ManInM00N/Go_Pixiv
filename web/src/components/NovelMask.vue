@@ -77,6 +77,18 @@
                 </el-button-group>
               </div>
 
+              <!-- 章节列表按钮 -->
+              <el-button
+                  v-if="novelViewerStore.hasSeries"
+                  circle
+                  size="large"
+                  @click="toggleSeriesSidebar"
+                  v-tooltip="'章节列表'"
+                  class="control-btn"
+              >
+                <el-icon><Menu /></el-icon>
+              </el-button>
+
               <el-button
                   circle
                   size="large"
@@ -123,7 +135,6 @@
 
             <!-- 主内容容器 -->
             <div class="novel-container" ref="novelContainer">
-
               <div class="novel-content-wrapper" :style="contentStyle">
                 <Transition name="loading-fade" v-if="novelViewerStore.isLoading">
                   <div  class="loading-container">
@@ -144,9 +155,20 @@
                         <el-icon><User /></el-icon>
                         {{ novelViewerStore.author }}
                       </span>
-                            <span class="novel-id">
+                      <!-- Novel ID (可点击复制) -->
+                      <span class="novel-id clickable" @click="copyToClipboard(novelViewerStore.currentNovelId, '小说ID')">
                         <el-icon><Document /></el-icon>
                         {{ novelViewerStore.currentNovelId }}
+                      </span>
+
+                      <!-- Series ID (可点击复制) -->
+                      <span
+                          v-if="novelViewerStore.seriesData!==null"
+                          class="series-id clickable"
+                          @click="copyToClipboard(novelViewerStore.seriesId, '系列ID')"
+                      >
+                        <el-icon><Collection /></el-icon>
+                        系列: {{ novelViewerStore.seriesId }}
                       </span>
 
                     </div>
@@ -188,6 +210,48 @@
               >
                 <el-icon><ArrowRight /></el-icon>
               </button>
+            </Transition>
+            <!-- 章节列表侧边栏 -->
+            <Transition name="sidebar-slide">
+              <div v-if="showSeriesSidebar && novelViewerStore.hasSeries" class="series-sidebar">
+                <div class="sidebar-header">
+                  <h4>章节列表</h4>
+                  <div class="sidebar-header-buttons">
+                    <el-button
+                        circle
+                        size="small"
+                        @click="DownloadByNovelId(novelViewerStore.seriesId.toString(), true)"
+                        v-tooltip="'下载整个系列'"
+                        class="download-series-btn"
+                    >
+                      <el-icon><Download /></el-icon>
+                    </el-button>
+                    <el-button
+                        circle
+                        size="small"
+                        @click="toggleSeriesSidebar"
+                        v-tooltip="'关闭'"
+                        class="close-sidebar-btn"
+                    >
+                      <el-icon><Close /></el-icon>
+                    </el-button>
+                  </div>
+                </div>
+                <el-scrollbar class="sidebar-scrollbar">
+                  <div class="chapter-list">
+                    <div
+                        v-for="chapter in novelViewerStore.seriesList"
+                        :key="chapter.id"
+                        class="chapter-item"
+                        :class="{ active: chapter.id === novelViewerStore.currentNovelId }"
+                        @click="novelViewerStore.goToChapter(chapter.id)"
+                    >
+                      <span class="chapter-order">#{{ chapter.order }}</span>
+                      <span class="chapter-title">{{ chapter.title }}</span>
+                    </div>
+                  </div>
+                </el-scrollbar>
+              </div>
             </Transition>
           </div>
 
@@ -248,7 +312,9 @@ import {
   Loading,
   QuestionFilled,
   Plus,
-  Minus
+  Minus,
+  Menu,
+  Collection
 } from '@element-plus/icons-vue'
 import {ElMessage, ElNotification} from 'element-plus'
 import { useNovelViewerStore } from '../assets/stores/novelViewer.js'
@@ -261,7 +327,33 @@ const modalRef = ref(null)
 const novelContainer = ref(null)
 const contentLoading = ref(false)
 const showShortcuts = ref(false)
+const showSeriesSidebar = ref(false)
 const novelContent = ref('')
+
+const copyToClipboard = async (text, label = '内容') => {
+  try {
+    await navigator.clipboard.writeText(text)
+    ElNotification({
+      position: "bottom-right",
+      type: "success",
+      message: `${label}已复制: ${text}`,
+      duration: 2000,
+    })
+  } catch (err) {
+    console.error('复制失败', err)
+    ElNotification({
+      position: "bottom-right",
+      type: "warning",
+      message: "复制失败",
+      duration: 1000,
+    })
+  }
+}
+
+const toggleSeriesSidebar = () => {
+  showSeriesSidebar.value = !showSeriesSidebar.value
+}
+
 
 async function  preventOutLink(e) {
   const el = e.target
@@ -390,6 +482,19 @@ watch(() => novelViewerStore.isVisible, (newVal) => {
   opacity: 0;
   transform: scale(0.8);
 }
+
+
+// 侧边栏动画
+.sidebar-slide-enter-active,
+.sidebar-slide-leave-active {
+  transition: all 0.3s ease;
+}
+
+.sidebar-slide-enter-from,
+.sidebar-slide-leave-to {
+  transform: translateX(100%);
+}
+
 // 加载动画
 .loading-fade-enter-active,
 .loading-fade-leave-active {
@@ -695,6 +800,101 @@ watch(() => novelViewerStore.isVisible, (newVal) => {
       }
     }
   }
+
+  .series-sidebar {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 320px;
+    background: rgba(0, 0, 0, 0.9);
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+    z-index: 20;
+
+    .sidebar-header {
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+      h4 {
+        margin: 0;
+        color: white;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .sidebar-header-buttons {
+        display: flex;
+        gap: 8px;
+      }
+
+      .close-sidebar-btn
+      .download-series-btn {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.2);
+        color: white;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.2);
+        }
+      }
+    }
+
+    .sidebar-scrollbar {
+      flex: 1;
+      padding: 10px;
+
+      .chapter-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        .chapter-item {
+          padding: 12px 15px;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 8px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          display: flex;
+          gap: 10px;
+          align-items: flex-start;
+
+          .chapter-order {
+            color: #409EFF;
+            font-weight: 600;
+            flex-shrink: 0;
+            min-width: 35px;
+          }
+
+          .chapter-title {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.4;
+            flex: 1;
+            word-break: break-word;
+          }
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(-5px);
+          }
+
+          &.active {
+            background: rgba(64, 158, 255, 0.2);
+            border-left: 3px solid #409EFF;
+
+            .chapter-title {
+              color: white;
+              font-weight: 500;
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 // 分页控制
@@ -868,4 +1068,5 @@ watch(() => novelViewerStore.isVisible, (newVal) => {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
 </style>

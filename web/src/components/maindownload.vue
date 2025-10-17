@@ -151,6 +151,11 @@
                   <template #prepend>
                     <el-icon><Document /></el-icon>
                   </template>
+                  <template #append>
+                    <el-checkbox v-model="isSeries">
+                      是否为系列
+                    </el-checkbox>
+                  </template>
                 </el-input>
               </div>
               <el-button
@@ -431,6 +436,7 @@ const inputPid = ref('')
 const inputAuthorId = ref('')
 const inputNovelId = ref('')
 const period = ref("daily")
+const isSeries =ref(false)
 
 onMounted(() => {
     Events.On("NotFound", (msg) => {
@@ -570,7 +576,7 @@ async function handleDownload(type, value = null) {
         taskName = `${period.value} 排行榜 (${dateSelect.value.selectedDate})`
         break
       case 'novel':
-        result = await DownloadByNovelId(value)
+        result = await DownloadByNovelId(value,isSeries.value)
         taskName = `小说 ${value}`
         break
     }
