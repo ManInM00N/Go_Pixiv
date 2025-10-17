@@ -107,7 +107,7 @@
             class="refresh-fab"
             v-tooltip="{ content: '刷新页面', placement: 'left' }"
         >
-          <el-icon><Refresh /></el-icon>
+          <el-icon v-if="!loading"><Refresh /></el-icon>
         </el-button>
       </div>
     </div>
@@ -172,6 +172,7 @@ import 'vue-waterfall-plugin-next/dist/style.css'
 import 'animate.css';
 import PicCard from './PicCard.vue';
 import "../assets/style/variable.less";
+import { debounce } from '../assets/js/utils/index.js'
 import {
   UserFilled,
   Download,
@@ -209,16 +210,15 @@ const filteredPicItems = computed(() => {
 // 计算属性：过滤后的数量
 const filteredCount = computed(() => filteredPicItems.value.length)
 
-function onModeChange() {
+const onModeChange = debounce(() => {
   console.log("内容过滤模式切换到:", mode.value)
-  // 重新渲染瀑布流
   nextTick(() => {
     if (waterfall.value) {
       console.log("渲染开始")
       waterfall.value.renderer()
     }
   })
-}
+}, 200)
 
 function refreshData() {
   fetchFollowData()
@@ -294,56 +294,27 @@ function downloadMultiplePages() {
 
 </script>
 
+
 <style lang="less" scoped>
+@import "../assets/style/common/page-header.less";
+@import "../assets/style/common/cards.less";
+@import "../assets/style/common/pagination.less";
+@import "../assets/style/common/waterfall.less";
+@import "../assets/style/common/buttons.less";
+@import "../assets/style/common/animations.less";
+@import "../assets/style/common/loading.less";
+@import "../assets/style/common/responsive.less";
 @import "../assets/style/load.less";
 
 .main-container {
   padding: 20px;
   min-height: 100vh;
   overflow-y: hidden;
-  //background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   overflow-x: hidden;
 }
 
-// 页面标题
-.page-header {
-  text-align: center;
-  margin-bottom: 30px;
-
-  .page-title {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-    font-size: 28px;
-    font-weight: 600;
-    color: #ffffff;
-    margin: 0;
-    padding: 20px 0;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-
-    .title-icon {
-      font-size: 32px;
-      color: #409EFF;
-    }
-
-    .count-tag {
-      font-size: 14px;
-      font-weight: normal;
-    }
-  }
-}
-
-// 控制面板
+// 控制面板特定样式（通用样式不包含的部分）
 .control-panel {
-  margin-bottom: 25px;
-  border-radius: 15px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-
-  :deep(.el-card__body) {
-    padding: 25px;
-  }
-
   .control-row {
     align-items: flex-end;
   }
@@ -359,10 +330,6 @@ function downloadMultiplePages() {
   }
 
   .range-input-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-
     .range-separator {
       font-weight: bold;
       color: #909399;
@@ -372,46 +339,18 @@ function downloadMultiplePages() {
     .el-input-number {
       width: 100px;
     }
-
-    @media (max-width: 768px) {
-      flex-direction: column;
-
-      .el-input-number {
-        width: 100%;
-      }
-
-      .el-button {
-        width: 100%;
-        margin-top: 10px;
-      }
-    }
   }
 
   .current-page-download {
-    display: flex;
-    justify-content: flex-end;
-    align-items: flex-end;
-
     .download-current-btn {
       width: 100%;
       height: 44px;
     }
-
-    @media (max-width: 768px) {
-      margin-top: 20px;
-    }
   }
 }
 
-// 分页容器
+// 分页容器特定配色
 .pagination-container {
-  display: flex;
-  align-items: center;
-  margin-bottom: 25px;
-  padding: 20px;
-  background: black;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
   .stats-info {
     display: flex;
     gap: 10px;
@@ -420,134 +359,6 @@ function downloadMultiplePages() {
       padding: 8px 12px;
       border-radius: 20px;
     }
-  }
-
-  @media (max-width: 768px) {
-    //flex-direction: column;
-    gap: 15px;
-
-    .stats-info {
-      flex-wrap: wrap;
-      //justify-content: center;
-    }
-  }
-}
-
-// 瀑布流容器
-.waterfall-container {
-  min-height: 400px;
-
-  .artwork-card {
-    position: relative;
-    border-radius: 15px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
-    background: white;
-
-    &:hover {
-      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-      transform: translateY(-5px);
-    }
-  }
-}
-
-// 加载状态
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 300px;
-
-  .loader {
-    text-align: center;
-  }
-
-  .loading-text {
-    margin-top: 20px;
-    color: #606266;
-    font-size: 16px;
-  }
-}
-
-// 空状态
-.empty-state {
-  margin: 60px 0;
-
-  .empty-description {
-    p {
-      margin: 5px 0;
-      color: #909399;
-    }
-  }
-}
-
-// 浮动操作按钮
-.floating-actions {
-  //position: fixed;
-  //right: 50px;
-  //bottom: 130px;
-  //z-index: 100;
-  //float: left;
-  .refresh-fab {
-    width: 45px;
-    height: 45px;
-    box-shadow: 0 4px 15px rgba(64, 158, 255, 0.3);
-
-    &:hover {
-      transform: scale(1.1);
-    }
-  }
-}
-
-// 响应式设计
-@media (max-width: 768px) {
-  .main-container {
-    padding: 15px;
-  }
-
-  .page-header .page-title {
-    font-size: 24px;
-    flex-direction: column;
-    gap: 10px;
-  }
-}
-
-@media (max-width: 480px) {
-  .page-header .page-title {
-    font-size: 20px;
-  }
-
-  .waterfall-container {
-    :deep(.vue-waterfall) {
-      --waterfall-item-width: 100% !important;
-    }
-  }
-}
-
-// 动画效果
-.el-fade-in-linear-enter-active {
-  transition: all 0.4s ease;
-}
-
-.el-fade-in-linear-enter-from {
-  opacity: 0;
-  transform: translateY(30px);
-}
-
-.artwork-card {
-  animation: slideInUp 0.6s ease forwards;
-}
-
-@keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }
 </style>

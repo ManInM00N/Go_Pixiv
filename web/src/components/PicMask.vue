@@ -266,6 +266,8 @@
 </template>
 
 <script setup>
+import { getThumbnailUrl  } from '../assets/js/utils/imageHelper.js'
+import { openPixivArtwork } from '../assets/js/utils/pixivHelper.js'
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import {
   User,
@@ -306,12 +308,6 @@ const currentImageUrl = computed(() => {
   return `${baseUrl}${pixivUrl}`
 })
 
-// 获取缩略图URL
-const getThumbnailUrl = (page) => {
-  const baseUrl = 'http://127.0.0.1:7234/api/preview?url='
-  const pixivUrl = `${imageViewerStore.thumbUrls[page]}`
-  return `${baseUrl}${pixivUrl}`
-}
 
 // 鼠标事件处理
 const handleMouseDown = (event) => {
@@ -403,8 +399,6 @@ const handleTouchEnd = () => {
   touchStartDistance.value = 0
 }
 
-
-
 // 事件处理
 const handleBackdropClick = (event) => {
   if (event.target === event.currentTarget) {
@@ -449,8 +443,7 @@ const downloadCurrent = async () => {
 }
 
 const openInPixiv = () => {
-  const url = `https://www.pixiv.net/artworks/${imageViewerStore.currentPid}`
-  window.open(url, '_blank')
+  openPixivArtwork(imageViewerStore.currentPid)
 }
 
 const toggleShortcuts = () => {
@@ -482,489 +475,123 @@ watch(() => imageViewerStore.currentPage, () => {
 </script>
 
 <style lang="less" scoped>
-// 模态框动画
-.modal-fade-enter-active,
-.modal-fade-leave-active {
-  transition: all 0.3s ease;
-}
+// 导入通用样式
+@import "../assets/style/common/modal.less";
+@import "../assets/style/common/buttons.less";
+@import "../assets/style/common/loading.less";
+@import "../assets/style/common/pagination.less";
+@import "../assets/style/common/animations.less";
 
-.modal-fade-enter-from,
-.modal-fade-leave-to {
-  opacity: 0;
-}
-
-// 导航按钮动画
-.nav-fade-enter-active,
-.nav-fade-leave-active {
-  transition: all 0.2s ease;
-}
-
-.nav-fade-enter-from,
-.nav-fade-leave-to {
-  opacity: 0;
-  transform: scale(0.8);
-}
-
-// 主容器
+// 图片查看器特定样式
 .image-viewer-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 201;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  outline: none;
+  // 基础模态框样式由 modal.less 提供
 
-  .modal-backdrop {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.16);
-    backdrop-filter: blur(8px);
-  }
-
-  .modal-container {
-    position: relative;
-    width: 95vw;
-    height: 95vh;
-    max-width: 1400px;
-    max-height: 900px;
-    display: flex;
-    flex-direction: column;
-    //background: rgba(255, 255, 255, 0.95);
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  }
-}
-
-// 头部信息栏
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 30px;
-  //background: transparent;
-  background: rgba(0, 0, 0, 0.57);
-  color: white;
-
-  .image-info {
+  // 图片展示区域
+  .image-display-area {
     flex: 1;
-
-    .image-title {
-      margin: 0 0 8px 0;
-      font-size: 20px;
-      font-weight: 600;
-      line-height: 1.3;
-    }
-
-    .image-meta {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      font-size: 14px;
-      opacity: 0.9;
-
-      .author-info,
-      .pid-info {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-      }
-    }
-  }
-
-  .modal-controls {
+    position: relative;
     display: flex;
-    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    height: 60%;
+    background: rgba(0, 0, 0, 0.57);
 
-    .zoom-controls {
+    .image-container {
+      width: 100%;
+      height: 100%;
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 8px 12px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
+      justify-content: center;
+      padding: 20px 120px;
 
-      .zoom-info {
-        font-size: 14px;
-        font-weight: 600;
-        min-width: 50px;
-        text-align: center;
+      &.dragging {
+        cursor: grabbing;
       }
 
-      .zoom-buttons {
-        .el-button {
-          background: transparent;
-          border-color: rgba(255, 255, 255, 0.3);
-          color: white;
+      &.zoomedIn {
+        cursor: grab;
+      }
 
-          &:hover:not(:disabled) {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.5);
-          }
+      .image-wrapper {
+        height: 95%;
 
-          &:disabled {
-            opacity: 0.5;
-          }
+        .main-image {
+          height: 100%;
+          border-radius: 8px;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
       }
     }
+  }
+}
 
-    .control-btn {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+// 缩放控制
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+
+  .zoom-info {
+    font-size: 14px;
+    font-weight: 600;
+    min-width: 50px;
+    text-align: center;
+  }
+
+  .zoom-buttons {
+    .el-button {
+      background: transparent;
+      border-color: rgba(255, 255, 255, 0.3);
       color: white;
 
-      &:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: scale(1.05);
+      &:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.5);
       }
 
-      &.close-btn {
-        background: rgba(245, 108, 108, 0.8);
-        border-color: rgba(245, 108, 108, 0.8);
-
-        &:hover {
-          background: rgba(245, 108, 108, 1);
-        }
+      &:disabled {
+        opacity: 0.5;
       }
     }
   }
 }
 
-// 图片展示区域
-.image-display-area {
+// 图片信息
+.image-info {
   flex: 1;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 60%;
-  //background: rgba(255, 255, 255, 0.95);
-  background: rgba(0, 0, 0, 0.57);
-  //background: #f8f9fa;
 
-  .nav-button {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.6);
-    color: white;
-    border: none;
-    cursor: pointer;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    transition: all 0.3s ease;
-
-    &:hover {
-      background: rgba(0, 0, 0, 0.8);
-      transform: translateY(-50%) scale(1.1);
-    }
-
-    &.nav-prev {
-      left: 30px;
-    }
-
-    &.nav-next {
-      right: 30px;
-    }
-  }
-
-  .image-container {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px 120px;
-
-    .image-wrapper {
-      //max-width: 100%;
-      height: 95%;
-      .main-image {
-        height: 100%;
-        border-radius: 8px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-      }
-    }
-  }
-
-  .image-loading,
-  .image-error {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-    color: #ffffff;
-
-    .loading-icon {
-      font-size: 48px;
-      animation: spin 1s linear infinite;
-    }
-
-    .error-icon {
-      font-size: 48px;
-    }
-
-    p {
-      font-size: 16px;
-      margin: 0;
-    }
-  }
-  // 提示文本
-  .zoom-hint,
-  .drag-hint {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 14px;
-    pointer-events: none;
-    z-index: 5;
-    animation: fadeInOut 3s ease-in-out;
-  }
-}
-
-// 分页控制
-.pagination-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  padding: 10px 30px;
-  //background: white;
-  background: rgba(0, 0, 0, 0.57);
-  //border-top: 1px solid #e4e7ed;
-
-  .page-info {
-    text-align: center;
-    font-size: 16px;
+  .image-title {
+    margin: 0 0 8px 0;
+    font-size: 20px;
     font-weight: 600;
-    color: #303133;
-
-    .current-page {
-      color: #409EFF;
-    }
-
-    .page-separator {
-      margin: 0 8px;
-      color: #909399;
-    }
+    line-height: 1.3;
   }
-  .thumbnail-strip {
+
+  .image-meta {
     display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding: 10px 0;
+    align-items: center;
+    gap: 20px;
+    font-size: 14px;
+    opacity: 0.9;
 
-    .thumbnail-item {
-      position: relative;
-      flex-shrink: 0;
-      width: 60px;
-      height: 60px;
-      border-radius: 8px;
-      overflow: hidden;
-      cursor: pointer;
-      border: 2px solid transparent;
-      transition: all 0.3s ease;
-
-      &:hover {
-        transform: scale(1.05);
-        border-color: #409EFF;
-      }
-
-      &.active {
-        border-color: #409EFF;
-        box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.3);
-      }
-
-      .thumbnail-image {
-        width: 100%;
-        height: 100%;
-      }
-
-      .thumbnail-overlay {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: rgba(0, 0, 0, 0.7);
-        color: white;
-        font-size: 12px;
-        text-align: center;
-        padding: 2px;
-      }
-    }
-  }
-}
-
-// 快捷键提示
-.keyboard-shortcuts {
-  position: absolute;
-  bottom: 80px;
-  right: 30px;
-  background: rgba(0, 0, 0, 0.9);
-  color: white;
-  border-radius: 12px;
-  padding: 20px;
-  min-width: 200px;
-
-  .shortcuts-content {
-    h4 {
-      margin: 0 0 15px 0;
-      font-size: 16px;
-      font-weight: 600;
-    }
-
-    .shortcut-list {
+    .author-info,
+    .pid-info {
       display: flex;
-      flex-direction: column;
-      gap: 8px;
-
-      .shortcut-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-
-        kbd {
-          background: #555;
-          padding: 4px 8px;
-          border-radius: 4px;
-          font-family: monospace;
-          font-size: 12px;
-        }
-
-        span {
-          font-size: 14px;
-        }
-      }
+      align-items: center;
+      gap: 6px;
     }
   }
 }
 
-// 帮助按钮
-.help-button {
-  position: absolute;
-  bottom: 30px;
-  right: 30px;
-
-  .help-btn {
-    background: rgba(0, 0, 0, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-
-    &:hover {
-      background: rgba(0, 0, 0, 0.8);
-      transform: scale(1.05);
-    }
-  }
-}
-
-// 响应式设计
+// 响应式特定调整
 @media (max-width: 768px) {
-  .modal-container {
-    width: 100vw;
-    height: 100vh;
-    border-radius: 0;
-  }
-
-  .modal-header {
-    padding: 15px 20px;
-
-    .image-title {
-      font-size: 18px;
-    }
-
-    .image-meta {
-      gap: 15px;
-      font-size: 13px;
-    }
-
-    .modal-controls {
-      gap: 8px;
-      .zoom-controls {
-        padding: 6px 10px;
-
-        .zoom-info {
-          font-size: 12px;
-          min-width: 40px;
-        }
-      }
-    }
-  }
-
   .image-display-area {
     .image-container {
       padding: 15px 80px;
     }
-
-    .nav-button {
-      width: 50px;
-      height: 50px;
-      font-size: 20px;
-
-      &.nav-prev {
-        left: 15px;
-      }
-
-      &.nav-next {
-        right: 15px;
-      }
-    }
-
-    .zoom-hint,
-    .drag-hint {
-      font-size: 12px;
-      padding: 6px 12px;
-      bottom: 15px;
-    }
   }
-
-  .pagination-controls {
-    padding: 15px 20px;
-
-    .thumbnail-strip {
-      .thumbnail-item {
-        width: 50px;
-        height: 50px;
-      }
-    }
-  }
-
-  .keyboard-shortcuts {
-    display: none;
-  }
-
-  .help-button {
-    bottom: 20px;
-    right: 20px;
-  }
-}
-
-// 动画
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-@keyframes fadeInOut {
-  0%, 100% { opacity: 0; }
-  20%, 80% { opacity: 1; }
 }
 </style>

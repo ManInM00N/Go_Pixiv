@@ -22,7 +22,7 @@
                   <LazyImg
                       :ref="pic"
                       :onload="load = false"
-                      :url="getImageUrl()"
+                      :url="getImageUrl(props.img, props.r18)"
                       class="image"
 
                   />
@@ -36,7 +36,7 @@
                 <div style="padding: 14px">
                     <el-row>
                         <el-text class="w-280px mb-2" truncated
-                            @click="jump('https://www.pixiv.net/artworks/' + $props.pid)">
+                             @click="openPixivArtwork(props.pid)">
                             {{ $props.title }}
                         </el-text>
                     </el-row>
@@ -90,7 +90,6 @@ import { DownloadByPid } from "../../bindings/main/internal/pixivlib/ctl.js";
 const name = "PicCard"
 import { form } from "../assets/js/configuration.js"
 import { LazyImg } from "vue-waterfall-plugin-next";
-import { sleep } from "../assets/js/Time.js"
 import {
   Download,
   View,
@@ -102,6 +101,8 @@ import {
   Loading,
   Check
 } from "@element-plus/icons-vue";
+import { getImageUrl, openPixivArtwork } from '../assets/js/utils/index.js'
+import { sleep } from '../assets/js/utils/debounce.js'
 import { useImageViewerStore } from "../assets/stores/PicPreview.js"
 const store = useImageViewerStore()
 
@@ -139,13 +140,6 @@ const props = defineProps({
 const pic = ref(null)
 const inqueue = ref(false)
 const dis = ref(false)
-// 获取图片URL
-const getImageUrl = () => {
-  if (props.r18 && !form.value.r_18) {
-    return noProfileImg
-  }
-  return `http://127.0.0.1:7234/api/preview?url=${props.img}`
-}
 
 const openImageViewer = () => {
   const imageData = {
@@ -159,95 +153,57 @@ const openImageViewer = () => {
   }
   store.openViewer(imageData)
 }
+
 async function download() {
-    if (DownloadByPid(props.pid)) {
-        console.log(props.pid)
-        dis.value = true
-        inqueue.value = true
-        await sleep(1000)
-        dis.value = false
-    }
+  if (DownloadByPid(props.pid)) {
+    console.log(props.pid)
+    dis.value = true
+    inqueue.value = true
+    await sleep(1000)
+    dis.value = false
+  }
 }
 
 
 onMounted(() => {
 })
-function jump(event) {
-    console.log("jump", event)
-    window.open(event, '_blank')
-}
 </script>
 
+
 <style lang="less" scoped>
-.image {
-    width: 100%;
-}
+// 导入通用样式
+@import "../assets/style/common/loading.less";
+@import "../assets/style/common/waterfall.less";
+@import "../assets/style/common/animations.less";
+
 
 .loading {
-    width: 28px;
-    height: 28px;
-    border: 2px solid #ffffff;
-    border-top-color: transparent;
-    border-radius: 100%;
-    animation: circle infinite 0.75s linear;
+  width: 28px;
+  height: 28px;
+  border: 2px solid #ffffff;
+  border-top-color: transparent;
+  border-radius: 100%;
+  animation: circle infinite 0.75s linear;
 }
-.image-container {
-  position: relative;
-  cursor: pointer;
-  overflow: hidden;
 
-  .image {
-    width: 100%;
-    transition: transform 0.3s ease;
-  }
 
-  .image-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
+// 组件特定样式
+.image {
+  width: 100%;
+}
 
-    .overlay-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      color: white;
-      transform: translateY(10px);
-      transition: transform 0.3s ease;
+.r18-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
 
-      .preview-icon {
-        font-size: 32px;
-      }
-
-      .preview-text {
-        font-size: 14px;
-        font-weight: 500;
-      }
-    }
-  }
-
-  &:hover {
-    .image {
-      transform: scale(1.05);
-    }
-
-    .image-overlay {
-      opacity: 1;
-
-      .overlay-content {
-        transform: translateY(0);
-      }
-    }
+  .el-tag {
+    font-weight: bold;
+    border-radius: 20px;
   }
 }
+// 卡片特定的下载区域样式
 .download-area {
   .download-btn {
     width: 32px;
@@ -263,9 +219,6 @@ function jump(event) {
   .download-status {
     width: 32px;
     height: 32px;
-    //display: flex;
-    //align-items: center;
-    //justify-content: center;
 
     .loading-spinner {
       .spinning {
@@ -281,47 +234,6 @@ function jump(event) {
         animation: checkMark 0.5s ease;
       }
     }
-  }
-}
-@keyframes circle {
-    0% {
-        transform: rotate(0);
-    }
-
-    100% {
-        transform: rotate(360deg);
-    }
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-@keyframes checkMark {
-  0% {
-    transform: scale(0);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.2);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.r18-badge {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 10;
-
-  .el-tag {
-    font-weight: bold;
-    border-radius: 20px;
   }
 }
 </style>

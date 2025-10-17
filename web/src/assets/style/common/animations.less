@@ -1,0 +1,174 @@
+/**
+ * 动画通用样式
+ */
+
+// 旋转动画
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// 淡入淡出动画
+@keyframes fadeInOut {
+  0%, 100% {
+    opacity: 0;
+  }
+  20%, 80% {
+    opacity: 1;
+  }
+}
+
+// 向上滑入动画
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// 脉冲动画
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+// 圆圈动画
+@keyframes circle {
+  0% {
+    transform: rotate(0);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+// 勾选标记动画
+@keyframes checkMark {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+// Element Plus 过渡动画增强
+.el-fade-in-linear-enter-active {
+  transition: all 0.4s ease;
+}
+
+.el-fade-in-linear-enter-from {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+// Vue 过渡动画
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.3s ease;
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+// 模态框动画
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
+// 侧边栏滑动动画
+.sidebar-slide-enter-active,
+.sidebar-slide-leave-active {
+  transition: all 0.3s ease;
+}
+
+.sidebar-slide-enter-from,
+.sidebar-slide-leave-to {
+  transform: translateX(100%);
+}
+
+// 导航按钮动画
+.nav-fade-enter-active,
+.nav-fade-leave-active {
+  transition: all 0.2s ease;
+}
+
+.nav-fade-enter-from,
+.nav-fade-leave-to {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+// 加载动画
+.loading-fade-enter-active,
+.loading-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.loading-fade-enter-from,
+.loading-fade-leave-to {
+  opacity: 0;
+}
+
+// 内容淡入动画
+.content-fade-enter-active {
+  transition: all 0.4s ease;
+}
+
+.content-fade-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+// 卡片动画
+.artwork-card,
+.novel-wrapper,
+.card-wrapper {
+  animation: slideInUp 0.6s ease forwards;
+}
+
+// 加载旋转
+.loading-spinner,
+.loading-icon {
+  animation: spin 1s linear infinite;
+}
+
+// 应用工具类
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+.pulsing {
+  animation: pulse 1.5s ease-in-out infinite;
+}

@@ -30,7 +30,7 @@
             <LazyImg
                 :ref="pic"
                 :onload="load = false"
-                :url="getImageUrl()"
+                :url="getImageUrl(props.cover, props.genre == '1')"
                 class="image"
 
             />
@@ -106,7 +106,7 @@
 <!--                <el-icon>-->
                   <LazyImg
                       :onload="load = false"
-                      :url="getProfileUrl()"
+                      :url="getProfileUrl(props.profileImageUrl)"
                   >
 
                   </LazyImg>
@@ -214,6 +214,14 @@ import {
   Download,
   Collection
 } from '@element-plus/icons-vue'
+import {
+  getImageUrl,
+  getProfileUrl,
+  formatCount,
+  isTextLong,
+  openPixivUser
+} from '../assets/js/utils/index.js'
+
 import { ElMessage } from 'element-plus'
 import {form} from "../assets/js/configuration.js";
 import noProfileImg from "../assets/images/NoR18.png";
@@ -326,20 +334,9 @@ const coverLoading = ref(true)
 const downloading = ref(false)
 const isFavorited = ref(false)
 
-// 计算属性
-const isTitleLong = computed(() => props.title && props.title.length > 30)
-const isDescriptionLong = computed(() => props.description && props.description.length > 100)
 
-const getImageUrl = () => {
-  if (props.genre == "1" && !form.value.r_18) {
-    return noProfileImg
-  }
-  return `http://127.0.0.1:7234/api/preview?url=${props.cover}`
-}
-
-const getProfileUrl = () => {
-  return `http://127.0.0.1:7234/api/preview?url=${props.profileImageUrl}`
-}
+const isTitleLong = computed(() => isTextLong(props.title, 30))
+const isDescriptionLong = computed(() => isTextLong(props.description, 100))
 
 // 事件处理
 const onCoverLoad = () => {
@@ -350,9 +347,7 @@ const onCoverError = () => {
   coverLoading.value = false
 }
 
-const openAuthor = () => {
-  window.open(`https://www.pixiv.net/users/${props.userId}`, '_blank')
-}
+const openAuthor = () => openPixivUser(props.userId)
 
 const downloadNovel = async () => {
   try {
@@ -375,40 +370,25 @@ const toggleFavorite = () => {
   ElMessage.success(isFavorited.value ? '已添加收藏' : '已取消收藏')
 }
 
-// 格式化数字
-const formatCount = (count) => {
-  if (count < 1000) return count.toString()
-  if (count < 10000) return (count / 1000).toFixed(1) + 'K'
-  if (count < 100000) return (count / 10000).toFixed(1) + 'W'
-  return (count / 10000).toFixed(0) + 'W'
-}
 </script>
 
+
 <style lang="less" scoped>
+// 导入通用样式
+@import "../assets/style/common/loading.less";
+@import "../assets/style/common/cards.less";
+@import "../assets/style/common/waterfall.less";
+@import "../assets/style/common/buttons.less";
+@import "../assets/style/common/animations.less";
+
+// 组件特定样式
 .novel-card-wrapper {
   width: 100%;
   max-width: 300px;
   margin: 0 auto;
 }
 
-// 骨架屏
-.skeleton-card {
-  border-radius: 15px;
-  overflow: hidden;
-  background: white;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-
-  .skeleton-cover {
-    width: 100%;
-    height: 120px;
-  }
-
-  .skeleton-content {
-    padding: 16px;
-  }
-}
-
-// 主卡片
+// 小说卡片特定样式
 .novel-card {
   width: 100%;
   border-radius: 15px;
@@ -417,10 +397,6 @@ const formatCount = (count) => {
   border: 2px solid transparent;
   cursor: pointer;
   position: relative;
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
-  }
 
   &.login-required {
     border-color: #f39c12;
@@ -431,153 +407,16 @@ const formatCount = (count) => {
   }
 }
 
-// 封面区域
+// 封面容器特定配置
 .cover-container {
   position: relative;
   width: 100%;
-  //height: 120px;
   overflow: hidden;
-
-  .novel-cover {
-    width: 100%;
-    height: 100%;
-    transition: transform 0.3s ease;
-  }
-
-  .cover-loading,
-  .cover-error {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #f5f5f5;
-    color: #999;
-
-    .loading-icon {
-      font-size: 24px;
-      animation: spin 1s linear infinite;
-    }
-
-    .error-icon {
-      font-size: 24px;
-    }
-  }
-
-  // 遮罩层
-  .cover-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-
-    .overlay-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      color: white;
-      transform: translateY(10px);
-      transition: transform 0.3s ease;
-
-      .read-icon {
-        font-size: 24px;
-      }
-
-      .read-text {
-        font-size: 12px;
-        font-weight: 500;
-      }
-    }
-  }
-
-  &:hover {
-    .cover-overlay {
-      opacity: 1;
-      .overlay-content {
-        transform: translateY(0);
-      }
-    }
-  }
-
-  // 标签区域
-  .cover-badges {
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    z-index: 2;
-
-    .login-badge,
-    .ai-badge,
-    .series-badge {
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 8px;
-      font-weight: bold;
-    }
-  }
 }
 
 // 内容区域
 .novel-content {
   padding: 16px;
-}
-
-// 标题
-.novel-title {
-  margin-bottom: 10px;
-
-  .title-text {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 600;
-    color: #e6efff;
-    line-height: 1.4;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    transition: color 0.3s ease;
-
-    &:hover {
-      color: #409EFF;
-    }
-  }
-}
-
-// 作者信息
-.author-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
-
-  .author-avatar {
-    cursor: pointer;
-    transition: transform 0.2s ease;
-    background: #409EFF;
-  }
-
-  .author-name {
-    font-size: 14px;
-    color: #606266;
-    cursor: pointer;
-    transition: color 0.3s ease;
-
-    &:hover {
-      color: #409EFF;
-    }
-  }
 }
 
 // 简介
@@ -684,12 +523,6 @@ const formatCount = (count) => {
   }
 }
 
-// 动画
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
 // 响应式
 @media (max-width: 480px) {
   .novel-card-wrapper {
@@ -717,7 +550,7 @@ const formatCount = (count) => {
 </style>
 
 <style lang="less">
-.el-tag{
+.el-tag {
   white-space: normal;
   height: auto;
 }

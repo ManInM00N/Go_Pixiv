@@ -99,7 +99,7 @@
       </el-row>
     </el-card>
 
-    <div class="waterfall-container">
+    <div class="waterfall-container" v-show="!loading">
       <Waterfall
           ref="waterfall"
           :list="picitem"
@@ -246,27 +246,26 @@ onMounted(function () {
 })
 </script>
 <style lang="less" scoped>
+// 导入通用样式
+@import "../assets/style/common/page-header.less";
+@import "../assets/style/common/cards.less";
+@import "../assets/style/common/pagination.less";
+@import "../assets/style/common/waterfall.less";
+@import "../assets/style/common/buttons.less";
+//@import "../assets/style/common/loading.less";
+@import "../assets/style/common/animations.less";
+@import "../assets/style/common/responsive.less";
 @import "../assets/style/load.less";
 
+// 主容器
 .scrollbar {
-  //height: calc(100vh - 40px);
-  //overflow-y: auto;
-  //overflow-x: hidden;
   padding: 20px;
   min-height: 100vh;
   overflow-y: hidden;
-  //background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  overflow-x: hidden;
-}
-.main-container {
-  padding: 20px;
-  min-height: 100vh;
-  overflow-y: hidden;
-  //background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   overflow-x: hidden;
 }
 
-// 筛选卡片样式
+// 筛选卡片特定样式
 .filter-card {
   margin-bottom: 20px;
   border-radius: 12px;
@@ -305,13 +304,13 @@ onMounted(function () {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
+
     @media (max-width: 768px) {
       flex-direction: column;
 
       .el-button {
         width: 100%;
-        margin:auto;
-
+        margin: auto;
       }
     }
   }
@@ -328,27 +327,6 @@ onMounted(function () {
   }
 }
 
-// 瀑布流容器
-.waterfall-container {
-  min-height: 400px;
-
-  .artwork-card {
-    position: relative;
-    border-radius: 15px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
-    background: white;
-
-    &:hover {
-      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-      transform: translateY(-5px);
-    }
-
-
-  }
-}
-
 // 加载动画
 .loading-footer {
   padding: 40px 0;
@@ -359,12 +337,6 @@ onMounted(function () {
     color: #909399;
     font-size: 14px;
   }
-}
-
-
-// 空状态
-.empty-state {
-  margin: 60px 0;
 }
 
 // 响应式适配
@@ -405,30 +377,5 @@ onMounted(function () {
 
 :deep(.el-card__body) {
   padding: 24px;
-}
-
-// 动画效果
-.el-fade-in-linear-enter-active {
-  transition: all 0.4s ease;
-}
-
-.el-fade-in-linear-enter-from {
-  opacity: 0;
-  transform: translateY(30px);
-}
-
-.artwork-card {
-  animation: slideInUp 0.6s ease forwards;
-}
-
-@keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 </style>

@@ -397,6 +397,7 @@
 
 <script lang="js" setup>
 import DateChoose from "./DateChoose.vue";
+import { getLogType } from '../assets/js/utils/logHelper.js'
 import { onMounted, ref, computed, nextTick } from "vue";
 import { ElNotification, ElMessage } from "element-plus";
 import {
@@ -534,21 +535,6 @@ const currentTask = computed(() => {
   return queue.value.length > 0 ? queue.value[0].value : null
 });
 
-function getLogType(log) {
-  if (log.includes('错误') || log.includes('Error')) {
-    return 'log-error'
-  } else if (log.includes('警告') || log.includes('Warning')) {
-    return 'log-warning'
-  } else if (log.includes('完成') || log.includes('Success')) {
-    return 'log-success'
-  }
-  return 'log-info'
-}
-
-function getCurrentTime() {
-  return new Date().toLocaleTimeString()
-}
-
 function clearLogs() {
   logs.value = []
   ElMessage.success('日志已清空')
@@ -601,59 +587,31 @@ async function handleDownload(type, value = null) {
   }
 }
 
-// function Download() {
-//     // console.log("Downloading ", now.value)
-//
-//     return
-// }
 </script>
 
 <style lang="less" scoped>
+// 导入通用样式
+@import "../assets/style/common/page-header.less";
+@import "../assets/style/common/cards.less";
+@import "../assets/style/common/buttons.less";
+@import "../assets/style/common/loading.less";
+@import "../assets/style/common/animations.less";
 @import "../assets/style/font.less";
 @import "../assets/style/variable.less";
 @import "../assets/style/color.less";
 
+// 主容器
 .main-container {
   padding: 20px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
 }
 
-// 页面标题
-.page-header {
-  text-align: center;
-  margin-bottom: 15px;
-
-  .page-title {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-    font-size: 32px;
-    font-weight: 700;
-    color: white;
-    margin: 0;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-
-    .title-icon {
-      font-size: 36px;
-    }
-  }
-}
-
-// 下载表单卡片
+// 下载表单卡片特定样式
 .download-forms-card {
   margin-bottom: 25px;
   border-radius: 15px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-
-  .card-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 600;
-    font-size: 16px;
-  }
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 
   .download-tabs {
     :deep(.el-tabs__nav) {
@@ -713,7 +671,7 @@ async function handleDownload(type, value = null) {
   }
 }
 
-// 主内容区域 - 左主右侧边栏布局
+// 主内容区域布局
 .main-content {
   display: grid;
   grid-template-columns: 1fr 350px;
@@ -731,24 +689,16 @@ async function handleDownload(type, value = null) {
   }
 }
 
-// 左侧主要内容区域
+// 主要区域
 .main-section {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
+// 进度卡片特定样式
 .progress-card {
-  border-radius: 15px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-
   .card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    font-weight: 600;
-
     .progress-info {
       display: flex;
       gap: 8px;
@@ -769,9 +719,8 @@ async function handleDownload(type, value = null) {
   }
 }
 
+// 终端卡片特定样式
 .terminal-card {
-  border-radius: 15px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
 
   .card-header {
     display: flex;
@@ -779,87 +728,54 @@ async function handleDownload(type, value = null) {
     justify-content: space-between;
     gap: 10px;
     font-weight: 600;
-
     .terminal-actions {
       display: flex;
       gap: 5px;
     }
   }
 
-  .terminal-container {
-    background: #1e1e1e;
-    border-radius: 8px;
-    overflow: hidden;
 
-    .terminal-scrollbar {
-      :deep(.el-scrollbar__wrap) {
-        background: transparent;
-      }
-    }
+  .terminal-content {
+    .terminal-line {
+      display: flex;
+      margin-bottom: 8px;
+      align-items: flex-start;
 
-    .terminal-content {
-      padding: 15px 0;
-      font-family: 'Consolas', 'Monaco', monospace;
-      font-size: 14px;
-      line-height: 1.5;
-
-      .terminal-line {
-        display: flex;
-        margin-bottom: 8px;
-        align-items: flex-start;
-
-        .terminal-time {
-          color: #666;
-          margin-right: 10px;
-          font-size: 12px;
-          white-space: nowrap;
-        }
-
-        .terminal-text {
-          flex: 1;
-          color: #e0e0e0;
-          word-break: break-all;
-        }
-
-        &.log-error .terminal-text {
-          color: #ff4757;
-        }
-
-        &.log-warning .terminal-text {
-          color: #ffa726;
-        }
-
-        &.log-success .terminal-text {
-          color: #26de81;
-        }
-
-        &.log-info .terminal-text {
-          color: #74b9ff;
-        }
-      }
-
-      .terminal-empty {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 200px;
+      .terminal-time {
         color: #666;
-        gap: 10px;
+        margin-right: 10px;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      .terminal-text {
+        flex: 1;
+        color: #e0e0e0;
+        word-break: break-all;
+      }
+
+      &.log-error .terminal-text {
+        color: #ff4757;
+      }
+
+      &.log-warning .terminal-text {
+        color: #ffa726;
+      }
+
+      &.log-success .terminal-text {
+        color: #26de81;
+      }
+
+      &.log-info .terminal-text {
+        color: #74b9ff;
       }
     }
   }
 }
 
-// 右侧任务队列侧边栏
+// 队列侧边栏特定样式
 .sidebar-section {
   .queue-sidebar {
-    border-radius: 15px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-    height: fit-content;
-    position: sticky;
-    top: 20px;
-
     .sidebar-header {
       display: flex;
       align-items: center;
@@ -963,39 +879,6 @@ async function handleDownload(type, value = null) {
           &:hover:not(.active-task) {
             background: rgba(159, 160, 161, 0.18);
             border-color: #b3d8ff;
-            //transform: translateX(3px);
-          }
-        }
-
-        .queue-empty {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          height: 400px;
-          color: #ffffff;
-
-          .empty-icon {
-            margin-bottom: 15px;
-
-            .el-icon {
-              font-size: 48px;
-            }
-          }
-
-          .empty-text {
-            text-align: center;
-
-            p {
-              margin: 0 0 5px 0;
-              font-size: 16px;
-              font-weight: 600;
-            }
-
-            span {
-              font-size: 14px;
-              opacity: 0.8;
-            }
           }
         }
       }
@@ -1003,33 +886,21 @@ async function handleDownload(type, value = null) {
   }
 }
 
-
 // 页脚
 .page-footer {
   .el-alert {
     border-radius: 12px;
+
     :deep(.el-alert__title) {
       font-size: 14px;
     }
   }
 }
 
-// 动画
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-// 响应式设计
+// 响应式
 @media (max-width: 768px) {
   .main-container {
     padding: 15px;
-  }
-
-  .page-header .page-title {
-    font-size: 28px;
-    flex-direction: column;
-    gap: 10px;
   }
 
   .download-form .form-content {
@@ -1044,7 +915,7 @@ async function handleDownload(type, value = null) {
 
   .main-content {
     .sidebar-section {
-      order: -1; // 在移动端将侧边栏移到上方
+      order: -1;
     }
   }
 }

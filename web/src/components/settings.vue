@@ -6,7 +6,6 @@
         <el-icon class="title-icon"><Setting /></el-icon>
         应用设置
       </h1>
-      <p class="page-description">配置 Pixiv 下载器的各项参数</p>
     </div>
 
     <!-- 设置表单 -->
@@ -454,9 +453,7 @@ async function testConnection() {
     testing.value = true
 
     ElMessage.info('正在测试连接...')
-
     await CheckLogin()
-
 
   } catch (error) {
     console.error('连接测试失败:', error)
@@ -472,41 +469,19 @@ onMounted(() => {
 </script>
 
 <style lang="less" scoped>
+// 导入通用样式
+@import "../assets/style/common/page-header.less";
+@import "../assets/style/common/cards.less";
+@import "../assets/style/common/buttons.less";
+@import "../assets/style/common/responsive.less";
 @import "../assets/style/variable.less";
 @import "../assets/style/color.less";
 
+// 主容器
 .settings-container {
   padding: 20px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
-}
-
-// 页面标题
-.page-header {
-  text-align: center;
-  margin-bottom: 30px;
-  color: white;
-
-  .page-title {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-    font-size: 32px;
-    font-weight: 700;
-    margin: 0 0 10px 0;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-
-    .title-icon {
-      font-size: 36px;
-    }
-  }
-
-  .page-description {
-    font-size: 16px;
-    opacity: 0.9;
-    margin: 0;
-  }
 }
 
 // 设置内容
@@ -515,31 +490,14 @@ onMounted(() => {
   margin: 0 auto;
 
   .settings-form {
-    .settings-section {
-      margin-bottom: 25px;
-      border-radius: 15px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-
-      .section-header {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-weight: 600;
-        font-size: 16px;
-        color: #409EFF;
-      }
-
-      :deep(.el-card__body) {
-        padding: 25px;
-      }
-    }
-
+    // 表单项标签
     :deep(.el-form-item__label) {
       font-weight: 600;
       color: #ffffff;
       font-size: 14px;
     }
 
+    // 帮助文本
     .form-help {
       font-size: 12px;
       color: #909399;
@@ -549,6 +507,7 @@ onMounted(() => {
       gap: 4px;
     }
 
+    // 开关网格
     .switch-grid {
       display: grid;
       gap: 20px;
@@ -595,7 +554,7 @@ onMounted(() => {
   }
 }
 
-// 操作按钮
+// 操作按钮特定样式
 .form-actions {
   display: flex;
   justify-content: center;
@@ -607,12 +566,12 @@ onMounted(() => {
     padding: 12px 30px;
     border-radius: 25px;
     font-weight: 600;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     transition: all 0.3s ease;
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
     }
   }
 
@@ -643,7 +602,7 @@ onMounted(() => {
   .status-alert {
     border-radius: 12px;
     border: none;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 
     :deep(.el-alert__title) {
       font-weight: 600;
@@ -651,38 +610,10 @@ onMounted(() => {
   }
 }
 
-// 回到顶部
-.back-to-top {
-  width: 45px;
-  height: 45px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-
-  &:hover {
-    transform: scale(1.1);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-  }
-}
-
-// 响应式设计
+// 响应式特定调整
 @media (max-width: 768px) {
   .settings-container {
     padding: 15px;
-  }
-
-  .page-header {
-    .page-title {
-      font-size: 28px;
-      flex-direction: column;
-      gap: 10px;
-    }
   }
 
   .settings-content {

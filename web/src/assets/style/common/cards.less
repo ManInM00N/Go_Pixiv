@@ -1,0 +1,149 @@
+/**
+ * 卡片通用样式
+ */
+
+// 控制面板卡片
+.control-panel,
+.filter-card {
+  margin-bottom: 25px;
+  border-radius: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+
+  :deep(.el-card__body) {
+    padding: 25px;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 16px;
+  }
+
+  .filter-header,
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    color: #409EFF;
+    margin-bottom: 20px;
+    font-size: 16px;
+  }
+}
+
+// 作品卡片
+.artwork-card,
+.novel-card,
+.card-wrapper {
+  position: relative;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  background: black;
+
+  &:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    transform: translateY(-5px);
+  }
+
+  // R18 标识
+  .r18-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+
+    .el-tag {
+      font-weight: bold;
+      border-radius: 20px;
+    }
+  }
+}
+
+// 设置区块卡片
+.settings-section {
+  margin-bottom: 25px;
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+
+  :deep(.el-card__body) {
+    padding: 25px;
+  }
+}
+
+// 终端卡片
+.terminal-card {
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+
+  .terminal-container {
+    background: #1e1e1e;
+    border-radius: 8px;
+    overflow: hidden;
+
+    .terminal-content {
+      padding: 15px 0;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+  }
+}
+
+// 队列侧边栏卡片
+.queue-sidebar {
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  height: fit-content;
+  position: sticky;
+  top: 20px;
+}
+
+
+.progress-card {
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-weight: 600;
+
+    .progress-info {
+      display: flex;
+      gap: 8px;
+    }
+  }
+
+  .main-progress {
+    :deep(.el-progress__text) {
+      font-size: 16px;
+      font-weight: 600;
+    }
+  }
+
+  .progress-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: #409EFF;
+  }
+}
+
+// 响应式
+@media (max-width: 768px) {
+  .control-panel,
+  .filter-card,
+  .settings-section {
+    border-radius: 12px;
+    margin-bottom: 20px;
+
+    :deep(.el-card__body) {
+      padding: 20px;
+    }
+  }
+}

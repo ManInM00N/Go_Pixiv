@@ -1,0 +1,62 @@
+/**
+ * 页面标题通用样式
+ */
+
+.page-header {
+  text-align: center;
+  margin-bottom: 30px;
+
+  .page-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    font-size: 32px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+    padding: 20px 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+
+    .title-icon {
+      font-size: 36px;
+      color: #409EFF;
+    }
+
+    .count-tag {
+      font-size: 14px;
+      font-weight: normal;
+    }
+  }
+
+  .page-description {
+    font-size: 16px;
+    opacity: 0.9;
+    margin: 0;
+    color: white;
+  }
+}
+
+// 响应式
+@media (max-width: 768px) {
+  .page-header {
+    margin-bottom: 20px;
+
+    .page-title {
+      font-size: 28px;
+      flex-direction: column;
+      gap: 10px;
+      padding: 15px 0;
+    }
+
+    .page-description {
+      font-size: 14px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .page-header .page-title {
+    font-size: 24px;
+  }
+}

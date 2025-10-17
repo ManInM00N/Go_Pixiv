@@ -154,7 +154,7 @@
               class="refresh-fab"
               v-tooltip="{ content: '刷新页面', placement: 'left' }"
           >
-            <el-icon><Refresh /></el-icon>
+            <el-icon v-if="!loading"><Refresh /></el-icon>
           </el-button>
           <el-tag type="info" size="large">
             <el-icon><DataLine /></el-icon>
@@ -212,6 +212,7 @@
 </template>
 
 <script setup>
+import { createDebouncedSearch } from '../assets/js/utils/debounce.js'
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import {
   Reading,
@@ -450,13 +451,9 @@ const applyFilters = () => {
   })
 }
 
-const handleSearch = () => {
-  // 防抖处理
-  clearTimeout(handleSearch.timer)
-  handleSearch.timer = setTimeout(() => {
-    applyFilters()
-  }, 300)
-}
+const handleSearch = createDebouncedSearch(() => {
+  applyFilters()
+}, 300)
 
 const loadMore = () => {
   currentPage.value++
@@ -499,45 +496,28 @@ onMounted(() => {
 </script>
 
 <style lang="less" scoped>
+// 导入通用样式
+@import "../assets/style/common/page-header.less";
+@import "../assets/style/common/cards.less";
+@import "../assets/style/common/pagination.less";
+@import "../assets/style/common/waterfall.less";
+@import "../assets/style/common/buttons.less";
+@import "../assets/style/common/loading.less";
+@import "../assets/style/common/animations.less";
+@import "../assets/style/common/responsive.less";
+
+// 主容器
 .novel-page-container {
   padding: 20px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
 }
 
-// 页面标题
-.page-header {
-  text-align: center;
-  margin-bottom: 30px;
-  color: white;
-
-  .page-title {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-    font-size: 32px;
-    font-weight: 700;
-    margin: 0 0 10px 0;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-
-    .title-icon {
-      font-size: 36px;
-    }
-  }
-
-  .page-description {
-    font-size: 16px;
-    opacity: 0.9;
-    margin: 0;
-  }
-}
-
 // 导航卡片
 .nav-card {
   margin-bottom: 20px;
   border-radius: 15px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 
   .novel-tabs {
     :deep(.el-tabs__nav) {
@@ -562,22 +542,8 @@ onMounted(() => {
   }
 }
 
-// 筛选卡片
+// 筛选卡片特定样式
 .filter-card {
-  margin-bottom: 25px;
-  border-radius: 15px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-
-  .filter-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 600;
-    color: #409EFF;
-    margin-bottom: 20px;
-    font-size: 16px;
-  }
-
   .filter-content {
     .filter-item {
       margin-bottom: 15px;
@@ -586,7 +552,7 @@ onMounted(() => {
         display: block;
         margin-bottom: 8px;
         font-weight: 600;
-        color: #606266;
+        color: #ffffff;
         font-size: 14px;
       }
 
@@ -605,37 +571,7 @@ onMounted(() => {
   }
 }
 
-
-.pagination-container {
-  display: flex;
-  align-items: center;
-  margin-bottom: 25px;
-  padding: 20px;
-  background: black;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  .stats-info {
-    display: flex;
-    gap: 10px;
-
-    .el-tag {
-      padding: 8px 12px;
-      border-radius: 20px;
-    }
-  }
-
-  @media (max-width: 768px) {
-    //flex-direction: column;
-    gap: 15px;
-
-    .stats-info {
-      flex-wrap: wrap;
-      //justify-content: center;
-    }
-  }
-}
-
-// 内容区域
+// 内容区域特定配置
 .content-area {
   .stats-info {
     display: flex;
@@ -645,7 +581,7 @@ onMounted(() => {
     padding: 20px;
     background: white;
     border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 
     .el-tag {
       padding: 8px 16px;
@@ -655,17 +591,6 @@ onMounted(() => {
     @media (max-width: 768px) {
       flex-direction: column;
       gap: 15px;
-    }
-  }
-
-  // 瀑布流容器
-  .waterfall-container {
-    .novel-wrapper {
-      margin-bottom: 20px;
-      border-radius: 15px;
-      overflow: hidden;
-      transition: all 0.3s ease;
-
     }
   }
 
@@ -697,35 +622,12 @@ onMounted(() => {
       }
     }
   }
-
-  // 空状态
-  .empty-state {
-    margin: 60px 0;
-  }
 }
 
-// 动画效果
-.el-fade-in-linear-enter-active {
-  transition: all 0.4s ease;
-}
-
-.el-fade-in-linear-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-// 响应式设计
+// 响应式
 @media (max-width: 768px) {
   .novel-page-container {
     padding: 15px;
-  }
-
-  .page-header {
-    .page-title {
-      font-size: 28px;
-      flex-direction: column;
-      gap: 10px;
-    }
   }
 
   .filter-content {
@@ -741,10 +643,6 @@ onMounted(() => {
 }
 
 @media (max-width: 480px) {
-  .page-header .page-title {
-    font-size: 24px;
-  }
-
   .waterfall-container {
     :deep(.vue-waterfall) {
       --waterfall-item-width: 100% !important;

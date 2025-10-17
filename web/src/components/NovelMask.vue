@@ -318,6 +318,7 @@ import {
 } from '@element-plus/icons-vue'
 import {ElMessage, ElNotification} from 'element-plus'
 import { useNovelViewerStore } from '../assets/stores/novelViewer.js'
+import { copyToClipboard, copyLink, openPixivNovel } from '../assets/js/utils/index.js'
 import axios from 'axios'
 import {DownloadByNovelId} from "../../bindings/main/internal/pixivlib/ctl.js";
 
@@ -330,55 +331,21 @@ const showShortcuts = ref(false)
 const showSeriesSidebar = ref(false)
 const novelContent = ref('')
 
-const copyToClipboard = async (text, label = '内容') => {
-  try {
-    await navigator.clipboard.writeText(text)
-    ElNotification({
-      position: "bottom-right",
-      type: "success",
-      message: `${label}已复制: ${text}`,
-      duration: 2000,
-    })
-  } catch (err) {
-    console.error('复制失败', err)
-    ElNotification({
-      position: "bottom-right",
-      type: "warning",
-      message: "复制失败",
-      duration: 1000,
-    })
-  }
-}
 
 const toggleSeriesSidebar = () => {
   showSeriesSidebar.value = !showSeriesSidebar.value
 }
 
 
-async function  preventOutLink(e) {
+async function preventOutLink(e) {
   const el = e.target
   if (el.tagName === 'A') {
-    e.preventDefault() // 阻止默认跳转
+    e.preventDefault()
     const href = el.getAttribute('href')
-    try {
-      await navigator.clipboard.writeText(href)
-      ElNotification({
-        position:"bottom-right",
-        type: "info",
-        message: "链接已复制到剪切板",
-        duration: 1000,
-      })
-    } catch (err) {
-      console.error('复制失败', err)
-      ElNotification({
-        position:"bottom-right",
-        type:"warning",
-        message:"链接复制失败",
-        duration: 1000,
-      })
-    }
+    await copyLink(href)
   }
 }
+
 // 计算属性
 const contentStyle = computed(() => ({
   fontSize: `${novelViewerStore.fontSize}px`,
@@ -424,8 +391,7 @@ const downloadCurrent = async () => {
 }
 
 const openInPixiv = () => {
-  const url = `https://www.pixiv.net/novel/show.php?id=${novelViewerStore.currentNovelId}`
-  window.open(url, '_blank')
+  openPixivNovel(novelViewerStore.currentNovelId)
 }
 
 const toggleShortcuts = () => {
@@ -459,102 +425,86 @@ watch(() => novelViewerStore.isVisible, (newVal) => {
 })
 </script>
 
+
 <style lang="less" scoped>
-// 模态框动画
-.modal-fade-enter-active,
-.modal-fade-leave-active {
-  transition: all 0.3s ease;
-}
+// 导入通用样式
+@import "../assets/style/common/modal.less";
+@import "../assets/style/common/buttons.less";
+@import "../assets/style/common/loading.less";
+@import "../assets/style/common/animations.less";
 
-.modal-fade-enter-from,
-.modal-fade-leave-to {
-  opacity: 0;
-}
-
-// 导航按钮动画
-.nav-fade-enter-active,
-.nav-fade-leave-active {
-  transition: all 0.2s ease;
-}
-
-.nav-fade-enter-from,
-.nav-fade-leave-to {
-  opacity: 0;
-  transform: scale(0.8);
-}
-
-
-// 侧边栏动画
-.sidebar-slide-enter-active,
-.sidebar-slide-leave-active {
-  transition: all 0.3s ease;
-}
-
-.sidebar-slide-enter-from,
-.sidebar-slide-leave-to {
-  transform: translateX(100%);
-}
-
-// 加载动画
-.loading-fade-enter-active,
-.loading-fade-leave-active {
-  transition: all 0.3s ease;
-}
-
-.loading-fade-enter-from,
-.loading-fade-leave-to {
-  opacity: 0;
-}
-
-// 内容淡入动画
-.content-fade-enter-active {
-  transition: all 0.4s ease;
-}
-
-.content-fade-enter-from {
-  opacity: 0;
-  transform: translateY(10px);
-}
-
-// 主容器
+// 小说查看器特定样式
 .novel-viewer-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 201;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  outline: none;
 
-  .modal-backdrop {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.16);
-    backdrop-filter: blur(8px);
-  }
+  // 小说内容包装器
+  .novel-content-wrapper {
+    width: 100%;
+    height: calc(100% - 40px);
+    background: rgba(0, 0, 0, 0.79);
+    margin-top: auto;
+    border-radius: 12px;
+    padding: 30px 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 
-  .modal-container {
-    position: relative;
-    width: 95vw;
-    height: 95vh;
-    max-width: 1200px;
-    max-height: 900px;
-    display: flex;
-    flex-direction: column;
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    .content-scrollbar {
+      height: 100%;
+
+      .chapter-header {
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #409EFF;
+
+        .chapter-title {
+          margin: 0;
+          font-size: 24px;
+          font-weight: 600;
+          color: #ffffff;
+        }
+      }
+
+      .novel-text {
+        padding: 0 20px;
+
+        .paragraph {
+          margin: 0 0 1.5em 0;
+          text-align: justify;
+          text-indent: 2em;
+          color: #e3e3e3;
+          line-height: inherit;
+        }
+      }
+
+      .content-loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        color: #909399;
+        padding: 60px 0;
+
+        .loading-icon {
+          font-size: 48px;
+          animation: spin 1s linear infinite;
+        }
+      }
+
+      .chapter-nav {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid #e4e7ed;
+      }
+    }
   }
 }
+
+// 小说信息特定样式
 .novel-info {
   flex: 1;
   color: #fbf1f1;
+
   .novel-title {
     margin: 0 0 8px 0;
     font-size: 20px;
@@ -570,164 +520,160 @@ watch(() => novelViewerStore.isVisible, (newVal) => {
     font-size: 14px;
     opacity: 0.9;
     white-space: normal;
-    height:auto;
+    height: auto;
     overflow-x: hidden;
+
     .author-info,
-    .novel-id {
+    .novel-id,
+    .series-id {
       display: flex;
       align-items: center;
       gap: 6px;
+      cursor: pointer;
+
+      &.clickable:hover {
+        color: #409EFF;
+      }
     }
   }
 }
 
-// 加载容器
-.loading-container {
+// 字体控制
+.font-controls {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  color: #e3e3e3;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
 
-  .loading-spinner {
-    position: relative;
-    width: 80px;
-    height: 80px;
-    margin-bottom: 30px;
-
-    .spinner-ring {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      border: 3px solid transparent;
-      border-top-color: #409EFF;
-      border-radius: 50%;
-      animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-
-      &:nth-child(1) {
-        animation-delay: -0.45s;
-      }
-
-      &:nth-child(2) {
-        animation-delay: -0.3s;
-      }
-
-      &:nth-child(3) {
-        animation-delay: -0.15s;
-      }
-    }
-  }
-
-  .loading-text {
-    font-size: 18px;
-    color: #909399;
-    margin: 0;
-    animation: pulse 1.5s ease-in-out infinite;
-  }
-}
-
-// 头部信息栏
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 30px 0 30px;
-  background: rgba(0, 0, 0, 0.57);
-  color: white;
-
-  .modal-controls {
-    display: flex;
-    gap: 10px;
-    .font-controls {
-      display: flex;
-      align-items: center;
-      padding: 8px 12px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-
-      .font-buttons {
-        .el-button {
-          background: transparent;
-          border-color: rgba(255, 255, 255, 0.3);
-          color: white;
-
-          &:hover:not(:disabled) {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.5);
-          }
-
-          &:disabled {
-            opacity: 0.5;
-          }
-        }
-      }
-    }
-
-    .control-btn {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+  .font-buttons {
+    .el-button {
+      background: transparent;
+      border-color: rgba(255, 255, 255, 0.3);
       color: white;
 
-      &:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: scale(1.05);
+      &:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.5);
       }
 
-      &.close-btn {
-        background: rgba(245, 108, 108, 0.8);
-        border-color: rgba(245, 108, 108, 0.8);
+      &:disabled {
+        opacity: 0.5;
+      }
+    }
+  }
+}
+
+// 系列侧边栏
+.series-sidebar {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 320px;
+  background: rgba(0, 0, 0, 0.9);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  z-index: 20;
+
+  .sidebar-header {
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+    h4 {
+      margin: 0;
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .sidebar-header-buttons {
+      display: flex;
+      gap: 8px;
+    }
+  }
+
+  .sidebar-scrollbar {
+    flex: 1;
+    padding: 10px;
+
+    .chapter-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      .chapter-item {
+        padding: 12px 15px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+
+        .chapter-order {
+          color: #409EFF;
+          font-weight: 600;
+          flex-shrink: 0;
+          min-width: 35px;
+        }
+
+        .chapter-title {
+          color: rgba(255, 255, 255, 0.9);
+          line-height: 1.4;
+          flex: 1;
+          word-break: break-word;
+        }
 
         &:hover {
-          background: rgba(245, 108, 108, 1);
+          background: rgba(255, 255, 255, 0.1);
+          transform: translateX(-5px);
+        }
+
+        &.active {
+          background: rgba(64, 158, 255, 0.2);
+          border-left: 3px solid #409EFF;
+
+          .chapter-title {
+            color: white;
+            font-weight: 500;
+          }
         }
       }
     }
   }
 }
+
+// 章节导航
+.chapter-nav {
+  display: flex;
+  gap: 10px;
+}
+
+// 提示文本样式
+.tips-content {
+  width: 300px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+</style>
+
+<style lang="less" scoped>
 
 // 小说显示区域
 .novel-display-area {
   flex: 1;
-  //flex-direction: column;
   height: calc(100% - 160px);
   position: relative;
   display: flex;
-  //align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.57);
-
-  .nav-button {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.6);
-    color: white;
-    border: none;
-    cursor: pointer;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    transition: all 0.3s ease;
-
-    &:hover {
-      background: rgba(0, 0, 0, 0.8);
-      transform: translateY(-50%) scale(1.1);
-    }
-
-    &.nav-prev {
-      left: 30px;
-    }
-
-    &.nav-next {
-      right: 30px;
-    }
-  }
 
   .novel-container {
     width: 100%;
@@ -738,335 +684,7 @@ watch(() => novelViewerStore.isVisible, (newVal) => {
     justify-content: center;
     padding: 20px 50px;
 
-    .novel-content-wrapper {
-      width: 100%;
-      //max-height: calc(100% - 60px);
-      height: calc(100% - 40px);
-      background: rgba(0, 0, 0, 0.79);
-      margin-top: auto;
-      border-radius: 12px;
-      padding:30px 20px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-      .content-scrollbar {
-        //height: 100%;
-        height: 100%;
-
-        .chapter-header {
-          margin-bottom: 30px;
-          padding-bottom: 15px;
-          border-bottom: 2px solid #409EFF;
-
-          .chapter-title {
-            margin: 0;
-            font-size: 24px;
-            font-weight: 600;
-            color: #ffffff;
-          }
-        }
-
-        .novel-text {
-          .paragraph {
-            margin: 0 0 1.5em 0;
-            text-align: justify;
-            text-indent: 2em;
-            color: #e3e3e3;
-            line-height: inherit;
-          }
-          padding: 0 20px
-        }
-
-        .content-loading {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 15px;
-          color: #909399;
-          padding: 60px 0;
-
-          .loading-icon {
-            font-size: 48px;
-            animation: spin 1s linear infinite;
-          }
-        }
-
-        .chapter-nav {
-          display: flex;
-          justify-content: space-between;
-          margin-top: 40px;
-          padding-top: 20px;
-          border-top: 1px solid #e4e7ed;
-        }
-      }
-    }
   }
-
-  .series-sidebar {
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: 320px;
-    background: rgba(0, 0, 0, 0.9);
-    border-left: 1px solid rgba(255, 255, 255, 0.1);
-    display: flex;
-    flex-direction: column;
-    z-index: 20;
-
-    .sidebar-header {
-      padding: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-
-      h4 {
-        margin: 0;
-        color: white;
-        font-size: 18px;
-        font-weight: 600;
-      }
-
-      .sidebar-header-buttons {
-        display: flex;
-        gap: 8px;
-      }
-
-      .close-sidebar-btn
-      .download-series-btn {
-        background: rgba(255, 255, 255, 0.1);
-        border-color: rgba(255, 255, 255, 0.2);
-        color: white;
-
-        &:hover {
-          background: rgba(255, 255, 255, 0.2);
-        }
-      }
-    }
-
-    .sidebar-scrollbar {
-      flex: 1;
-      padding: 10px;
-
-      .chapter-list {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-
-        .chapter-item {
-          padding: 12px 15px;
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 8px;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          display: flex;
-          gap: 10px;
-          align-items: flex-start;
-
-          .chapter-order {
-            color: #409EFF;
-            font-weight: 600;
-            flex-shrink: 0;
-            min-width: 35px;
-          }
-
-          .chapter-title {
-            color: rgba(255, 255, 255, 0.9);
-            line-height: 1.4;
-            flex: 1;
-            word-break: break-word;
-          }
-
-          &:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateX(-5px);
-          }
-
-          &.active {
-            background: rgba(64, 158, 255, 0.2);
-            border-left: 3px solid #409EFF;
-
-            .chapter-title {
-              color: white;
-              font-weight: 500;
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-// 分页控制
-.pagination-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  padding: 0px 30px 8px 30px;
-  background: rgba(0, 0, 0, 0.57);
-
-  .page-info {
-    text-align: center;
-    font-size: 16px;
-    font-weight: 600;
-    color: white;
-
-    .current-page {
-      color: #409EFF;
-    }
-
-    .page-separator {
-      margin: 0 8px;
-      color: rgba(255, 255, 255, 0.6);
-    }
-  }
-
-  .chapter-list {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding: 4px 0;
-
-    .chapter-btn {
-      flex-shrink: 0;
-      min-width: 40px;
-    }
-  }
-}
-
-// 快捷键提示
-.keyboard-shortcuts {
-  position: absolute;
-  bottom: 80px;
-  right: 30px;
-  background: rgba(0, 0, 0, 0.9);
-  color: white;
-  border-radius: 12px;
-  padding: 20px;
-  min-width: 200px;
-
-  .shortcuts-content {
-    h4 {
-      margin: 0 0 15px 0;
-      font-size: 16px;
-      font-weight: 600;
-    }
-
-    .shortcut-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-
-      .shortcut-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-
-        kbd {
-          background: #555;
-          padding: 4px 8px;
-          border-radius: 4px;
-          font-family: monospace;
-          font-size: 12px;
-        }
-
-        span {
-          font-size: 14px;
-        }
-      }
-    }
-  }
-}
-
-// 帮助按钮
-.help-button {
-  position: absolute;
-  bottom: 30px;
-  right: 30px;
-
-  .help-btn {
-    background: rgba(0, 0, 0, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-
-    &:hover {
-      background: rgba(0, 0, 0, 0.8);
-      transform: scale(1.05);
-    }
-  }
-}
-
-// 响应式设计
-@media (max-width: 768px) {
-  .modal-container {
-    width: 100vw;
-    height: 100vh;
-    border-radius: 0;
-  }
-
-  .modal-header {
-    padding: 15px 20px;
-
-    .novel-title {
-      font-size: 18px;
-    }
-
-    .novel-meta {
-      gap: 15px;
-      font-size: 13px;
-    }
-
-    .modal-controls {
-      gap: 8px;
-
-      .font-controls {
-        padding: 6px 10px;
-      }
-    }
-  }
-
-  .novel-display-area {
-    .novel-container {
-      padding: 15px 80px;
-
-      .novel-content-wrapper {
-        padding: 20px;
-      }
-    }
-
-    .nav-button {
-      width: 50px;
-      height: 50px;
-      font-size: 20px;
-
-      &.nav-prev {
-        left: 15px;
-      }
-
-      &.nav-next {
-        right: 15px;
-      }
-    }
-  }
-
-  .pagination-controls {
-    padding: 15px 20px;
-  }
-
-  .keyboard-shortcuts {
-    display: none;
-  }
-
-  .help-button {
-    bottom: 20px;
-    right: 20px;
-  }
-}
-
-// 动画
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 
 </style>

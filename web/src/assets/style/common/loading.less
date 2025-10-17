@@ -1,0 +1,212 @@
+/**
+ * 加载状态通用样式
+ */
+
+// 加载容器
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  color: #e3e3e3;
+  gap: 20px;
+
+  .loading-text {
+    font-size: 18px;
+    color: #909399;
+    margin: 0;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+}
+
+// 加载旋转器
+.loading-spinner {
+  position: relative;
+  width: 80px;
+  height: 80px;
+
+  .spinner-ring {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 3px solid transparent;
+    border-top-color: #409EFF;
+    border-radius: 50%;
+    animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+
+    &:nth-child(1) {
+      animation-delay: -0.45s;
+    }
+
+    &:nth-child(2) {
+      animation-delay: -0.3s;
+    }
+
+    &:nth-child(3) {
+      animation-delay: -0.15s;
+    }
+  }
+}
+
+// 简单加载器
+.loading,
+.loader {
+  width: 28px;
+  height: 28px;
+  border: 2px solid #ffffff;
+  border-top-color: transparent;
+  border-radius: 100%;
+  //animation: circle infinite 0.75s linear;
+}
+
+// 图片加载状态
+.image-loading,
+.cover-loading {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  color: #999;
+
+  .loading-icon {
+    font-size: 24px;
+    animation: spin 1s linear infinite;
+  }
+
+  p {
+    font-size: 14px;
+    margin: 10px 0 0 0;
+  }
+}
+
+// 图片错误状态
+.image-error,
+.cover-error {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  color: #999;
+  gap: 15px;
+
+  .error-icon {
+    font-size: 48px;
+  }
+
+  p {
+    font-size: 14px;
+    margin: 0;
+  }
+}
+
+// 下载状态
+.download-status {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .loading-spinner {
+    .spinning {
+      animation: spin 1s linear infinite;
+      color: #409EFF;
+    }
+  }
+
+  .download-success {
+    .success-icon {
+      color: #67c23a;
+      font-size: 32px;
+      animation: checkMark 0.5s ease;
+    }
+  }
+}
+
+// 终端日志加载
+.terminal-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #666;
+  gap: 10px;
+
+  .el-icon {
+    font-size: 48px;
+  }
+}
+
+// 空状态
+.empty-state,
+.queue-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 60px 0;
+  color: #ffffff;
+
+  .empty-icon {
+    margin-bottom: 15px;
+
+    .el-icon {
+      font-size: 48px;
+    }
+  }
+
+  .empty-text {
+    text-align: center;
+
+    p {
+      margin: 0 0 5px 0;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    span {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+  }
+}
+
+// 骨架屏
+.skeleton-card {
+  border-radius: 15px;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+
+  .skeleton-cover {
+    width: 100%;
+    height: 120px;
+  }
+
+  .skeleton-content {
+    padding: 16px;
+  }
+}
+
+// 响应式
+@media (max-width: 768px) {
+  .loading-container {
+    min-height: 300px;
+
+    .loading-text {
+      font-size: 16px;
+    }
+  }
+
+  .loading-spinner {
+    width: 60px;
+    height: 60px;
+  }
+}

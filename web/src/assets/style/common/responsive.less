@@ -1,0 +1,243 @@
+/**
+ * 响应式布局通用样式
+ */
+
+// 主容器响应式
+.main-container,
+.novel-page-container,
+.settings-container {
+  padding: 20px;
+  min-height: 100vh;
+
+  @media (max-width: 768px) {
+    padding: 15px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 10px;
+  }
+}
+
+// 网格布局响应式
+.main-content {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 25px;
+  margin-bottom: 30px;
+
+  @media (max-width: 1200px) {
+    grid-template-columns: 1fr 300px;
+    gap: 20px;
+  }
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: 20px;
+
+    .sidebar-section {
+      order: -1; // 在移动端将侧边栏移到上方
+    }
+  }
+}
+
+// 行布局响应式
+.control-row,
+.filter-row {
+  @media (max-width: 768px) {
+    .el-col {
+      margin-bottom: 15px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+}
+
+// 表单响应式
+.download-form,
+.settings-form {
+  .form-content {
+    display: flex;
+    align-items: flex-end;
+    gap: 20px;
+    flex-wrap: wrap;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: stretch;
+
+      .input-group,
+      .filter-item {
+        width: 100%;
+      }
+
+      .download-btn,
+      .el-button {
+        width: 100%;
+        margin-top: 15px;
+      }
+    }
+  }
+}
+
+// 开关网格响应式
+.switch-grid {
+  display: grid;
+  gap: 20px;
+
+  @media (max-width: 768px) {
+    .switch-item {
+      .switch-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+    }
+  }
+}
+
+// 列表容器响应式
+.list-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// 范围输入组响应式
+.range-input-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+
+    .el-input-number {
+      width: 100%;
+    }
+
+    .el-button {
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .range-separator {
+      display: none;
+    }
+  }
+}
+
+// 当前页下载按钮响应式
+.current-page-download {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+
+  @media (max-width: 768px) {
+    margin-top: 20px;
+    justify-content: stretch;
+
+    .download-current-btn {
+      width: 100%;
+    }
+  }
+}
+
+// 字体响应式
+@media (max-width: 768px) {
+  .page-title,
+  h1 {
+    font-size: 28px !important;
+  }
+
+  .page-description,
+  .section-header {
+    font-size: 14px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title,
+  h1 {
+    font-size: 24px !important;
+  }
+
+  .page-description {
+    font-size: 13px !important;
+  }
+}
+
+// 卡片响应式
+@media (max-width: 768px) {
+  .el-card {
+    border-radius: 12px !important;
+
+    :deep(.el-card__body) {
+      padding: 20px !important;
+    }
+  }
+}
+
+// 模态框响应式
+@media (max-width: 768px) {
+  .modal-container {
+    width: 100vw !important;
+    height: 100vh !important;
+    border-radius: 0 !important;
+  }
+
+  .modal-header {
+    padding: 15px 20px !important;
+
+    .image-meta,
+    .novel-meta {
+      gap: 15px !important;
+      font-size: 13px !important;
+    }
+  }
+
+  .modal-controls {
+    gap: 8px !important;
+  }
+}
+
+// 侧边栏响应式
+@media (max-width: 900px) {
+  .sidebar-section {
+    .queue-sidebar,
+    .series-sidebar {
+      position: static !important;
+    }
+  }
+}
+
+// 隐藏类
+.hidden-mobile {
+  @media (max-width: 768px) {
+    display: none !important;
+  }
+}
+
+.hidden-desktop {
+  display: none !important;
+
+  @media (max-width: 768px) {
+    display: block !important;
+  }
+}
+
+// 文本响应式
+.text-responsive {
+  @media (max-width: 768px) {
+    font-size: 14px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 13px;
+  }
+}
