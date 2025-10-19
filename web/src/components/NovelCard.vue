@@ -101,7 +101,7 @@
               <el-avatar
                   :size="20"
                   class="author-avatar"
-                  @click.stop="openAuthor"
+                  @click.stop="openPixivUser(props.userId)"
               >
 <!--                <el-icon>-->
                   <LazyImg
@@ -114,7 +114,7 @@
               </el-avatar>
               <span
                   class="author-name"
-                  @click.stop="openAuthor"
+                  @click.stop="openPixivUser(props.userId)"
               >
                                 {{ props.userName }}
                             </span>
@@ -249,8 +249,6 @@ const openNovelViewer = () => {
     bookmarkCount: props.bookmarkCount,
     textCount: props.textCount,
     tags : props.tags,
-
-    
   }
 
   // 使用 store 打开查看器
@@ -347,8 +345,6 @@ const onCoverError = () => {
   coverLoading.value = false
 }
 
-const openAuthor = () => openPixivUser(props.userId)
-
 const downloadNovel = async () => {
   try {
     downloading.value = true
@@ -374,7 +370,6 @@ const toggleFavorite = () => {
 
 
 <style lang="less" scoped>
-// 导入通用样式
 @import "../assets/style/common/loading.less";
 @import "../assets/style/common/cards.less";
 @import "../assets/style/common/waterfall.less";
@@ -391,12 +386,8 @@ const toggleFavorite = () => {
 // 小说卡片特定样式
 .novel-card {
   width: 100%;
-  border-radius: 15px;
-  overflow: hidden;
-  transition: all 0.3s ease;
   border: 2px solid transparent;
   cursor: pointer;
-  position: relative;
 
   &.login-required {
     border-color: #f39c12;
@@ -407,17 +398,6 @@ const toggleFavorite = () => {
   }
 }
 
-// 封面容器特定配置
-.cover-container {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-}
-
-// 内容区域
-.novel-content {
-  padding: 16px;
-}
 
 // 简介
 .novel-description {

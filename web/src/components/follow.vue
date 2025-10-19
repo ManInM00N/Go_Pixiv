@@ -31,7 +31,7 @@
           </div>
         </el-col>
 
-        <el-col :xs="24" :sm="12" :md="10" :lg="8">
+        <el-col :xs="24" :sm="12" :md="16" :lg="8">
           <div class="control-item">
             <label class="control-label">批量下载页面范围</label>
             <div class="range-input-group">
@@ -64,24 +64,18 @@
                 <el-icon><Download /></el-icon>
                 批量下载
               </el-button>
+              <el-button
+                  type="success"
+                  size="large"
+                  @click="downloadCurrentPage"
+                  :disabled="wait || picitem.length === 0"
+                  :loading="downloading"
+                  class="download-current-btn"
+              >
+                <el-icon><Download /></el-icon>
+                下载当前页 ({{ currentPage }})
+              </el-button>
             </div>
-          </div>
-        </el-col>
-
-        <!-- 当前页下载 -->
-        <el-col :xs="24" :sm="24" :md="6" :lg="10">
-          <div class="control-item current-page-download">
-            <el-button
-                type="success"
-                size="large"
-                @click="downloadCurrentPage"
-                :disabled="wait || picitem.length === 0"
-                :loading="downloading"
-                class="download-current-btn"
-            >
-              <el-icon><Download /></el-icon>
-              下载当前页 ({{ currentPage }})
-            </el-button>
           </div>
         </el-col>
       </el-row>
@@ -111,12 +105,13 @@
         </el-button>
       </div>
     </div>
-    <div class="waterfall-container">
+    <div class="waterfall-container" v-show="!loading">
       <Waterfall
           ref="waterfall"
-          :list="filteredPicItems"
-          :width="300"
-          :gutter="20"
+          :list=filteredPicItems
+          :width=waterFallConf.width
+          :gutter=waterFallConf.gutter
+          :breakpoints=waterFallConf.breakpoints
           background-color="transparent"
           animation-effect="fadeInUp"
           key="followWaterfall"
@@ -142,13 +137,7 @@
 
     <el-footer v-if="loading == true">
       <div class="loader" id="loader">
-        <br>
-        <br>
-        <br>
-        <br>
-        <br>
-        <br>
-        <br>
+        <br v-for="_ in 6">
         <div class="loading">
           <span></span>
           <span></span>
@@ -173,6 +162,7 @@ import 'animate.css';
 import PicCard from './PicCard.vue';
 import "../assets/style/variable.less";
 import { debounce } from '../assets/js/utils/index.js'
+import { waterFallConf } from "../assets/js/configuration.js";
 import {
   UserFilled,
   Download,
@@ -206,7 +196,6 @@ const filteredPicItems = computed(() => {
   }
   return picitem.value
 })
-
 // 计算属性：过滤后的数量
 const filteredCount = computed(() => filteredPicItems.value.length)
 
@@ -255,7 +244,10 @@ function fetchFollowData() {
   })
 }
 function handlePageChange(page) {
-  console.log("页面切换到:", page)
+  if (page == currentPage.value){
+    return
+  }
+  picitem.value = [];
   currentPage.value = page
   fetchFollowData()
 }
@@ -302,7 +294,7 @@ function downloadMultiplePages() {
 @import "../assets/style/common/waterfall.less";
 @import "../assets/style/common/buttons.less";
 @import "../assets/style/common/animations.less";
-@import "../assets/style/common/loading.less";
+//@import "../assets/style/common/loading.less";
 @import "../assets/style/common/responsive.less";
 @import "../assets/style/load.less";
 
@@ -313,52 +305,6 @@ function downloadMultiplePages() {
   overflow-x: hidden;
 }
 
-// 控制面板特定样式（通用样式不包含的部分）
-.control-panel {
-  .control-row {
-    align-items: flex-end;
-  }
 
-  .control-item {
-    .control-label {
-      display: block;
-      margin-bottom: 10px;
-      font-weight: 600;
-      color: #fdfdfd;
-      font-size: 14px;
-    }
-  }
 
-  .range-input-group {
-    .range-separator {
-      font-weight: bold;
-      color: #909399;
-      font-size: 16px;
-    }
-
-    .el-input-number {
-      width: 100px;
-    }
-  }
-
-  .current-page-download {
-    .download-current-btn {
-      width: 100%;
-      height: 44px;
-    }
-  }
-}
-
-// 分页容器特定配色
-.pagination-container {
-  .stats-info {
-    display: flex;
-    gap: 10px;
-
-    .el-tag {
-      padding: 8px 12px;
-      border-radius: 20px;
-    }
-  }
-}
 </style>

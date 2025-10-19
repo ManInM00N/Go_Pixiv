@@ -2,7 +2,7 @@
  * 剪贴板操作工具
  */
 
-import { ElNotification } from 'element-plus'
+import {ElNotification} from 'element-plus'
 
 /**
  * 复制文本到剪贴板
@@ -52,14 +52,5 @@ export async function readFromClipboard() {
  * @returns {Promise<boolean>} 是否成功
  */
 export async function copyLink(url) {
-    const success = await copyToClipboard(url, '链接')
-    if (success) {
-        ElNotification({
-            position: "bottom-right",
-            type: "info",
-            message: "链接已复制到剪切板",
-            duration: 1000,
-        })
-    }
-    return success
+    return await copyToClipboard(url, '链接')
 }

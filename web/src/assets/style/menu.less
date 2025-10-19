@@ -21,7 +21,7 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    padding: 20px 0;
+    //padding: 20px 0;
   }
 
   // Logo区域
@@ -30,7 +30,8 @@
     align-items: center;
     padding: 0 24px 32px 24px;
     border-bottom: 1px solid rgba(148, 163, 184, 0.1);
-    margin-bottom: 24px;
+    margin-bottom: 12px;
+    margin-top: 24px;
 
     .logo-icon {
       width: 40px;
@@ -54,10 +55,64 @@
     }
   }
 
+  // 用户状态
+  .user-status {
+    padding: 16px 24px;
+    border-top: 1px solid rgba(148, 163, 184, 0.1);
+    margin-top: auto;
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #ef4444;
+        transition: background 0.3s ease;
+      }
+
+      .status-text {
+        font-size: 14px;
+        color: #94a3b8;
+        font-weight: 500;
+      }
+
+      &.online {
+        .status-dot {
+          background: #10b981;
+          box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+        }
+
+        .status-text {
+          color: #10b981;
+        }
+      }
+    }
+  }
+
+  .version-info {
+    text-align: center;
+    margin-bottom: 12px;
+
+    span {
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 500;
+    }
+  }
+
   // 主导航
-  .main-navigation {
+  .main-navigation{
     flex: 1;
     padding: 0 6px;
+  }
+  .bottom-section{
+    padding: 0 6px;
+  }
+  .main-navigation,.bottom-section {
 
     .sidebar-menu {
       border: none;
@@ -126,98 +181,7 @@
     }
   }
 
-  // 用户状态
-  .user-status {
-    padding: 16px 24px;
-    border-top: 1px solid rgba(148, 163, 184, 0.1);
-    margin-top: auto;
 
-    .status-indicator {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-
-      .status-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #ef4444;
-        transition: background 0.3s ease;
-      }
-
-      .status-text {
-        font-size: 14px;
-        color: #94a3b8;
-        font-weight: 500;
-      }
-
-      &.online {
-        .status-dot {
-          background: #10b981;
-          box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
-        }
-
-        .status-text {
-          color: #10b981;
-        }
-      }
-    }
-  }
-
-  // 底部区域
-  .bottom-section {
-    //padding: 0 16px 16px 16px;
-    margin: 0 6px 16px 6px;
-    .bottom-menu {
-      border: none;
-
-      .settings-item {
-        border-radius: 12px;
-        transition: all 0.3s ease;
-
-        &:hover {
-          background: rgba(100, 116, 139, 0.1);
-          transform: translateX(4px);
-        }
-        .nav-item-content {
-          display: flex;
-          align-items: center;
-          width: 100%;
-          //padding: 12px 0px;
-          color: #e2e8f0;
-          transition: color 0.3s ease;
-
-          .nav-icon {
-            margin-right: 2px;
-            display: flex;
-            align-items: center;
-          }
-
-          .nav-text {
-            flex: 1;
-            font-size: 15px;
-            font-weight: 500;
-          }
-
-          .lock-indicator {
-            opacity: 0.6;
-            color: #f59e0b;
-          }
-        }
-      }
-    }
-
-    .version-info {
-      text-align: center;
-      margin-bottom: 8px;
-
-      span {
-        font-size: 12px;
-        color: #64748b;
-        font-weight: 500;
-      }
-    }
-  }
 }
 
 .main-content {
@@ -239,7 +203,7 @@
 .back-to-top-btn {
   width: 44px;
   height: 44px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #8d99d5 0%, #58bf85 100%);
   color: white;
   border-radius: 22px;
   display: flex;

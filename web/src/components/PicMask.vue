@@ -73,7 +73,7 @@
               <el-button
                   circle
                   size="large"
-                  @click="openInPixiv"
+                  @click="openPixivArtwork(imageViewerStore.currentPid)"
                   v-tooltip="'在 Pixiv 中查看'"
                   class="control-btn"
               >
@@ -203,7 +203,7 @@
                   @click="imageViewerStore.goToPage(page - 1)"
               >
                 <el-image
-                    :src="getThumbnailUrl(page - 1)"
+                    :src="getThumbnailUrl(imageViewerStore.thumbUrls[page-1])"
                     fit="cover"
                     class="thumbnail-image"
                 />
@@ -307,7 +307,6 @@ const currentImageUrl = computed(() => {
   const pixivUrl = `${imageViewerStore.currentImageUrl}`
   return `${baseUrl}${pixivUrl}`
 })
-
 
 // 鼠标事件处理
 const handleMouseDown = (event) => {
@@ -442,10 +441,6 @@ const downloadCurrent = async () => {
   }
 }
 
-const openInPixiv = () => {
-  openPixivArtwork(imageViewerStore.currentPid)
-}
-
 const toggleShortcuts = () => {
   showShortcuts.value = !showShortcuts.value
 }
@@ -484,7 +479,6 @@ watch(() => imageViewerStore.currentPage, () => {
 
 // 图片查看器特定样式
 .image-viewer-modal {
-  // 基础模态框样式由 modal.less 提供
 
   // 图片展示区域
   .image-display-area {

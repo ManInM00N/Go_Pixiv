@@ -5,25 +5,9 @@
 .waterfall-container {
   min-height: 400px;
 
-  .novel-wrapper,
-  .artwork-card,
-  .card-wrapper {
-    position: relative;
-    border-radius: 15px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    background: transparent;
-    margin-bottom: 20px;
-
-    &:hover {
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-      transform: translateY(-5px);
-    }
-  }
-
   // 图片容器
-  .image-container {
+  .image-container,
+  .cover-container {
     position: relative;
     cursor: pointer;
     overflow: hidden;
@@ -70,34 +54,6 @@
       }
     }
 
-    &:hover {
-      .image {
-        transform: scale(1.05);
-      }
-
-      .image-overlay,
-      .cover-overlay {
-        opacity: 1;
-
-        .overlay-content {
-          transform: translateY(0);
-        }
-      }
-    }
-  }
-
-  // 封面容器
-  .cover-container {
-    position: relative;
-    width: 100%;
-    overflow: hidden;
-
-    .novel-cover {
-      width: 100%;
-      height: 100%;
-      transition: transform 0.3s ease;
-    }
-
     // 标签区域
     .cover-badges {
       position: absolute;
@@ -117,6 +73,30 @@
         font-weight: bold;
       }
     }
+
+    &:hover {
+      .image {
+        transform: scale(1.05);
+      }
+
+      .image-overlay,
+      .cover-overlay {
+        opacity: 1;
+
+        .overlay-content {
+          transform: translateY(0);
+        }
+      }
+    }
+  }
+
+  // 封面容器
+  .cover-container {
+    .novel-cover {
+      width: 100%;
+      height: 100%;
+      transition: transform 0.3s ease;
+    }
   }
 
   // 内容区域
@@ -125,29 +105,9 @@
   }
 }
 
-// 响应式布局
-@media (max-width: 768px) {
-  .waterfall-container {
-    :deep(.vue-waterfall) {
-      --waterfall-item-width: 280px !important;
-    }
-
-    .novel-wrapper,
-    .artwork-card,
-    .card-wrapper {
-      &:hover {
-        transform: none; // 移动端禁用悬停变换
-      }
-    }
-  }
-}
 
 @media (max-width: 480px) {
   .waterfall-container {
-    :deep(.vue-waterfall) {
-      --waterfall-item-width: 100% !important;
-    }
-
     .image-container,
     .cover-container {
       .image-overlay,

@@ -32,6 +32,11 @@
                       <span class="preview-text">点击预览</span>
                     </div>
                   </div>
+                  <!-- R18标识 -->
+                  <div class="cover-badges">
+                    <el-tag v-if="$props.r18 > 0"  type="danger" size="small">R18</el-tag>
+                    <el-tag v-if="$props.pages > 1" type="normal" size="small">{{$props.pages}}页</el-tag>
+                  </div>
                 </div>
                 <div style="padding: 14px">
                     <el-row>
@@ -42,14 +47,10 @@
                     </el-row>
                     <el-row>
                         <el-text class="w-280px mb-2" truncated type="primary"
-                            @click="'https://www.pixiv.net/users/' + $props.authorId">{{ $props.author }}</el-text>
+                            @click="openPixivUser( $props.authorId)">{{ $props.author }}</el-text>
                     </el-row>
                     <el-row>
                         <el-col :span="20" style="text-align: left;;">
-                            <el-text class="w-250px mb-2" truncated type="success">
-                                Pages:{{ $props.pages }}
-
-                            </el-text>
                         </el-col>
 
                         <el-col :span="4">
@@ -75,10 +76,7 @@
 
                 </div>
             </el-card>
-            <!-- R18标识 -->
-            <div v-if="$props.r18 > 0" class="r18-badge">
-              <el-tag type="danger" size="small">R18</el-tag>
-            </div>
+
         </template>
     </el-skeleton>
 </template>
@@ -86,7 +84,7 @@
 <script lang="ts" setup>
 import { onMounted, ref } from "vue";
 import noProfileImg from '../assets/images/NoR18.png';
-import { DownloadByPid } from "../../bindings/main/internal/pixivlib/ctl.js";
+import {DownloadByPid} from "../../bindings/main/internal/pixivlib/ctl.js";
 const name = "PicCard"
 import { form } from "../assets/js/configuration.js"
 import { LazyImg } from "vue-waterfall-plugin-next";
@@ -101,7 +99,7 @@ import {
   Loading,
   Check
 } from "@element-plus/icons-vue";
-import { getImageUrl, openPixivArtwork } from '../assets/js/utils/index.js'
+import {getImageUrl, openPixivArtwork, openPixivUser} from '../assets/js/utils/index.js'
 import { sleep } from '../assets/js/utils/debounce.js'
 import { useImageViewerStore } from "../assets/stores/PicPreview.js"
 const store = useImageViewerStore()
@@ -164,7 +162,6 @@ async function download() {
   }
 }
 
-
 onMounted(() => {
 })
 </script>
@@ -176,33 +173,6 @@ onMounted(() => {
 @import "../assets/style/common/waterfall.less";
 @import "../assets/style/common/animations.less";
 
-
-.loading {
-  width: 28px;
-  height: 28px;
-  border: 2px solid #ffffff;
-  border-top-color: transparent;
-  border-radius: 100%;
-  animation: circle infinite 0.75s linear;
-}
-
-
-// 组件特定样式
-.image {
-  width: 100%;
-}
-
-.r18-badge {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 10;
-
-  .el-tag {
-    font-weight: bold;
-    border-radius: 20px;
-  }
-}
 // 卡片特定的下载区域样式
 .download-area {
   .download-btn {

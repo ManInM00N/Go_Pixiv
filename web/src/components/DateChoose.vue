@@ -3,7 +3,7 @@
         <div class="block">
             <el-date-picker v-model="selectedDate" format="YYYY-MM-DD" value-format="YYYY-MM-DD" type="date"
                 :disabled="lock" placeholder="Pick a day" :disabled-date="disabledDate" size="large"
-                :clearable="false" />
+                :clearable="false" style="width: 150px;" />
         </div>
     </div>
 </template>
@@ -38,7 +38,6 @@ function formatDateToYYYYMMDD(date) {
     const day = padStart(date.getDate(), 2, '0');
     return `${year}-${month}-${day}`;
 }
-const emitsEventList = defineEmits(["DownloadByRank"])
 
 const re = ref(props.re)
 defineExpose(
@@ -67,7 +66,6 @@ defineExpose(
         margin-bottom: 20px;
     }
 }
-
 
 .date-picker .block:last-child {
     border-right: none;

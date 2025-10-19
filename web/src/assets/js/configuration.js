@@ -2,12 +2,12 @@ import axios from "axios";
 import { ref } from "vue"
 import { CheckLogin } from "../../../bindings/main/internal/pixivlib/ctl.js";
 import {ElNotification} from "element-plus";
-export let form = ref({
-    prefix: '',
+export const defaultConf = {
+    prefix: 'http://127.0.0.1:7234',
     proxy: '',
     cookie: '',
     r_18: false,
-    downloadposition: 'download',
+    downloadposition: 'Download',
     likelimit: 0,
     retry429: 2000,
     downloadinterval: 500,
@@ -16,10 +16,12 @@ export let form = ref({
     expired_time: 7,
     useproxy: false,
     logined: false,
-})
-
+}
+let prePost = {}
+export let form = ref(Object.assign({}, defaultConf))
 axios.get("http://127.0.0.1:7234/api/getsetting").then(res => {
     console.log(form.value)
+
     form.value.prefix = res.data.setting.prefix
     form.value.proxy = res.data.setting.proxy
     form.value.cookie = res.data.setting.cookie.toString()
@@ -32,6 +34,7 @@ axios.get("http://127.0.0.1:7234/api/getsetting").then(res => {
     form.value.differauthor = res.data.setting.differauthor
     form.value.expired_time = res.data.setting.expired_time
     form.value.useproxy = res.data.setting.useproxy
+    prePost = Object.assign({}, form.value)
     console.log(res.data)
     console.log(form.value)
     if (form.value.cookie != "") {
@@ -62,7 +65,11 @@ const startWebSocket = () => {
     };
 };
 startWebSocket()
+
+const reconnectFields = ['prefix', 'proxy', 'cookie', 'useproxy']
+
 export async function updateSettings(){
+    let needRecon = false
     await axios.post("http://127.0.0.1:7234/api/update", {
         prefix: form.value.prefix,
         proxy: form.value.proxy,
@@ -81,6 +88,17 @@ export async function updateSettings(){
             'Content-Type': 'application/json'
         }
     }).then(res => {
+        for (const field of reconnectFields) {
+            let oldValue = prePost[field]
+            let newValue = res.data.setting[field]
+            if (field === 'cookie') {
+                oldValue = prePost.cookie
+                newValue = res.data.setting.cookie.toString()
+            }else if (oldValue !== newValue) {
+                needRecon = true
+                break
+            }
+        }
         form.value.prefix = res.data.setting.prefix
         form.value.proxy = res.data.setting.proxy
         form.value.cookie = res.data.setting.cookie.toString()
@@ -93,6 +111,7 @@ export async function updateSettings(){
         form.value.differauthor = res.data.setting.differauthor
         form.value.expired_time = res.data.setting.expired_time
         form.value.useproxy = res.data.setting.useproxy
+        prePost = Object.assign({}, form.value)
         console.log(res)
     }).catch(error => {
         console.log(error)
@@ -106,5 +125,29 @@ export async function updateSettings(){
     }).finally(() => {
 
         // CheckLogin()
+        return needRecon
     })
+}
+
+
+export const waterFallConf ={
+    breakpoints: {
+        1750:{
+            rowPerView: 5,
+        },
+        1400:{
+            rowPerView: 4,
+        },
+        1050: {
+            rowPerView: 3,
+        },
+        700: {
+            rowPerView: 2,
+        },
+        400: {
+            rowPerView: 1,
+        }
+    },
+    width : 300,
+    gutter : 20,
 }

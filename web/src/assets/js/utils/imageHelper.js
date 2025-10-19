@@ -19,10 +19,10 @@ export function getProxiedImageUrl(pixivUrl) {
 /**
  * 获取图片 URL（带 R18 检查）
  * @param {string} imageUrl - 图片 URL
- * @param {boolean} isR18 - 是否为 R18 内容
+ * @param {number} isR18 - 是否为 R18 内容
  * @returns {string} 处理后的 URL
  */
-export function getImageUrl(imageUrl, isR18 = false) {
+export function getImageUrl(imageUrl, isR18 = 0) {
     if (isR18 && !form.value.r_18) {
         return noProfileImg
     }

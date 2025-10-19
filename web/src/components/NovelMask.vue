@@ -59,7 +59,7 @@
                 <el-button-group class="font-buttons">
                   <el-button
                       size="small"
-                      @click="decreaseFontSize"
+                      @click="novelViewerStore.decreaseFontSize"
                       :disabled="novelViewerStore.fontSize <= novelViewerStore.minFontSize || novelViewerStore.isLoading"
                   >
                     <el-icon><Minus /></el-icon>
@@ -69,7 +69,7 @@
                   </el-button>
                   <el-button
                       size="small"
-                      @click="increaseFontSize"
+                      @click="novelViewerStore.increaseFontSize"
                       :disabled="novelViewerStore.fontSize >= novelViewerStore.maxFontSize  || novelViewerStore.isLoading"
                   >
                     <el-icon><Plus /></el-icon>
@@ -101,7 +101,7 @@
               <el-button
                   circle
                   size="large"
-                  @click="openInPixiv"
+                  @click="openPixivNovel(novelViewerStore.currentNovelId)"
                   v-tooltip="'在 Pixiv 中查看'"
                   class="control-btn"
               >
@@ -320,10 +320,9 @@ import {ElMessage, ElNotification} from 'element-plus'
 import { useNovelViewerStore } from '../assets/stores/novelViewer.js'
 import { copyToClipboard, copyLink, openPixivNovel } from '../assets/js/utils/index.js'
 import axios from 'axios'
-import {DownloadByNovelId} from "../../bindings/main/internal/pixivlib/ctl.js";
+import {DownloadByNovelId, OpenInBrowser} from "../../bindings/main/internal/pixivlib/ctl.js";
 
 const novelViewerStore = useNovelViewerStore()
-
 const modalRef = ref(null)
 const novelContainer = ref(null)
 const contentLoading = ref(false)
@@ -331,18 +330,17 @@ const showShortcuts = ref(false)
 const showSeriesSidebar = ref(false)
 const novelContent = ref('')
 
-
 const toggleSeriesSidebar = () => {
   showSeriesSidebar.value = !showSeriesSidebar.value
 }
-
 
 async function preventOutLink(e) {
   const el = e.target
   if (el.tagName === 'A') {
     e.preventDefault()
     const href = el.getAttribute('href')
-    await copyLink(href)
+    OpenInBrowser(href)
+    // await copyLink(href)
   }
 }
 
@@ -357,15 +355,6 @@ const novelParagraphs = computed(() => {
   return novelViewerStore.novelContent.split('\n').filter(p => p.trim())
 })
 
-
-// 字体控制
-const increaseFontSize = () => {
-  novelViewerStore.increaseFontSize()
-}
-
-const decreaseFontSize = () => {
-  novelViewerStore.decreaseFontSize()
-}
 
 // 事件处理
 const handleBackdropClick = (event) => {
@@ -388,10 +377,6 @@ const downloadCurrent = async () => {
     console.error('下载失败:', error)
     ElMessage.error('下载失败,请稍后重试')
   }
-}
-
-const openInPixiv = () => {
-  openPixivNovel(novelViewerStore.currentNovelId)
 }
 
 const toggleShortcuts = () => {
@@ -427,7 +412,6 @@ watch(() => novelViewerStore.isVisible, (newVal) => {
 
 
 <style lang="less" scoped>
-// 导入通用样式
 @import "../assets/style/common/modal.less";
 @import "../assets/style/common/buttons.less";
 @import "../assets/style/common/loading.less";
@@ -485,12 +469,10 @@ watch(() => novelViewerStore.isVisible, (newVal) => {
 
         .loading-icon {
           font-size: 48px;
-          animation: spin 1s linear infinite;
         }
       }
 
       .chapter-nav {
-        display: flex;
         justify-content: space-between;
         margin-top: 40px;
         padding-top: 20px;

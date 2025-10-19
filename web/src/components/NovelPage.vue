@@ -6,7 +6,6 @@
         <el-icon class="title-icon"><Reading /></el-icon>
         小说中心
       </h1>
-      <p class="page-description">发现精彩的文学作品</p>
     </div>
 
     <!-- 导航标签 -->
@@ -167,8 +166,9 @@
         <Waterfall
             ref="waterfall"
             :list="filteredNovels"
-            :width="300"
-            :gutter="20"
+            :width=waterFallConf.width
+            :gutter=waterFallConf.gutter
+            :breakpoints=waterFallConf.breakpoints
             background-color="transparent"
             :animationEffect="fadeInUp"
             key="novelWaterfall"
@@ -197,17 +197,17 @@
       </el-empty>
     </div>
 
-    <!-- 回到顶部 -->
-    <el-backtop
-        target=".novel-page-container"
-        :bottom="60"
-        :right="60"
-        :visibility-height="400"
-    >
-      <div class="back-to-top">
-        <el-icon><ArrowUp /></el-icon>
-      </div>
-    </el-backtop>
+<!--    &lt;!&ndash; 回到顶部 &ndash;&gt;-->
+<!--    <el-backtop-->
+<!--        target=".novel-page-container"-->
+<!--        :bottom="60"-->
+<!--        :right="60"-->
+<!--        :visibility-height="400"-->
+<!--    >-->
+<!--      <div class="back-to-top">-->
+<!--        <el-icon><ArrowUp /></el-icon>-->
+<!--      </div>-->
+<!--    </el-backtop>-->
   </div>
 </template>
 
@@ -229,6 +229,7 @@ import { ElMessage } from 'element-plus'
 import { Waterfall } from 'vue-waterfall-plugin-next'
 import NovelCard from './NovelCard.vue'
 import axios from "axios";
+import {waterFallConf} from "../assets/js/configuration.js";
 
 // 响应式数据
 const activeTab = ref('follow')
@@ -277,7 +278,6 @@ const filteredNovels = computed(() => {
       }
     })
   }
-
 
   // 搜索筛选
   if (searchKeyword.value) {
@@ -437,13 +437,10 @@ const fetchNovel = async (type, page = 1, options = {}) => {
     console.error('获取小说数据失败:', error)
     throw error
   }
-
-
 }
 
 const applyFilters = () => {
   currentPage.value = 1
-  // 重新渲染瀑布流
   nextTick(() => {
     if (waterfall.value) {
       waterfall.value.renderer()
@@ -508,9 +505,7 @@ onMounted(() => {
 
 // 主容器
 .novel-page-container {
-  padding: 20px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-height: 100vh;
 }
 
 // 导航卡片
@@ -542,34 +537,6 @@ onMounted(() => {
   }
 }
 
-// 筛选卡片特定样式
-.filter-card {
-  .filter-content {
-    .filter-item {
-      margin-bottom: 15px;
-
-      .filter-label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 600;
-        color: #ffffff;
-        font-size: 14px;
-      }
-
-      .filter-select {
-        width: 100%;
-      }
-    }
-
-    .search-section {
-      margin-top: 20px;
-
-      .search-input {
-        max-width: 400px;
-      }
-    }
-  }
-}
 
 // 内容区域特定配置
 .content-area {
@@ -594,17 +561,6 @@ onMounted(() => {
     }
   }
 
-  // 列表容器
-  .list-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-
-    @media (max-width: 768px) {
-      grid-template-columns: 1fr;
-    }
-  }
-
   // 加载更多
   .load-more-section {
     text-align: center;
@@ -626,10 +582,6 @@ onMounted(() => {
 
 // 响应式
 @media (max-width: 768px) {
-  .novel-page-container {
-    padding: 15px;
-  }
-
   .filter-content {
     .el-row {
       margin: 0 !important;
@@ -642,11 +594,4 @@ onMounted(() => {
   }
 }
 
-@media (max-width: 480px) {
-  .waterfall-container {
-    :deep(.vue-waterfall) {
-      --waterfall-item-width: 100% !important;
-    }
-  }
-}
 </style>

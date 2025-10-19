@@ -290,6 +290,13 @@
             <el-icon><Connection /></el-icon>
             测试连接
           </el-button>
+<!--          <el-button-->
+<!--            size="large"-->
+<!--            @click="GetWebView2Cookies('114')"-->
+<!--            class="test-btn"-->
+<!--          >-->
+<!--            功能测试-->
+<!--          </el-button>-->
         </div>
       </el-form>
     </div>
@@ -327,8 +334,8 @@ import {
 } from '@element-plus/icons-vue'
 import { ElMessage, ElNotification, ElMessageBox } from 'element-plus'
 import { Events } from "@wailsio/runtime"
-import { form, updateSettings } from "../assets/js/configuration.js"
-import { CheckLogin } from "../../bindings/main/internal/pixivlib/ctl.js"
+import { form, updateSettings, defaultConf } from "../assets/js/configuration.js"
+import {CheckLogin, GetWebView2Cookies} from "../../bindings/main/internal/pixivlib/ctl.js"
 
 // 响应式数据
 const formRef = ref(null)
@@ -379,6 +386,7 @@ const connectionStatus = computed(() => {
 
 // 更新设置
 async function handleUpdate() {
+  let needReconn = false
   try {
     // 表单验证
     // await formRef.value.validate()
@@ -393,10 +401,16 @@ async function handleUpdate() {
       duration: 2000,
     })
 
-    await updateSettings()
-
-    ElMessage.success('设置保存成功')
-
+    needReconn = await updateSettings()
+    ElNotification({
+      type:"success",
+      message:"设置保存成功",
+      position:"bottom-right",
+      duration:2000,
+    })
+    if (needReconn){
+      await testConnection()
+    }
   } catch (error) {
     if (error.errorFields) {
       ElMessage.error('请检查表单输入')
@@ -406,7 +420,7 @@ async function handleUpdate() {
     }
   } finally {
     updating.value = false
-    await testConnection()
+
   }
 }
 
@@ -422,22 +436,7 @@ async function handleReset() {
           type: 'warning',
         }
     )
-
-    // 重置表单到默认值
-    Object.assign(form.value, {
-      prefix: 'http://127.0.0.1:7234',
-      proxy: '',
-      cookie: '',
-      r_18: false,
-      downloadposition: 'download',
-      likelimit: 0,
-      retry429: 2000,
-      downloadinterval: 500,
-      retryinterval: 1000,
-      differauthor: false,
-      expired_time: 7,
-      useproxy: false,
-    })
+    form.value = defaultConf
 
     ElMessage.success('设置已重置')
 
@@ -451,7 +450,6 @@ async function testConnection() {
 
   try {
     testing.value = true
-
     ElMessage.info('正在测试连接...')
     await CheckLogin()
 
@@ -556,18 +554,15 @@ onMounted(() => {
 
 // 操作按钮特定样式
 .form-actions {
-  display: flex;
   justify-content: center;
   gap: 15px;
   margin: 30px 0;
-  flex-wrap: wrap;
 
   .el-button {
     padding: 12px 30px;
     border-radius: 25px;
     font-weight: 600;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transition: all 0.3s ease;
 
     &:hover {
       transform: translateY(-2px);
@@ -612,10 +607,6 @@ onMounted(() => {
 
 // 响应式特定调整
 @media (max-width: 768px) {
-  .settings-container {
-    padding: 15px;
-  }
-
   .settings-content {
     .settings-form {
       .switch-grid {
@@ -629,19 +620,6 @@ onMounted(() => {
       }
     }
   }
-
-  .form-actions {
-    flex-direction: column;
-
-    .el-button {
-      width: 100%;
-    }
-  }
 }
 
-@media (max-width: 480px) {
-  .page-header .page-title {
-    font-size: 24px;
-  }
-}
 </style>

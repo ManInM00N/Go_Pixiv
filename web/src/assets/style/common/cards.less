@@ -4,8 +4,9 @@
 
 // 控制面板卡片
 .control-panel,
-.filter-card {
-  margin-bottom: 25px;
+.filter-card,
+.terminal-card{
+  margin-bottom: 20px;
   border-radius: 15px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 
@@ -19,6 +20,10 @@
     gap: 10px;
     font-weight: 600;
     font-size: 16px;
+    .terminal-actions {
+      display: flex;
+      gap: 5px;
+    }
   }
 
   .filter-header,
@@ -30,6 +35,52 @@
     color: #409EFF;
     margin-bottom: 20px;
     font-size: 16px;
+  }
+}
+
+// 筛选卡片特定样式
+.filter-card {
+  .filter-header {
+    .page-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0;
+      color: #409EFF;
+      font-size: 24px;
+      font-weight: 600;
+    }
+  }
+
+  .filter-row {
+    align-items: flex-end;
+  }
+
+  .filter-item {
+    margin-bottom: 10px;
+    .filter-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #c2c7d1;
+      font-size: 14px;
+    }
+  }
+}
+
+.control-panel {
+  .control-row {
+    align-items: flex-end;
+  }
+
+  .control-item {
+    .control-label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: #fdfdfd;
+      font-size: 14px;
+    }
   }
 }
 
@@ -46,7 +97,6 @@
 
   &:hover {
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-    transform: translateY(-5px);
   }
 
   // R18 标识
@@ -76,9 +126,10 @@
 
 // 终端卡片
 .terminal-card {
-  border-radius: 15px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-
+  .card-header {
+    justify-content: space-between;
+  }
   .terminal-container {
     background: #1e1e1e;
     border-radius: 8px;
@@ -89,6 +140,40 @@
       font-family: 'Consolas', 'Monaco', monospace;
       font-size: 14px;
       line-height: 1.5;
+      .terminal-line {
+        display: flex;
+        margin-bottom: 8px;
+        align-items: flex-start;
+
+        .terminal-time {
+          color: #666;
+          margin-right: 10px;
+          font-size: 12px;
+          white-space: nowrap;
+        }
+
+        .terminal-text {
+          flex: 1;
+          color: #e0e0e0;
+          word-break: break-all;
+        }
+
+        &.log-error .terminal-text {
+          color: #ff4757;
+        }
+
+        &.log-warning .terminal-text {
+          color: #ffa726;
+        }
+
+        &.log-success .terminal-text {
+          color: #26de81;
+        }
+
+        &.log-info .terminal-text {
+          color: #74b9ff;
+        }
+      }
     }
   }
 }
@@ -144,6 +229,13 @@
 
     :deep(.el-card__body) {
       padding: 20px;
+    }
+  }
+  .novel-wrapper,
+  .artwork-card,
+  .card-wrapper {
+    &:hover {
+      transform: none; // 移动端禁用悬停变换
     }
   }
 }

@@ -33,6 +33,11 @@
     transform: scale(1.05);
     box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
   }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(64, 158, 255, 0.4);
+  }
 }
 
 // 刷新浮动按钮
@@ -46,32 +51,12 @@
   }
 }
 
-// 回到顶部按钮
-.back-to-top,
-.back-to-top-btn {
-  width: 45px;
-  height: 45px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-
-  &:hover {
-    transform: scale(1.1);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-  }
-}
 
 // 操作按钮组
 .form-actions,
 .action-buttons {
   display: flex;
-  gap: 15px;
+  gap: 10px;
   flex-wrap: wrap;
 
   .el-button {
@@ -86,8 +71,8 @@
 // 主要操作按钮
 .update-btn,
 .search-btn {
-  padding: 12px 30px;
-  border-radius: 25px;
+  padding: 12px 24px;
+  //border-radius: 25px;
   font-weight: 600;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 

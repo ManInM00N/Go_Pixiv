@@ -382,22 +382,12 @@
       </el-alert>
     </div>
 
-    <!-- 回到顶部 -->
-    <el-backtop
-        :bottom="60"
-        :right="60"
-        :visibility-height="300"
-    >
-      <div class="back-to-top">
-        <el-icon><ArrowUp /></el-icon>
-      </div>
-    </el-backtop>
   </div>
 </template>
 
 <script lang="js" setup>
 import DateChoose from "./DateChoose.vue";
-import { getLogType } from '../assets/js/utils/logHelper.js'
+import { getLogType,debounce } from '../assets/js/utils/index.js'
 import { onMounted, ref, computed, nextTick } from "vue";
 import { ElNotification, ElMessage } from "element-plus";
 import {
@@ -420,7 +410,13 @@ import axios from "axios";
 import { timeElement } from "../assets/js/Time.js"
 import { Events } from "@wailsio/runtime"
 import { ws, form } from "../assets/js/configuration.js";
-import { DownloadByPid, DownloadByRank, DownloadByNovelId, DownloadByAuthorId } from "../../bindings/main/internal/pixivlib/ctl.js";
+import {
+  DownloadByPid,
+  DownloadByRank,
+  DownloadByNovelId,
+  DownloadByAuthorId,
+  RemoveTask
+} from "../../bindings/main/internal/pixivlib/ctl.js";
 
 // 响应式数据
 const activeTab = ref('pid')
@@ -456,6 +452,7 @@ onMounted(() => {
       }
       cnt = (cnt+1)%6
       // msg.data[1]
+      const arr = msg.data[0] || []
       let tmp = msg.data[1]
       let tt = [];
       for(let k in msg.data[1]){
@@ -469,9 +466,9 @@ onMounted(() => {
           // console.log(wk.task.Name)
         }
       }
-      for (let v of msg.data[0]){
-        // console.log(v.info)
-        tt.push({value:v.info.Name})
+      for (let v of arr){
+        // console.log(v)
+        tt.push({value:v.info.Name,data:v})
       }
       queue.value = tt
     })
@@ -519,16 +516,25 @@ const options = ref([
   { value: "weekly_r18", label: "每周排行 R18", disabled: true },
 ])
 
+const debouncedRemoveTask = debounce(
+    (index)=>{
+      if (index <= 0) {
+        ElMessage.warning('无法删除正在执行的任务')
+        return
+      }
+      // console.log(queue.value[index].data.info.ID)
+      RemoveTask(queue.value[index].data.info.ID)
+      ElNotification({
+        type:"info",
+        position:"bottom-right",
+        message:"删除成功"
+      })
+    }
+    ,300)
+
 // 删除指定任务
 const removeTask = (index) => {
-  if (index <= 0) {
-    ElMessage.warning('无法删除正在执行的任务')
-    return
-  }
-
-  queue.value.splice(index, 1)
-
-
+  debouncedRemoveTask(index)
 }
 
 const currentTask = computed(() => {
@@ -596,15 +602,14 @@ async function handleDownload(type, value = null) {
 @import "../assets/style/common/buttons.less";
 @import "../assets/style/common/loading.less";
 @import "../assets/style/common/animations.less";
+@import "../assets/style/common/responsive.less";
 @import "../assets/style/font.less";
 @import "../assets/style/variable.less";
 @import "../assets/style/color.less";
 
 // 主容器
 .main-container {
-  padding: 20px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-height: 100vh;
 }
 
 // 下载表单卡片特定样式
@@ -628,11 +633,6 @@ async function handleDownload(type, value = null) {
     padding: 20px 10px;
 
     .form-content {
-      display: flex;
-      align-items: flex-end;
-      gap: 20px;
-      flex-wrap: wrap;
-
       &.rank-form {
         flex-direction: row;
         align-items: flex-end;
@@ -661,31 +661,8 @@ async function handleDownload(type, value = null) {
         border-radius: 22px;
         font-weight: 600;
         box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
-
-        &:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 6px 16px rgba(64, 158, 255, 0.4);
-        }
       }
     }
-  }
-}
-
-// 主内容区域布局
-.main-content {
-  display: grid;
-  grid-template-columns: 1fr 350px;
-  gap: 25px;
-  margin-bottom: 30px;
-
-  @media (max-width: 1200px) {
-    grid-template-columns: 1fr 300px;
-    gap: 20px;
-  }
-
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-    gap: 20px;
   }
 }
 
@@ -694,83 +671,6 @@ async function handleDownload(type, value = null) {
   display: flex;
   flex-direction: column;
   gap: 20px;
-}
-
-// 进度卡片特定样式
-.progress-card {
-  .card-header {
-    .progress-info {
-      display: flex;
-      gap: 8px;
-    }
-  }
-
-  .main-progress {
-    :deep(.el-progress__text) {
-      font-size: 16px;
-      font-weight: 600;
-    }
-  }
-
-  .progress-text {
-    font-size: 14px;
-    font-weight: 600;
-    color: #409EFF;
-  }
-}
-
-// 终端卡片特定样式
-.terminal-card {
-
-  .card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    font-weight: 600;
-    .terminal-actions {
-      display: flex;
-      gap: 5px;
-    }
-  }
-
-
-  .terminal-content {
-    .terminal-line {
-      display: flex;
-      margin-bottom: 8px;
-      align-items: flex-start;
-
-      .terminal-time {
-        color: #666;
-        margin-right: 10px;
-        font-size: 12px;
-        white-space: nowrap;
-      }
-
-      .terminal-text {
-        flex: 1;
-        color: #e0e0e0;
-        word-break: break-all;
-      }
-
-      &.log-error .terminal-text {
-        color: #ff4757;
-      }
-
-      &.log-warning .terminal-text {
-        color: #ffa726;
-      }
-
-      &.log-success .terminal-text {
-        color: #26de81;
-      }
-
-      &.log-info .terminal-text {
-        color: #74b9ff;
-      }
-    }
-  }
 }
 
 // 队列侧边栏特定样式
@@ -890,33 +790,10 @@ async function handleDownload(type, value = null) {
 .page-footer {
   .el-alert {
     border-radius: 12px;
-
     :deep(.el-alert__title) {
       font-size: 14px;
     }
   }
 }
 
-// 响应式
-@media (max-width: 768px) {
-  .main-container {
-    padding: 15px;
-  }
-
-  .download-form .form-content {
-    flex-direction: column;
-    align-items: stretch;
-
-    .download-btn {
-      width: 100%;
-      margin-top: 15px;
-    }
-  }
-
-  .main-content {
-    .sidebar-section {
-      order: -1;
-    }
-  }
-}
 </style>

@@ -60,17 +60,19 @@
         <!-- 底部设置 -->
         <div class="bottom-section">
           <el-menu
-              class="bottom-menu"
+              :default-active="activeIndex"
+              class="sidebar-menu"
               mode="vertical"
               :router="true"
               text-color="#94a3b8"
               active-text-color="#ffffff"
               background-color="transparent"
+              @select="handleMenuSelect"
           >
             <el-menu-item
                 :index="userself.id"
                 :route="userself.index"
-                class="settings-item"
+                class="nav-item"
             >
               <div class="nav-item-content">
                 <div class="nav-icon">
@@ -85,7 +87,7 @@
 
           <!-- 版本信息 -->
           <div class="version-info">
-            <a href="https://github.com/ManInM00N/Go_Pixiv/releases" target="_blank">v1.3.0</a>
+            <a href="https://github.com/ManInM00N/Go_Pixiv/releases" target="_blank">v1.3.1</a>
           </div>
         </div>
       </div>
@@ -115,8 +117,8 @@
     </main>
     <el-backtop
         target=".main-content"
-        :bottom="30"
-        :right="30"
+        :bottom="45"
+        :right="45"
         :visibility-height="300"
     >
       <div class="back-to-top-btn">
@@ -160,7 +162,7 @@ const items = ref([
     { id: '0', iconmsg: "HomeFilled", key: "下载中心", index: "/", logined: true, description: "管理下载任务"},
     { id: '1', iconmsg: "StarFilled", key: "关注作品", index: "/follow", logined: false,description: "已关注用户的作品" },
     { id: '2', iconmsg: "Histogram", key: "排行榜", index: "/rank", logined: true,description: "热门作品排行" },
-    {id : '3', iconmsg:"Reading" ,key:"小说",index: '/novel',logined: false , description: "小说"},
+    { id : '3', iconmsg:"Reading" ,key:"小说",index: '/novel',logined: false , description: "小说"},
     { id: '4', iconmsg: "Search", key: "搜索", index: "/search", logined: true, description: "搜索作品和作者" },
 ])
 const userself = ref({
@@ -178,10 +180,6 @@ const currentMenuItem = computed(() => {
 function handleMenuSelect(index) {
   activeIndex.value = index
   console.log("菜单切换:", index)
-}
-
-function waitchange(val) {
-    wait.value = val
 }
 
 Events.On("downloadugoira",function(msg){
@@ -215,15 +213,14 @@ onMounted(function () {
     console.log("当前路径:", route.path)
     localStorage.setItem("cookie", form.value.cookie)
     console.log(localStorage.getItem("cookie"))
-    // 根据当前路由设置活跃菜单项
-    const currentItem = items.value.find(item => item.index === route.path)
+    const currentItem = items.value.find(item => item.index === route.path) || userself.value
+
     if (currentItem) {
       activeIndex.value = currentItem.id
     } else if (route.path === userself.value.index) {
       activeIndex.value = userself.value.id
     }
-
-    // 初始登录检查通知
+    console.log(currentItem)
     ElNotification({
       type: "info",
       title: "系统启动",
@@ -240,22 +237,4 @@ onMounted(function () {
 @import "../assets/style/color.less";
 @import "../assets/style/menu.less";
 
-:deep(.el-menu-item) {
-  border-radius: 12px !important;
-  margin-bottom: 4px;
-
-  &:hover {
-    background-color: rgba(100, 116, 139, 0.1) !important;
-  }
-
-  &.is-active {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-    color: #ffffff !important;
-  }
-}
-
-:deep(.el-backtop) {
-  background: transparent !important;
-  box-shadow: none !important;
-}
 </style>

@@ -2,12 +2,15 @@
  * Pixiv 相关工具函数
  */
 
+import {OpenInBrowser} from "../../../../bindings/main/internal/pixivlib/ctl.js";
+
 /**
  * 打开 Pixiv 作品页面
  * @param {string|number} pid - 作品 ID
  */
 export function openPixivArtwork(pid) {
     const url = `https://www.pixiv.net/artworks/${pid}`
+    OpenInBrowser(url)
     window.open(url, '_blank')
 }
 
@@ -17,7 +20,7 @@ export function openPixivArtwork(pid) {
  */
 export function openPixivUser(userId) {
     const url = `https://www.pixiv.net/users/${userId}`
-    window.open(url, '_blank')
+    OpenInBrowser(url)
 }
 
 /**
@@ -26,7 +29,7 @@ export function openPixivUser(userId) {
  */
 export function openPixivNovel(novelId) {
     const url = `https://www.pixiv.net/novel/show.php?id=${novelId}`
-    window.open(url, '_blank')
+    OpenInBrowser(url)
 }
 
 /**
@@ -35,7 +38,7 @@ export function openPixivNovel(novelId) {
  */
 export function openPixivSeries(seriesId) {
     const url = `https://www.pixiv.net/novel/series/${seriesId}`
-    window.open(url, '_blank')
+    OpenInBrowser(url)
 }
 
 /**
@@ -47,6 +50,7 @@ export function openPixivSeries(seriesId) {
 export function getPixivSearchUrl(keyword, type = 'artworks') {
     const encodedKeyword = encodeURIComponent(keyword)
     return `https://www.pixiv.net/tags/${encodedKeyword}/${type}`
+
 }
 
 /**
