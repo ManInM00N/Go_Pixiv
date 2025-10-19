@@ -77,6 +77,10 @@ func AppInit(fs *embed.FS) {
 	}
 	Tray.SetTemplateIcon(b)
 	Tray.SetIcon(b)
+	Tray.OnClick(func() {
+		App.Show()
+		Window.Show()
+	})
 	TrayMenu := App.NewMenu()
 	TrayShow := TrayMenu.Add("显示主界面")
 	TrayShow.OnClick(func(*application.Context) {

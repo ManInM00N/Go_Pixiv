@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	. "main/configs"
 	. "main/internal/cache/DAO"
+	"main/internal/pixivlib/DAO"
 	"main/internal/taskQueue"
 	"main/pkg/utils"
 	"os"
@@ -50,7 +51,12 @@ func init() {
 	taskQueue.RankPool = goruntine.NewGoPool(200, 1)
 	taskQueue.RankPool.Run()
 
-	taskQueue.TaskPool = goruntine.NewTaskPool(1, 1)
+	taskQueue.TaskPool = goruntine.NewTaskPool(1, 1,
+		goruntine.WithLowestValueFirst(),
+		goruntine.WithTaskEqualityByInfoFunc(func(a, b any) bool {
+			return a.(DAO.TaskInfo).ID == b.(DAO.TaskInfo).ID
+		}),
+	)
 	taskQueue.TaskPool.Run()
 
 	taskQueue.FollowPool = goruntine.NewGoPool(200, 1)

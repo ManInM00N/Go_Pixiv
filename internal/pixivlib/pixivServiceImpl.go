@@ -5,9 +5,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/ManInM00N/go-tool/goruntine"
 	"github.com/tidwall/gjson"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"io"
+
 	"main/configs"
 	"main/internal/pixivlib/DAO"
 	. "main/internal/pixivlib/handler"
@@ -148,4 +150,41 @@ func (a *Ctl) CheckLogin() bool {
 		a.App.Event.Emit("login", "True")
 	}
 	return true
+}
+
+func (a *Ctl) RemoveTask(taskId string) bool {
+	taskQueue.TaskPool.RemoveTaskByDeleteFunc(
+		func(item goruntine.Task) bool {
+			return (*item.GetInfo()).(*DAO.TaskInfo).ID == taskId
+		})
+	return true
+}
+
+const str = `
+	const cookies = document.cookie;
+	console.log(cookies)
+    if ('cookieStore' in window) {
+        const allCookies = await cookieStore.getAll();
+        console.log(allCookies);
+    }
+`
+
+func (a *Ctl) GetWebView2Cookies(windowName string) {
+	// 获取 WebView2 控制器
+	App := a.App
+	windows := App.Window.GetAll()
+	fmt.Println(windowName, len(windows))
+	for _, window := range windows {
+		window.ExecJS(str)
+		fmt.Println(window.Name())
+		//App.Browser.OpenURL("https://www.pixiv.net/users/114572298")
+	}
+
+}
+
+func (a *Ctl) OpenInBrowser(url string) {
+	err := a.App.Browser.OpenURL(url)
+	if err != nil {
+		DebugLog.Println(url, err.Error())
+	}
 }

@@ -1,19 +1,22 @@
 <template>
   <el-main style="padding: 20px" class="scrollbar" ref="mainContainer">
     <!-- 筛选控制面板 -->
-    <el-card class="filter-card" shadow="hover">
-      <div class="filter-header">
-        <h2 class="page-title">
-          <el-icon><Picture /></el-icon>
-          Pixiv Ranking
-        </h2>
-      </div>
+    <div class="page-header">
+      <h1 class="page-title">
+        <el-icon class="title-icon"><Histogram /></el-icon>
+        排行榜
+        <el-tag v-if="picitem.length > 0" type="info" class="count-tag">
+          {{ picitem.length }} 作品
+        </el-tag>
+      </h1>
+    </div>
+      <el-card class="control-panel" shadow="hover">
 
-      <el-row :gutter="20" class="filter-row">
+      <el-row :gutter="20" class="control-row">
         <!-- 排名周期选择 -->
-        <el-col  :span="4">
-          <div class="filter-item">
-            <label class="filter-label">Ranking Period</label>
+        <el-col :xs="24" :sm="12" :md="4" :lg="6">
+          <div class="control-item">
+            <label class="control-label">排行类型</label>
             <el-select
                 :disabled="lock"
                 v-model="period"
@@ -32,9 +35,9 @@
           </div>
         </el-col>
         <!-- 日期选择 -->
-        <el-col :span="7">
-          <div class="filter-item" >
-            <label class="filter-label">Date</label>
+        <el-col :xs="24" :sm="12" :md="5" :lg="6">
+          <div class="control-item" >
+            <label class="control-label">日期</label>
             <date-choose
                 :lock="lock"
                 key="rank"
@@ -46,9 +49,9 @@
         </el-col>
 
 
-        <el-col  :span="4" >
-          <div class="filter-item">
-            <label class="filter-label">Page</label>
+        <el-col :xs="24" :sm="12" :md="4" :lg="6">
+          <div class="control-item">
+            <label class="control-label">页号</label>
             <el-select
                 :disabled="lock"
                 class="filter-select"
@@ -67,8 +70,8 @@
         </el-col>
 
         <!-- 搜索和下载按钮 -->
-        <el-col  :span="3" style="margin-bottom: 8px" >
-          <div class="action-buttons">
+        <el-col :xs="24" :sm="12" :md="10" :lg="6">
+          <div class="control-item">
             <el-button
                 type="primary"
                 size="large"
@@ -80,10 +83,6 @@
               <el-icon><Search /></el-icon>
               Search
             </el-button>
-          </div>
-        </el-col>
-        <el-col  :span="3" style="margin-left: 24px;margin-bottom: 8px">
-          <div class="action-buttons">
             <el-button
                 type="success"
                 size="large"
@@ -103,15 +102,16 @@
       <Waterfall
           ref="waterfall"
           :list="picitem"
-          :width="300"
-          :gutter="20"
+          :width=waterFallConf.width
+          :gutter=waterFallConf.gutter
+          :breakpoints=waterFallConf.breakpoints
           background-color="transparent"
           :animationEffect="fadeInUp"
           key="rankWaterfall"
       >
         <template #default="{ item, url, index }">
           <transition name="el-fade-in-linear">
-            <div class="card-wrapper">
+            <div class="artwork-card">
               <PicCard
                   :author="item.Author"
                   :img="item.src"
@@ -130,6 +130,7 @@
 
     <el-footer v-if="loading === true">
       <div class="loader" id="loader">
+        <br v-for="_ in 6">
         <div class="loading">
           <span></span>
           <span></span>
@@ -159,12 +160,13 @@ import DateChoose from "./DateChoose.vue";
 import PicCard from "./PicCard.vue";
 import { defineComponent, onMounted, ref } from "vue";
 import { DownloadByRank } from "../../bindings/main/internal/pixivlib/ctl.js";
-import { Download, Search, Picture, DataLine, ArrowUp } from "@element-plus/icons-vue";
+import {Download, Search, Picture, DataLine, ArrowUp, UserFilled} from "@element-plus/icons-vue";
 import { LazyImg, Waterfall } from 'vue-waterfall-plugin-next'
 import { Events } from "@wailsio/runtime";
 import 'vue-waterfall-plugin-next/dist/style.css'
 import 'animate.css';
 import axios from 'axios'
+import {waterFallConf} from "../assets/js/configuration.js";
 defineComponent({
   PicCard, DateChoose
 })
@@ -237,7 +239,6 @@ function RankPage() {
     lock.value = false
     loading.value = false
   })
-
 }
 
 onMounted(function () {
@@ -265,57 +266,6 @@ onMounted(function () {
   overflow-x: hidden;
 }
 
-// 筛选卡片特定样式
-.filter-card {
-  margin-bottom: 20px;
-  border-radius: 12px;
-
-  .filter-header {
-    margin-bottom: 20px;
-
-    .page-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin: 0;
-      color: #409EFF;
-      font-size: 24px;
-      font-weight: 600;
-    }
-  }
-
-  .filter-row {
-    align-items: flex-end;
-  }
-
-  .filter-item {
-    margin-bottom: 10px;
-
-    .filter-label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 500;
-      color: #c2c7d1;
-      font-size: 14px;
-    }
-  }
-
-  .action-buttons {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-
-    @media (max-width: 768px) {
-      flex-direction: column;
-
-      .el-button {
-        width: 100%;
-        margin: auto;
-      }
-    }
-  }
-}
-
 // 结果信息
 .results-info {
   margin-bottom: 20px;
@@ -327,44 +277,7 @@ onMounted(function () {
   }
 }
 
-// 加载动画
-.loading-footer {
-  padding: 40px 0;
-  text-align: center;
-
-  .loading-text {
-    margin-top: 20px;
-    color: #909399;
-    font-size: 14px;
-  }
-}
-
-// 响应式适配
-@media (max-width: 768px) {
-  .el-main {
-    padding: 15px;
-  }
-
-  .filter-card {
-    .action-buttons {
-      margin-top: 15px;
-    }
-  }
-
-  .waterfall-container {
-    :deep(.vue-waterfall) {
-      --waterfall-item-width: 280px !important;
-    }
-  }
-}
-
 @media (max-width: 480px) {
-  .waterfall-container {
-    :deep(.vue-waterfall) {
-      --waterfall-item-width: 100% !important;
-    }
-  }
-
   .page-title {
     font-size: 20px !important;
   }
