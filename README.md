@@ -6,7 +6,7 @@
 <br>
 <a href="https://github.com/ManInM00N/Go_Pixiv/releases"> <img src="https://img.shields.io/github/v/release/ManInM00N/Go_Pixiv" alt=""/> </a>
 <a href="https://golang.google.cn/dl/"> <img src="https://img.shields.io/github/go-mod/go-version/ManInM00N/Go_Pixiv"> </a>
-<a href="https://wails.io/zh-Hans/docs/gettingstarted/installation"> <img src="https://img.shields.io/badge/wails-v3.0.0--alpha12-red"> </a>
+<a href="https://wails.io/zh-Hans/docs/gettingstarted/installation"> <img src="https://img.shields.io/badge/wails-v3.0.0--alpha36-red"> </a>
 <a href="https://github.com/ManInM00N/Go_Pixiv/blob/master/LICENSE"><img src="https://img.shields.io/github/license/ManInM00N/Go_Pixiv"> </a>
 
 </p>
@@ -19,7 +19,7 @@
 - [x] 托盘化 :zap:
 - [x] 小说下载功能 :monocle_face:
   - [x] 小说查看功能
-- [x] 小说系列下载功能 :wheelchair:
+  - [x] 小说系列下载功能 :wheelchair:
 - [x] GIF下载功能 :tada:
 
 ## ！！！不提供代理
@@ -62,7 +62,7 @@ You should Install Go >= 1.24.5 and Node.js >= v20
 
 For wails3 dependencies
 ```sh
-    go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-alpha.12
+    go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-alpha.36
 ```
 
 Run
