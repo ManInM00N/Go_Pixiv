@@ -1,6 +1,6 @@
 import axios from "axios";
 import {DownloadByFollowPage} from "../../../bindings/main/internal/pixivlib/ctl.js";
-import GIF from "./gif.js"
+import GIFConstructor from "./gif.js"
 import JSZip from "jszip"
 import {ElNotification} from "element-plus";
 function Download() {
@@ -96,7 +96,7 @@ export async function DownloadGIF(pid,width,height,frames,url){
         console.log(pid,"finish load")
         imgElements = await Promise.all(images);
 
-        gif = new GIF({
+        gif = new GIFConstructor({
             workers: 1,
             quality: 10,
             width: width,   // GIF宽度
