@@ -408,7 +408,9 @@ async function handleUpdate() {
       position:"bottom-right",
       duration:2000,
     })
+    console.log(needReconn)
     if (needReconn){
+
       await testConnection()
     }
   } catch (error) {

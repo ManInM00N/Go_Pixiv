@@ -1,6 +1,5 @@
 import axios from "axios";
 import {DownloadByFollowPage} from "../../../bindings/main/internal/pixivlib/ctl.js";
-import GIFConstructor from "./gif.js"
 import JSZip from "jszip"
 import {ElNotification} from "element-plus";
 function Download() {
@@ -96,12 +95,12 @@ export async function DownloadGIF(pid,width,height,frames,url){
         console.log(pid,"finish load")
         imgElements = await Promise.all(images);
 
-        gif = new GIFConstructor({
+        gif = new GIF({
             workers: 1,
             quality: 10,
             width: width,   // GIF宽度
             height: height,  // GIF高度
-            worker:workerManager.getWorkerUrl(),
+            worker: '/gif.worker.js',
         });
         imgElements.forEach((img, index) => {
             const delay = frames[index].delay || 500;  // 默认延迟 500ms

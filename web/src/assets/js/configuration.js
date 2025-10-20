@@ -94,7 +94,9 @@ export async function updateSettings(){
             if (field === 'cookie') {
                 oldValue = prePost.cookie
                 newValue = res.data.setting.cookie.toString()
-            }else if (oldValue !== newValue) {
+            }
+            console.log(oldValue,newValue)
+            if (oldValue !== newValue) {
                 needRecon = true
                 break
             }
@@ -125,8 +127,8 @@ export async function updateSettings(){
     }).finally(() => {
 
         // CheckLogin()
-        return needRecon
     })
+    return needRecon
 }
 
 
