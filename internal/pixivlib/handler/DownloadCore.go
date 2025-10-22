@@ -1,11 +1,13 @@
 package handler
 
 import (
+	Map "github.com/ManInM00N/go-tool/sync"
 	"github.com/tidwall/gjson"
 	_ "image/png"
 	. "main/internal/pixivlib/DAO"
 	"main/pkg/utils"
 	"strconv"
+	"time"
 )
 
 var (
@@ -16,7 +18,22 @@ var (
 	ProcessNow       = int64(0)
 	RankLoadingNow   = false
 	FollowLoadingNow = false
+	UgoiraMap        = Map.NewRWMap[string, bool]()
 )
+
+func UgoiraDownloadWait(indentify string) {
+	var v, ok bool
+	for {
+		v, ok = UgoiraMap.Get(indentify)
+		if ok && v == true {
+			UgoiraMap.Delete(indentify)
+			break
+		} else if ok == false {
+			break
+		}
+		time.Sleep(time.Second)
+	}
+}
 
 func GetAuthorArtworks(id int64) (map[string]gjson.Result, error) {
 	data, err := GetWebpageData(strconv.FormatInt(id, 10), strconv.FormatInt(id, 10), AuthorArtworks)

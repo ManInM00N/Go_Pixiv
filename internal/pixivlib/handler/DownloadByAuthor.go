@@ -21,11 +21,10 @@ func Download_By_Author(text string, callEvent func(name string, data ...interfa
 	taskQueue.WaitingTasks++
 	callEvent("Push", text)
 	id, _ := shortid.Generate()
-	authorMsg, _ := GetAuthorInfo(statics.StringToInt64(text))
 	progressInfo := &TaskInfo{
 		Status: "Waiting",
 		ID:     id,
-		Name:   fmt.Sprintf("%s(%s) artworks ", text, authorMsg["name"].String()),
+		Name:   fmt.Sprintf("%s artworks ", text),
 	}
 	Setting := NowSetting()
 	task, _ := taskQueue.TaskPool.NewTask(
@@ -36,6 +35,8 @@ func Download_By_Author(text string, callEvent func(name string, data ...interfa
 			}
 			c := make(chan string, 2000)
 			all, err := GetAuthorArtworks(statics.StringToInt64(text))
+			authorMsg, _ := GetAuthorInfo(statics.StringToInt64(text))
+			progressInfo.Name = fmt.Sprintf("%s(%s) artworks ", text, authorMsg["name"].String())
 			taskQueue.WaitingTasks--
 			progressInfo.Status = "Running"
 			progressInfo.BeginTime = time.Now()
@@ -82,8 +83,11 @@ func Download_By_Author(text string, callEvent func(name string, data ...interfa
 					}
 
 					if illust.IllustType == UgoiraType {
-						callEvent("downloadugoira", illust.Pid, illust.Width, illust.Height, illust.Frames, illust.Source)
-						time.Sleep(10 * time.Second)
+						id, _ := shortid.Generate()
+						identify := statics.Int64ToString(illust.Pid) + id
+						UgoiraMap.Set(identify, false)
+						callEvent("downloadugoira", illust.Pid, illust.Width, illust.Height, illust.Frames, illust.Source, identify)
+						UgoiraDownloadWait(identify)
 					}
 					if !Download(illust, options) {
 						c <- temp

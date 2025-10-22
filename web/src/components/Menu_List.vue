@@ -183,8 +183,8 @@ function handleMenuSelect(index) {
 }
 
 Events.On("downloadugoira",function(msg){
-  console.log("GIF下载事件:", msg.data)
-  DownloadGIF(msg.data[0][0],msg.data[0][1],msg.data[0][2],msg.data[0][3],msg.data[0][4])
+  console.log("GIF下载事件:", msg.data,msg.data[0])
+  DownloadGIF(msg.data[0][0],msg.data[0][1],msg.data[0][2],msg.data[0][3],msg.data[0][4],msg.data[0][5])
 })
 Events.On("login", function (msg) {
   console.log("登录事件:", msg.data)

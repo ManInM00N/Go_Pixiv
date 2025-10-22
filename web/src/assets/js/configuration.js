@@ -95,7 +95,6 @@ export async function updateSettings(){
                 oldValue = prePost.cookie
                 newValue = res.data.setting.cookie.toString()
             }
-            console.log(oldValue,newValue)
             if (oldValue !== newValue) {
                 needRecon = true
                 break

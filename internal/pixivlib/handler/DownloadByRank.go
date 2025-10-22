@@ -128,9 +128,11 @@ func Download_By_Rank(text, Type string, callEvent func(name string, data ...int
 					}
 
 					if illust.IllustType == UgoiraType {
-						callEvent("downloadugoira", illust.Pid, illust.Width, illust.Height, illust.Frames, illust.Source)
-						time.Sleep(10 * time.Second)
-						return nil, nil
+						id, _ := shortid.Generate()
+						identify := statics.Int64ToString(illust.Pid) + id
+						UgoiraMap.Set(identify, false)
+						callEvent("downloadugoira", illust.Pid, illust.Width, illust.Height, illust.Frames, illust.Source, identify)
+						UgoiraDownloadWait(identify)
 					}
 					Download(illust, options)
 					satisfy++

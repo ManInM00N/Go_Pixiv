@@ -101,8 +101,11 @@ func Download_By_FollowPage(page, Type string, callEvent func(name string, data 
 					return nil, nil
 				}
 				if illust.IllustType == UgoiraType {
-					callEvent("downloadugoira", illust.Pid, illust.Width, illust.Height, illust.Frames, illust.Source)
-					time.Sleep(time.Second * 15)
+					id, _ := shortid.Generate()
+					identify := statics.Int64ToString(illust.Pid) + id
+					UgoiraMap.Set(identify, false)
+					callEvent("downloadugoira", illust.Pid, illust.Width, illust.Height, illust.Frames, illust.Source, identify)
+					UgoiraDownloadWait(identify)
 				}
 				Download(illust, options)
 				time.Sleep(time.Second * 10)

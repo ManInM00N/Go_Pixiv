@@ -265,6 +265,8 @@ func GIFResource(c *gin.Context) {
 }
 func FetchGIF(c *gin.Context) {
 	Pid := c.Query("id")
+	Identify := c.Query("identify")
+	handler.UgoiraMap.Set(Identify, true)
 	Path := configs.Setting.Downloadposition
 	Path = filepath.Join(Path, "GIF")
 	file, _, err := c.Request.FormFile("file")
@@ -297,7 +299,7 @@ func FetchGIF(c *gin.Context) {
 	}
 	cache := DAO.Cache{
 		DownloadID: Pid,
-		Type:       "Illust",
+		Type:       "Ugoira",
 		CreatedAt:  time.Now(),
 	}
 	DAO.Db.FirstOrCreate(&cache, DAO.Cache{DownloadID: cache.DownloadID})

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/ManInM00N/go-tool/statics"
 	"github.com/bmaupin/go-epub"
+	"github.com/teris-io/shortid"
 	"github.com/tidwall/gjson"
 	"io"
 	. "main/configs"
@@ -46,7 +47,7 @@ const (
 // TODO: 指针内存问题OK
 // TODO: 图片下载完整  OK
 func Download(i *Illust, op *Option) bool {
-	if i.IllustType == 2 {
+	if i.IllustType == UgoiraType {
 		return true
 	}
 
@@ -438,8 +439,11 @@ func JustDownload(pid string, mode *Option, callEvent func(name string, data ...
 		utils.DebugLog.Println(pid, " Download failed")
 		return 0, false
 	} else if illust.IllustType == UgoiraType {
-		callEvent("downloadugoira", illust.Pid, illust.Width, illust.Height, illust.Frames, illust.Source)
-		time.Sleep(2 * time.Second)
+		id, _ := shortid.Generate()
+		identify := statics.Int64ToString(illust.Pid) + id
+		UgoiraMap.Set(identify, false)
+		callEvent("downloadugoira", illust.Pid, illust.Width, illust.Height, illust.Frames, illust.Source, identify)
+		UgoiraDownloadWait(identify)
 		return 1, true
 	}
 	if mode.ShowSingle {
