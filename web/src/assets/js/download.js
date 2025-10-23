@@ -47,12 +47,12 @@ class WorkerManager {
             for(;this.Running;){
                 await this.processQueue();
                 await sleep(1000)
-                console.log('[Queue Status]', {
-                    queue: this.queue.length,
-                    processing: this.processing.length,
-                    completed: this.completed,
-                    failed: this.failed
-                });
+                // console.log('[Queue Status]', {
+                //     queue: this.queue.length,
+                //     processing: this.processing.length,
+                //     completed: this.completed,
+                //     failed: this.failed
+                // });
             }
         }catch (e){
             console.log(e)

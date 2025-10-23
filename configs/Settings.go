@@ -26,6 +26,12 @@ type Settings struct {
 	ExpiredTime      int    `yml:"expiretime" json:"expired_time"`
 	UseProxy         bool   `yml:"useProxy" json:"useproxy"`
 }
+type GIFEncoderConf struct {
+	Quality         int     `yml:"quality" json:"quality"`
+	Dither          string  `yml:"dither" json:"dither"`
+	ContrastBoost   float64 `yml:"contrast_boost" json:"contrast_boost"`
+	SaturationBoost float64 `yml:"saturation_boost" json:"saturation_boost"`
+}
 
 func (s *Settings) MsgDetail() string {
 	res, _ := json.Marshal(s)

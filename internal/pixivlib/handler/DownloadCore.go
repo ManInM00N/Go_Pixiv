@@ -14,8 +14,6 @@ var (
 	Logo             []byte
 	NowTaskMsg       = ""
 	QueueTaskMsg     = ""
-	ProcessMax       = int64(0)
-	ProcessNow       = int64(0)
 	RankLoadingNow   = false
 	FollowLoadingNow = false
 	UgoiraMap        = Map.NewRWMap[string, bool]()

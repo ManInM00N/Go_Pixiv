@@ -7,9 +7,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ManInM00N/go-tool/statics"
+	"github.com/ManInM00N/nicogif"
 	"github.com/bmaupin/go-epub"
-	"github.com/teris-io/shortid"
+	"github.com/klauspost/compress/zip"
 	"github.com/tidwall/gjson"
+	"image"
+	_ "image/jpeg"
+	_ "image/png"
 	"io"
 	. "main/configs"
 	"main/internal/cache/DAO"
@@ -19,6 +23,7 @@ import (
 	url2 "net/url"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -47,9 +52,9 @@ const (
 // TODO: 指针内存问题OK
 // TODO: 图片下载完整  OK
 func Download(i *Illust, op *Option) bool {
-	if i.IllustType == UgoiraType {
-		return true
-	}
+	//if i.IllustType == UgoiraType {
+	//	return true
+	//}
 
 	var err error
 	total := 0
@@ -59,15 +64,18 @@ func Download(i *Illust, op *Option) bool {
 		utils.DebugLog.Println("Error creating request", err2)
 		return false
 	}
+	setting := NowSetting()
 	Request.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36")
 	Request.Header.Set("referer", "https://www.pixiv.net")
-	Request.Header.Set("cookie", "PHPSESSID="+Setting.Cookie)
+	Request.Header.Set("cookie", "PHPSESSID="+setting.Cookie)
 	var Response *http.Response
 	clientcopy := GetClient()
 
-	Path := Setting.Downloadposition
+	Path := setting.Downloadposition
 	if op.Mode == ByRank {
 		Path = filepath.Join(Path, op.Rank+op.RankDate)
+	} else if i.IllustType == UgoiraType {
+		Path = filepath.Join(Path, "GIF")
 	} else {
 		if op.DiffAuthor || op.Mode == ByAuthor {
 			Path = filepath.Join(Path, statics.Int64ToString(i.UserID))
@@ -79,6 +87,10 @@ func Download(i *Illust, op *Option) bool {
 		os.MkdirAll(Type, os.ModePerm)
 	}
 
+	cache := DAO.Cache{
+		DownloadID: statics.Int64ToString(i.Pid),
+		Type:       "Illust",
+	}
 	failtimes := 0
 	if i.IllustType <= 1 {
 		for j := 0; j < i.Pages; j++ {
@@ -89,7 +101,7 @@ func Download(i *Illust, op *Option) bool {
 				if op.Mode == ByPid {
 					os.Remove(imagefilepath)
 				} else if img.Size() != 0 {
-					time.Sleep(time.Millisecond * time.Duration(Setting.Downloadinterval))
+					time.Sleep(time.Millisecond * time.Duration(setting.Downloadinterval))
 					continue
 				}
 			}
@@ -109,7 +121,7 @@ func Download(i *Illust, op *Option) bool {
 				} else if err == nil {
 					break
 				}
-				time.Sleep(time.Millisecond * time.Duration(Setting.Downloadinterval))
+				time.Sleep(time.Millisecond * time.Duration(setting.Downloadinterval))
 			}
 			if !ok {
 				os.Remove(imagefilepath)
@@ -136,15 +148,93 @@ func Download(i *Illust, op *Option) bool {
 			Response.Body.Close()
 			f.Close()
 			total++
-			time.Sleep(time.Millisecond * time.Duration(Setting.Downloadinterval))
+			time.Sleep(time.Millisecond * time.Duration(setting.Downloadinterval))
 		}
 	} else {
+		for k := 0; k < 10; k++ {
+			Response, err = clientcopy.Do(Request)
+			if k == 9 && err != nil {
+				utils.DebugLog.Println("Illust Resouce Request Error", err, Request.URL.String())
+				return false
+			} else if err == nil {
+				break
+			}
+			time.Sleep(time.Millisecond * time.Duration(setting.Downloadinterval))
+		}
+		defer func() {
+			if Response != nil {
+				Response.Body.Close()
+			}
+		}()
+		body, err := io.ReadAll(Response.Body)
+		if err != nil {
+			utils.DebugLog.Println("Ugoira Response read failed", err.Error())
+			return false
+		}
+
+		reader := bytes.NewReader(body)
+		zipReader, err := zip.NewReader(reader, int64(len(body)))
+		if err != nil {
+			utils.DebugLog.Println("Zip reader failed", err.Error())
+			return false
+		}
+
+		opt := gifencoder.EncodeOptions{
+			Width:   int(i.Width),
+			Height:  int(i.Height),
+			Repeat:  0,
+			Quality: 10,
+			Dither:  gifencoder.DitherFloydSteinberg,
+		}
+		var Delay []int
+		for _, v := range i.Frames {
+			Delay = append(Delay, v.Delay)
+		}
+		opt.Delays = Delay
+		var frames []image.Image
+		for _, file := range zipReader.File {
+			rc, err := file.Open()
+			if err != nil {
+				fmt.Println(err.Error())
+				continue
+			}
+			img, _, err := image.Decode(rc)
+			rc.Close()
+			if err == nil {
+				frames = append(frames, img)
+				opt.Width = img.Bounds().Dx()
+				opt.Height = img.Bounds().Dy()
+			} else {
+				fmt.Println(err.Error())
+			}
+		}
+		body = nil      // ⭐ 添加
+		reader = nil    // ⭐ 添加
+		zipReader = nil // ⭐ 添加
+
+		data, err := gifencoder.EncodeGIFWithOptions(frames, opt)
+		frames = nil
+		if err != nil {
+			utils.DebugLog.Printf("GIF encode failed %s", err.Error())
+			return false
+		}
+		Path = filepath.Join(Path, statics.Int64ToString(i.Pid)+".gif")
+		f, err := os.OpenFile(Path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0755)
+		bufWriter := bufio.NewWriter(f)
+		defer func() {
+			bufWriter.Flush()
+			f.Close()
+		}()
+		_, err = bufWriter.Write(data)
+		data = nil
+		if err != nil {
+			utils.DebugLog.Printf("GIF write file failed %s", err.Error())
+			return false
+		}
+		runtime.GC()
+		cache.Type = "Ugoria"
 	}
-	cache := DAO.Cache{
-		DownloadID: statics.Int64ToString(i.Pid),
-		Type:       "Illust",
-		CreatedAt:  time.Now(),
-	}
+	cache.CreatedAt = time.Now()
 	DAO.Db.FirstOrCreate(&cache, DAO.Cache{DownloadID: cache.DownloadID})
 	return true
 }
@@ -439,12 +529,13 @@ func JustDownload(pid string, mode *Option, callEvent func(name string, data ...
 		utils.DebugLog.Println(pid, " Download failed")
 		return 0, false
 	} else if illust.IllustType == UgoiraType {
-		id, _ := shortid.Generate()
-		identify := statics.Int64ToString(illust.Pid) + id
-		UgoiraMap.Set(identify, false)
-		callEvent("downloadugoira", illust.Pid, illust.Width, illust.Height, illust.Frames, illust.Source, identify)
-		UgoiraDownloadWait(identify)
-		return 1, true
+
+		//id, _ := shortid.Generate()
+		//identify := statics.Int64ToString(illust.Pid) + id
+		//UgoiraMap.Set(identify, false)
+		//callEvent("downloadugoira", illust.Pid, illust.Width, illust.Height, illust.Frames, illust.Source, identify)
+		//UgoiraDownloadWait(identify)
+		//return 1, true
 	}
 	if mode.ShowSingle {
 		utils.InfoLog.Println(pid + " Start download")

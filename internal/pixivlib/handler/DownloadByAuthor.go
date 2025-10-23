@@ -22,9 +22,11 @@ func Download_By_Author(text string, callEvent func(name string, data ...interfa
 	callEvent("Push", text)
 	id, _ := shortid.Generate()
 	progressInfo := &TaskInfo{
-		Status: "Waiting",
-		ID:     id,
-		Name:   fmt.Sprintf("%s artworks ", text),
+		Status:  "Waiting",
+		ID:      id,
+		Name:    fmt.Sprintf("%s artworks ", text),
+		Current: 0,
+		Total:   0,
 	}
 	Setting := NowSetting()
 	task, _ := taskQueue.TaskPool.NewTask(
@@ -48,7 +50,6 @@ func Download_By_Author(text string, callEvent func(name string, data ...interfa
 				return
 			}
 
-			ProcessMax = int64(len(all))
 			utils.InfoLog.Println(text + "'s artworks Start download")
 			satisfy := 0
 			options := NewOption(WithMode(ByAuthor), WithR18(Setting.Agelimit), WithLikeLimit(Setting.LikeLimit))
@@ -80,14 +81,6 @@ func Download_By_Author(text string, callEvent func(name string, data ...interfa
 							c <- temp
 						}
 						return nil, nil
-					}
-
-					if illust.IllustType == UgoiraType {
-						id, _ := shortid.Generate()
-						identify := statics.Int64ToString(illust.Pid) + id
-						UgoiraMap.Set(identify, false)
-						callEvent("downloadugoira", illust.Pid, illust.Width, illust.Height, illust.Frames, illust.Source, identify)
-						UgoiraDownloadWait(identify)
 					}
 					if !Download(illust, options) {
 						c <- temp

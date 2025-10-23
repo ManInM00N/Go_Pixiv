@@ -64,9 +64,11 @@ func Download_By_Rank(text, Type string, callEvent func(name string, data ...int
 		utils.InfoLog.Println(text, Type, " page ", i, " pushed TaskQueue")
 		id, _ := shortid.Generate()
 		progressInfo := &TaskInfo{
-			Status: "Waiting",
-			ID:     id,
-			Name:   "Rank " + Type + " " + text + " Page " + strconv.FormatInt(i, 10),
+			Status:  "Waiting",
+			ID:      id,
+			Name:    "Rank " + Type + " " + text + " Page " + strconv.FormatInt(i, 10),
+			Current: 0,
+			Total:   0,
 		}
 		task, _ := taskQueue.TaskPool.NewTask(func() {
 			if taskQueue.IsClosed {
@@ -93,7 +95,6 @@ func Download_By_Rank(text, Type string, callEvent func(name string, data ...int
 				progressInfo.Status = "Done"
 				return
 			}
-			ProcessMax = int64(len(all))
 
 			utils.InfoLog.Println(op.RankDate + " " + op.Rank + "'s artworks Start download")
 			satisfy := 0
@@ -125,14 +126,6 @@ func Download_By_Rank(text, Type string, callEvent func(name string, data ...int
 							c <- temp.Str
 						}
 						return nil, nil
-					}
-
-					if illust.IllustType == UgoiraType {
-						id, _ := shortid.Generate()
-						identify := statics.Int64ToString(illust.Pid) + id
-						UgoiraMap.Set(identify, false)
-						callEvent("downloadugoira", illust.Pid, illust.Width, illust.Height, illust.Frames, illust.Source, identify)
-						UgoiraDownloadWait(identify)
 					}
 					Download(illust, options)
 					satisfy++

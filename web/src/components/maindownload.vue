@@ -186,11 +186,14 @@
               <el-icon><DataLine /></el-icon>
               <span>下载进度</span>
               <div class="progress-info">
-                <el-tag v-if="currentTask" type="primary" size="small">
-                  {{ currentTask }}
+                <el-tag v-if="currentTask != null" type="primary" size="small">
+                  {{ currentTask.value }}
                 </el-tag>
                 <el-tag type="info" size="small">
                   {{ percent }}%
+                </el-tag>
+                <el-tag v-if="currentTask != null" type="info" size="small">
+                  {{currentTask.data.task.Current}}/{{currentTask.data.task.Total}}
                 </el-tag>
               </div>
             </div>
@@ -462,13 +465,13 @@ onMounted(() => {
           percent.value = 0
         }else{
           percent.value = Math.round(wk.task.Current / Math.max(1,wk.task.Total) * 100)
-          tt.push({value:wk.task.Name})
-          // console.log(wk.task.Name)
+          tt.push({value:wk.task.Name,data:wk})
+          // console.log(wk)
         }
       }
       for (let v of arr){
         // console.log(v)
-        tt.push({value:v.info.Name,data:v})
+        tt.push({value:v.info.Name,data:{task:v.info,status:v.status}})
       }
       queue.value = tt
     })
@@ -527,7 +530,8 @@ const debouncedRemoveTask = debounce(
       ElNotification({
         type:"info",
         position:"bottom-right",
-        message:"删除成功"
+        message:"删除成功",
+        duration: 1000,
       })
     }
     ,300)
@@ -538,7 +542,7 @@ const removeTask = (index) => {
 }
 
 const currentTask = computed(() => {
-  return queue.value.length > 0 ? queue.value[0].value : null
+  return queue.value.length > 0 ? queue.value[0] : null
 });
 
 function clearLogs() {
@@ -553,7 +557,7 @@ async function handleDownload(type, value = null) {
 
     let result = false
     let taskName = ''
-
+    
     switch (type) {
       case 'pid':
         result = await DownloadByPid(value)

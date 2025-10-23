@@ -42,9 +42,11 @@ func Download_By_FollowPage(page, Type string, callEvent func(name string, data 
 	callEvent("Push", fmt.Sprint("follow page", page, Type))
 	id, _ := shortid.Generate()
 	progressInfo := &TaskInfo{
-		Status: "Waiting",
-		ID:     id,
-		Name:   "Follow Illust Page " + page,
+		Status:  "Waiting",
+		ID:      id,
+		Name:    "Follow Illust Page " + page,
+		Current: 0,
+		Total:   0,
 	}
 	task, _ := taskQueue.TaskPool.NewTask(func() {
 		if taskQueue.IsClosed {
@@ -54,7 +56,6 @@ func Download_By_FollowPage(page, Type string, callEvent func(name string, data 
 		op := NewOption(SufWithRankmode(Type), SufWithPage(page))
 		utils.InfoLog.Println("follow page", page, " "+Type+" pushed queue")
 		progressInfo.Status = "Running"
-		// println(page)
 		c := make(chan string, 2000)
 		tmp, err := GetFollow(op)
 		all := tmp.Get("page").Get("ids").Array()
@@ -66,10 +67,8 @@ func Download_By_FollowPage(page, Type string, callEvent func(name string, data 
 			callEvent("UpdateTerminal", fmt.Sprintln("follow page", page, Type, err))
 			return
 		}
-		ProcessMax = int64(len(all))
 
 		utils.InfoLog.Println("follow page", page, " "+Type+" Start download")
-		satisfy := 0
 		options := NewOption(WithMode(ByPid), WithR18(Setting.Agelimit), WithLikeLimit(0), WithDiffAuthor(false), SufWithRankmode(Type))
 		var cnt int64
 		for _, key := range all {
@@ -79,7 +78,6 @@ func Download_By_FollowPage(page, Type string, callEvent func(name string, data 
 			}
 
 			if Db.Model(&Cache{}).Where("download_id = ?", k.String()).Count(&cnt); cnt == 1 {
-				satisfy++
 				progressInfo.Current++
 				continue
 			}
@@ -91,7 +89,6 @@ func Download_By_FollowPage(page, Type string, callEvent func(name string, data 
 				temp := k
 				illust, err := work(statics.StringToInt64(temp.String()), options)
 				defer func() {
-					satisfy++
 					progressInfo.Current++
 				}()
 				if err != nil {
@@ -100,20 +97,12 @@ func Download_By_FollowPage(page, Type string, callEvent func(name string, data 
 					}
 					return nil, nil
 				}
-				if illust.IllustType == UgoiraType {
-					id, _ := shortid.Generate()
-					identify := statics.Int64ToString(illust.Pid) + id
-					UgoiraMap.Set(identify, false)
-					callEvent("downloadugoira", illust.Pid, illust.Width, illust.Height, illust.Frames, illust.Source, identify)
-					UgoiraDownloadWait(identify)
-				}
 				Download(illust, options)
-				time.Sleep(time.Second * 10)
+				time.Sleep(time.Second * 3)
 				return nil, nil
 			})
 		}
 		taskQueue.P.Wait()
-		utils.DebugLog.Printf("%s ,failed %d , satisfied %d \n", progressInfo.Name, len(c), satisfy)
 		for len(c) > 0 {
 			if taskQueue.IsClosed {
 				return
@@ -121,15 +110,13 @@ func Download_By_FollowPage(page, Type string, callEvent func(name string, data 
 			ss := <-c
 			// log.Println(ss, " Download failed Now retrying")
 			taskQueue.P.AddTask(func() (interface{}, error) {
-				if a, b := JustDownload(ss, options, callEvent); b {
-					satisfy += a
-				}
+				JustDownload(ss, options, callEvent)
 				return nil, nil
 			})
 		}
 		taskQueue.P.Wait()
-		utils.InfoLog.Println("follow page", page, " "+Type, "Satisfied and Successfully downloaded illusts: ", satisfy, "in all: ", len(all))
-		callEvent("UpdateTerminal", fmt.Sprintf("follow page %s type %s Satisfied %d in %d\n", page, Type, satisfy, len(all)))
+		utils.InfoLog.Println("follow page", page, " "+Type, "Successfully downloaded illusts: ", len(all))
+		callEvent("UpdateTerminal", fmt.Sprintf("follow page %s type %s all %d\n", page, Type, len(all)))
 		close(c)
 		progressInfo.EndTime = time.Now()
 		progressInfo.Status = "Done"

@@ -15,12 +15,15 @@
 - [x] 优化预览缓存机制,设置图片代理 :wave:
   - [x] 图片详细展示 
 - [x] 优化下载线程池 :confused:
+  - [ ] 中断任务
 - [ ] 以图搜图 :alien:
 - [x] 托盘化 :zap:
+  - [ ] 桌面通知 
 - [x] 小说下载功能 :monocle_face:
-  - [x] 小说查看功能
+  - [x] 小说查看功能 
   - [x] 小说系列下载功能 :wheelchair:
 - [x] GIF下载功能 :tada:
+  - [ ] 优化GIF Encoder
 
 ## ！！！不提供代理
 
@@ -33,7 +36,7 @@
 
 <https://github.com/daydreamer-json/pixiv-ajax-api-docs/tree/main><br>
 
-## 调试
+## 安装和调试
 You should Install Go >= 1.24.5 and Node.js >= v20
 
 wails3 安装
