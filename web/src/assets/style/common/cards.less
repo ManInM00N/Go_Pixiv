@@ -178,6 +178,53 @@
   }
 }
 
+
+// 下载表单卡片特定样式
+.download-forms-card {
+  margin-bottom: 25px;
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+
+  .download-tabs {
+    :deep(.el-tabs__nav) {
+      background: transparent;
+    }
+
+    :deep(.el-tabs__item) {
+      border-radius: 8px 8px 0 0;
+      margin-right: 5px;
+    }
+  }
+
+  .download-form {
+    padding: 20px 10px;
+
+    .form-content {
+      &.rank-form {
+        flex-direction: row;
+        align-items: flex-end;
+      }
+
+      .input-group {
+        flex: 1;
+        min-width: 200px;
+
+        .input-label {
+          display: block;
+          margin-bottom: 8px;
+          font-weight: 600;
+          color: #606266;
+          font-size: 14px;
+        }
+
+        .download-input {
+          width: 100%;
+        }
+      }
+    }
+  }
+}
+
 // 队列侧边栏卡片
 .queue-sidebar {
   border-radius: 15px;

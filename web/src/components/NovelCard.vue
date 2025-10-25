@@ -103,14 +103,12 @@
                   class="author-avatar"
                   @click.stop="openPixivUser(props.userId)"
               >
-<!--                <el-icon>-->
                   <LazyImg
                       :onload="load = false"
                       :url="getProfileUrl(props.profileImageUrl)"
                   >
 
                   </LazyImg>
-<!--                </el-icon>-->
               </el-avatar>
               <span
                   class="author-name"
@@ -224,7 +222,7 @@ import {
 
 import { ElMessage } from 'element-plus'
 import {form} from "../assets/js/configuration.js";
-import noProfileImg from "../assets/images/NoR18.png";
+import noProfileImg from "../../public/NoR18.png";
 import {LazyImg} from "vue-waterfall-plugin-next";
 import { useNovelViewerStore } from '../assets/stores/novelViewer.js'
 import {DownloadByNovelId} from "../../bindings/main/internal/pixivlib/ctl.js";
@@ -375,158 +373,8 @@ const toggleFavorite = () => {
 @import "../assets/style/common/waterfall.less";
 @import "../assets/style/common/buttons.less";
 @import "../assets/style/common/animations.less";
+@import "../assets/style/common/novel.less";
 
-// 组件特定样式
-.novel-card-wrapper {
-  width: 100%;
-  max-width: 300px;
-  margin: 0 auto;
-}
-
-// 小说卡片特定样式
-.novel-card {
-  width: 100%;
-  border: 2px solid transparent;
-  cursor: pointer;
-
-  &.login-required {
-    border-color: #f39c12;
-
-    &:hover {
-      border-color: #e67e22;
-    }
-  }
-}
-
-
-// 简介
-.novel-description {
-  margin-bottom: 12px;
-
-  .description-text {
-    margin: 0;
-    font-size: 13px;
-    color: #909399;
-    line-height: 1.4;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-}
-
-// 统计信息
-.novel-stats {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-
-  .stat-item {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-
-    .stat-icon {
-      font-size: 14px;
-      color: #909399;
-    }
-
-    .stat-text {
-      font-size: 12px;
-      color: #909399;
-    }
-  }
-}
-
-// 类型标签
-.novel-genre {
-  margin-bottom: 10px;
-
-  .genre-tag {
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 10px;
-    white-space: normal;
-    height: auto;
-  }
-}
-
-// 系列信息
-.series-info {
-  margin-bottom: 12px;
-  padding: 8px;
-  background: #f8f9fa;
-  border-radius: 8px;
-
-  .series-title {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 13px;
-    color: #606266;
-    margin-bottom: 4px;
-  }
-
-  .series-order {
-    font-size: 12px;
-    color: #909399;
-  }
-}
-
-// 操作区域
-.novel-actions {
-  display: flex;
-  gap: 8px;
-
-  .read-btn {
-    flex: 1;
-    font-size: 12px;
-  }
-
-  .download-btn,
-  .favorite-btn {
-    width: 32px;
-    height: 32px;
-    padding: 0;
-
-    .el-icon {
-      font-size: 14px;
-    }
-  }
-
-  .favorite-btn {
-    &.el-button--danger {
-      background: #f56c6c;
-      border-color: #f56c6c;
-      color: white;
-    }
-  }
-}
-
-// 响应式
-@media (max-width: 480px) {
-  .novel-card-wrapper {
-    max-width: 100%;
-  }
-
-  .novel-content {
-    padding: 12px;
-  }
-
-  .novel-title .title-text {
-    font-size: 15px;
-  }
-
-  .novel-actions {
-    gap: 6px;
-
-    .download-btn,
-    .favorite-btn {
-      width: 28px;
-      height: 28px;
-    }
-  }
-}
 </style>
 
 <style lang="less">

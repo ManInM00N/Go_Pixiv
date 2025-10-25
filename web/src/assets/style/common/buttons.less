@@ -25,9 +25,13 @@
 }
 
 // 下载按钮
-.download-btn,
-.download-current-btn {
+.download-btn {
   transition: all 0.3s ease;
+  height: 44px;
+  padding: 0 30px;
+  border-radius: 22px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
 
   &:hover:not(:disabled) {
     transform: scale(1.05);
@@ -53,17 +57,44 @@
 
 
 // 操作按钮组
-.form-actions,
-.action-buttons {
+.form-actions{
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+  justify-content: center;
+  margin: 30px 0;
 
   .el-button {
     transition: all 0.3s ease;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 
     &:hover:not(:disabled) {
       transform: translateY(-2px);
+    }
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    }
+
+  }
+  .update-btn {
+    background: linear-gradient(135deg, #67c23a, #85ce61);
+    border: none;
+
+    &:hover {
+      background: linear-gradient(135deg, #85ce61, #95d475);
+    }
+  }
+
+  .test-btn {
+    background: linear-gradient(135deg, #409EFF, #66b1ff);
+    border: none;
+
+    &:hover {
+      background: linear-gradient(135deg, #66b1ff, #82c4ff);
     }
   }
 }

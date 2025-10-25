@@ -319,7 +319,6 @@ import {
 import {ElMessage, ElNotification} from 'element-plus'
 import { useNovelViewerStore } from '../assets/stores/novelViewer.js'
 import { copyToClipboard, copyLink, openPixivNovel } from '../assets/js/utils/index.js'
-import axios from 'axios'
 import {DownloadByNovelId, OpenInBrowser} from "../../bindings/main/internal/pixivlib/ctl.js";
 
 const novelViewerStore = useNovelViewerStore()
@@ -340,7 +339,6 @@ async function preventOutLink(e) {
     e.preventDefault()
     const href = el.getAttribute('href')
     OpenInBrowser(href)
-    // await copyLink(href)
   }
 }
 

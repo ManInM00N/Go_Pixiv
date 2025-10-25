@@ -62,3 +62,44 @@ export function createLog(message, level = LogLevel.INFO) {
         type: typeMap[level] || 'log-info'
     }
 }
+
+/**
+ * 解析日志行，提取类型、时间和内容
+ * @param {string} logLine - 日志行文本，格式: [type] - HH:MM:SS message
+ * @returns {Object|null} - 返回 {type, time, message} 或 null（解析失败）
+ */
+export function parseLogLine(logLine) {
+    // 正则表达式: [类型] - 时间 内容
+    const pattern = /^\[(\w+)\]\s*-\s*(\d{2}:\d{2}:\d{2})\s+(.*)$/;
+    const match = logLine.match(pattern);
+
+    if (!match) {
+        return null; // 格式不匹配
+    }
+
+    return {
+        type: match[1].toLowerCase(),  // 类型（转小写）
+        time: match[2],                // 时间
+        log: match[3].trim()       // 内容（去除首尾空格）
+    };
+}
+
+// 示例3: 处理后端返回的日志数组
+function processLogs(rawLogs) {
+    return rawLogs.map(parseLogLine).filter(log => log !== null);
+}
+
+// 示例4: 按类型分组
+function groupByType(logs) {
+    const parsed = logs.map(parseLogLine).filter(log => log !== null);
+    const grouped = {};
+
+    parsed.forEach(log => {
+        if (!grouped[log.type]) {
+            grouped[log.type] = [];
+        }
+        grouped[log.type].push(log);
+    });
+
+    return grouped;
+}

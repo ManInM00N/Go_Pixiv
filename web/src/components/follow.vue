@@ -14,7 +14,7 @@
     <!-- 控制面板 -->
     <el-card class="control-panel" shadow="hover">
       <el-row :gutter="20" class="control-row">
-        <el-col :xs="24" :sm="12" :md="8" :lg="6">
+        <el-col :xs="6" :sm="6" :md="6" :lg="4">
           <div class="control-item">
             <label class="control-label">内容过滤</label>
             <el-select
@@ -31,7 +31,7 @@
           </div>
         </el-col>
 
-        <el-col :xs="24" :sm="12" :md="16" :lg="8">
+        <el-col :xs="16" :sm="16" :md="16" :lg="12">
           <div class="control-item">
             <label class="control-label">批量下载页面范围</label>
             <div class="range-input-group">
@@ -70,7 +70,7 @@
                   @click="downloadCurrentPage"
                   :disabled="wait || picitem.length === 0"
                   :loading="downloading"
-                  class="download-current-btn"
+                  class="download-btn"
               >
                 <el-icon><Download /></el-icon>
                 下载当前页 ({{ currentPage }})
@@ -128,6 +128,7 @@
                   :pages="item.pages"
                   :r18="item.r18"
                   :key="item.pid + 'follow'"
+                  :illustType="item.illustType"
               />
             </div>
           </transition>
@@ -232,7 +233,7 @@ function fetchFollowData() {
     console.log(res, res.data.data.length)
     let tmp = []
     for (var i = 0; i < res.data.data.length; i++) {
-      picitem.value.push({ pid: res.data.data[i].id, Title: res.data.data[i].title, Author: res.data.data[i].userName, src: res.data.data[i].url, pages: res.data.data[i].countPage, authorId: res.data.data[i].userId, r18: res.data.data[i].r18 })
+      picitem.value.push({ pid: res.data.data[i].id, Title: res.data.data[i].title, Author: res.data.data[i].userName, src: res.data.data[i].url, pages: res.data.data[i].countPage, authorId: res.data.data[i].userId, r18: res.data.data[i].r18,illustType: res.data.data[i].illustType })
     }
     waterfall.value.renderer()
   }).catch((error) => {
@@ -252,13 +253,9 @@ function handlePageChange(page) {
   fetchFollowData()
 }
 
-const debug = () => {
-  console.log(picitem.value)
-}
 onMounted(function () {
   loading.value = true
   fetchFollowData()
-  window.debug = debug
 })
 function downloadCurrentPage() {
   DownloadByFollowPage(currentPage.value.toString(), mode.value)
@@ -282,7 +279,6 @@ function downloadMultiplePages() {
     }, 3000)
   }
 }
-
 
 </script>
 

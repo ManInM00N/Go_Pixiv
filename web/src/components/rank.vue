@@ -142,8 +142,6 @@
 
     </el-footer>
 
-
-    <!-- 空状态 -->
     <el-empty
         v-if="!loading && picitem.length === 0"
         description="No illustrations found"
@@ -200,8 +198,6 @@ const options = ref([
 const dateSelect = ref(null)
 const loading = ref(false)
 const sum = ref(100)
-const loadup = ref(0)
-const pagemsg = ref('')
 const pages = ref('1')
 const downloadthispage = () => {
   console.log(dateSelect.value.selectedDate);
@@ -224,12 +220,9 @@ function RankPage() {
     }
   }).then((res) => {
     console.log(res, res.data.data.length)
-    let tmp = []
     for (var i = 0; i < res.data.data.length; i++) {
-      // tmp.push({ pid: String(res.data.data[i].illust_id), Title: res.data.data[i].title, Author: res.data.data[i].user_name, src: res.data.data[i].url, pages: Number(res.data.data[i].illust_page_count), authorId: String(res.data.data[i].user_id), r18: res.data.data[i]['illust_content_type.sexual'] })
-      picitem.value.push({ pid: String(res.data.data[i].illust_id), Title: res.data.data[i].title, Author: res.data.data[i].user_name, src: res.data.data[i].url, pages: Number(res.data.data[i].illust_page_count), authorId: String(res.data.data[i].user_id), r18: res.data.data[i].illust_content_type.sexual})
+      picitem.value.push({ pid: String(res.data.data[i].illust_id), Title: res.data.data[i].title, Author: res.data.data[i].user_name, src: res.data.data[i].url, pages: Number(res.data.data[i].illust_page_count), authorId: String(res.data.data[i].user_id), r18: res.data.data[i].illust_content_type.sexual,illustType:res.data.data[i].illustType})
     }
-    // picitem.value.concat(tmp)
     waterfall.value.renderer()
 
   }).catch((error) => {

@@ -418,8 +418,9 @@ import {
   DownloadByRank,
   DownloadByNovelId,
   DownloadByAuthorId,
-  RemoveTask
+  RemoveTask, FetchRecentLog
 } from "../../bindings/main/internal/pixivlib/ctl.js";
+import {parseLogLine} from "../assets/js/utils/logHelper.js";
 
 // 响应式数据
 const activeTab = ref('pid')
@@ -452,6 +453,7 @@ onMounted(() => {
     Events.On("taskPoolInfos",function (msg){
       if (cnt%6===0){
         // console.log(msg.data,msg.data[1])
+        console.log(msg.data[2],msg.data[3])
       }
       cnt = (cnt+1)%6
       // msg.data[1]
@@ -470,7 +472,7 @@ onMounted(() => {
         }
       }
       for (let v of arr){
-        // console.log(v)
+        console.log(v)
         tt.push({value:v.info.Name,data:{task:v.info,status:v.status}})
       }
       queue.value = tt
@@ -482,33 +484,18 @@ onMounted(() => {
         logs.value.pop()
       }
     })
-    ws.value.onmessage = (event) => {
-        handleMessage(JSON.parse(event.data));
-    };
+    Events.On("FetchLogs",function (logmsg){
+      console.log(logmsg.data[0])
+      for (let log of logmsg.data[0]) {
+        let obj = parseLogLine(log)
+        if (obj !==null){
+          console.log(obj)
+          logs.value.push(obj)
+        }
+      }
+    })
+    FetchRecentLog()
 })
-const rows = ref(10); // 可根据需要调整展示的行数
-function handleMessage(data) {
-  switch (data.type) {
-    case 1: // 进度更新
-      percent.value = data.newnum
-      break
-    case 2: // 任务完成
-      queue.value.shift()
-      break
-    case 3: // 新任务
-      queue.value.push(data.newtask)
-      break
-  }
-}
-const mode = ref('')
-function changetype(data) {
-    console.log(data)
-    now.value = data
-}
-function changetype2(data) {
-    console.log(data)
-    period.value = data
-}
 const now = ref("Pid")
 // 选项配置
 const options = ref([
@@ -614,60 +601,6 @@ async function handleDownload(type, value = null) {
 // 主容器
 .main-container {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-// 下载表单卡片特定样式
-.download-forms-card {
-  margin-bottom: 25px;
-  border-radius: 15px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-
-  .download-tabs {
-    :deep(.el-tabs__nav) {
-      background: transparent;
-    }
-
-    :deep(.el-tabs__item) {
-      border-radius: 8px 8px 0 0;
-      margin-right: 5px;
-    }
-  }
-
-  .download-form {
-    padding: 20px 10px;
-
-    .form-content {
-      &.rank-form {
-        flex-direction: row;
-        align-items: flex-end;
-      }
-
-      .input-group {
-        flex: 1;
-        min-width: 200px;
-
-        .input-label {
-          display: block;
-          margin-bottom: 8px;
-          font-weight: 600;
-          color: #606266;
-          font-size: 14px;
-        }
-
-        .download-input {
-          width: 100%;
-        }
-      }
-
-      .download-btn {
-        height: 44px;
-        padding: 0 30px;
-        border-radius: 22px;
-        font-weight: 600;
-        box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
-      }
-    }
-  }
 }
 
 // 主要区域

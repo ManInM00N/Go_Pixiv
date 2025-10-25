@@ -6,7 +6,7 @@
         <!-- Logo区域 -->
         <div class="logo-section">
           <div class="logo-icon">
-            <el-icon><img src="../assets/images/icon.ico" width="40" height="40"/></el-icon>
+            <el-icon><img src="../../public/icon.ico" width="40" height="40"/></el-icon>
           </div>
           <div class="logo-text">Pixiv</div>
         </div>
@@ -87,7 +87,7 @@
 
           <!-- 版本信息 -->
           <div class="version-info">
-            <a href="https://github.com/ManInM00N/Go_Pixiv/releases" target="_blank">v1.3.1</a>
+            <a href="javascript:void(0);" @click="OpenInBrowser('https://github.com/ManInM00N/Go_Pixiv/releases')">v1.3.1</a>
           </div>
         </div>
       </div>
@@ -145,6 +145,7 @@ import {
   Lock,
   ArrowUp
 } from "@element-plus/icons-vue";
+import { OpenInBrowser} from "../../bindings/main/internal/pixivlib/ctl.js";
 import { form, ws } from "../assets/js/configuration.js"
 import { useRoute, useRouter } from "vue-router";
 import { DownloadGIF } from "../assets/js/download.js";
@@ -170,11 +171,6 @@ const userself = ref({
     id: '10086', iconmsg: "Setting", key: "设置", index: "/setting", logined: true
 })
 const wait = ref(false)
-
-// 计算当前路由对应的菜单项
-const currentMenuItem = computed(() => {
-  return items.value.find(item => item.index === route.path) || userself.value
-})
 
 // 菜单选择处理
 function handleMenuSelect(index) {
@@ -209,10 +205,7 @@ Events.On("login", function (msg) {
   }
 })
 onMounted(function () {
-
     console.log("当前路径:", route.path)
-    localStorage.setItem("cookie", form.value.cookie)
-    console.log(localStorage.getItem("cookie"))
     const currentItem = items.value.find(item => item.index === route.path) || userself.value
 
     if (currentItem) {

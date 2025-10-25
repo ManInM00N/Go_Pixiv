@@ -34,8 +34,9 @@
                   </div>
                   <!-- R18标识 -->
                   <div class="cover-badges">
-                    <el-tag v-if="$props.r18 > 0"  type="danger" size="small">R18</el-tag>
+                    <el-tag v-if="$props.r18 > 1"  type="danger" size="small">R18</el-tag>
                     <el-tag v-if="$props.pages > 1" type="normal" size="small">{{$props.pages}}页</el-tag>
+                    <el-tag v-if="$props.illustType == 2" type="primary" size="small">GIF</el-tag>
                   </div>
                 </div>
                 <div style="padding: 14px">
@@ -83,7 +84,6 @@
 
 <script lang="ts" setup>
 import { onMounted, ref } from "vue";
-import noProfileImg from '../assets/images/NoR18.png';
 import {DownloadByPid} from "../../bindings/main/internal/pixivlib/ctl.js";
 const name = "PicCard"
 import { form } from "../assets/js/configuration.js"
@@ -91,12 +91,6 @@ import { LazyImg } from "vue-waterfall-plugin-next";
 import {
   Download,
   View,
-  User,
-  Picture,
-  PictureRounded,
-  Link,
-  Hide,
-  Loading,
   Check
 } from "@element-plus/icons-vue";
 import {getImageUrl, openPixivArtwork, openPixivUser} from '../assets/js/utils/index.js'
@@ -132,6 +126,10 @@ const props = defineProps({
     r18: {
         type: Number,
         default: true,
+    },
+    illustType:{
+      type: Number,
+      default : 0,
     }
 });
 
@@ -147,7 +145,8 @@ const openImageViewer = () => {
     author: props.author,
     authorId: props.authorId,
     r18: props.r18,
-    img: props.img
+    img: props.img,
+    illustType:props.illustType,
   }
   store.openViewer(imageData)
 }

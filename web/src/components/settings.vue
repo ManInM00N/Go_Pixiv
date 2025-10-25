@@ -69,10 +69,19 @@
                     resize="none"
                 >
                 </el-input>
-                <div class="form-help">
-                  <el-icon><InfoFilled /></el-icon>
-                  从浏览器开发者工具中复制 Pixiv 的完整 Cookie
-                </div>
+                <el-popover placement="top" :width="600" trigger="hover" >
+                  <template #reference>
+                    <div class="form-help" style="cursor: pointer;">
+                      <el-icon><InfoFilled /></el-icon>
+                      不清楚在哪里？从浏览器开发者工具中复制 Pixiv 的完整 Cookie
+                    </div>
+                  </template>
+                  <img src="/cookieTip.png" alt="Cookie 获取帮助" style="width: 100%; display: block;" />
+                </el-popover>
+<!--                <div class="form-help">-->
+<!--                  <el-icon><InfoFilled /></el-icon>-->
+<!--                  从浏览器开发者工具中复制 Pixiv 的完整 Cookie-->
+<!--                </div>-->
               </el-form-item>
             </el-col>
           </el-row>
@@ -174,7 +183,7 @@
               </el-form-item>
             </el-col>
 
-            <el-col :span="24">
+            <el-col :xs="24" :sm="8">
               <el-form-item label="缓存过期时间 (天)" prop="expired_time">
                 <el-input-number
                     v-model="form.expired_time"
@@ -333,7 +342,6 @@ import {
   ArrowUp
 } from '@element-plus/icons-vue'
 import { ElMessage, ElNotification, ElMessageBox } from 'element-plus'
-import { Events } from "@wailsio/runtime"
 import { form, updateSettings, defaultConf } from "../assets/js/configuration.js"
 import {CheckLogin, GetWebView2Cookies} from "../../bindings/main/internal/pixivlib/ctl.js"
 
@@ -438,7 +446,7 @@ async function handleReset() {
     )
     form.value = defaultConf
 
-    ElMessage.success('设置已重置')
+    ElMessage.success('设置已重置,请保存设置完成重置')
 
   } catch (error) {
     // 用户取消操作
@@ -477,7 +485,6 @@ onMounted(() => {
 
 // 主容器
 .settings-container {
-  padding: 20px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
 }
@@ -548,43 +555,6 @@ onMounted(() => {
           }
         }
       }
-    }
-  }
-}
-
-// 操作按钮特定样式
-.form-actions {
-  justify-content: center;
-  gap: 15px;
-  margin: 30px 0;
-
-  .el-button {
-    padding: 12px 30px;
-    border-radius: 25px;
-    font-weight: 600;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-    }
-  }
-
-  .update-btn {
-    background: linear-gradient(135deg, #67c23a, #85ce61);
-    border: none;
-
-    &:hover {
-      background: linear-gradient(135deg, #85ce61, #95d475);
-    }
-  }
-
-  .test-btn {
-    background: linear-gradient(135deg, #409EFF, #66b1ff);
-    border: none;
-
-    &:hover {
-      background: linear-gradient(135deg, #66b1ff, #82c4ff);
     }
   }
 }

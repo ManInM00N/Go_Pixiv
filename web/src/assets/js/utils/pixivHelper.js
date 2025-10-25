@@ -11,7 +11,6 @@ import {OpenInBrowser} from "../../../../bindings/main/internal/pixivlib/ctl.js"
 export function openPixivArtwork(pid) {
     const url = `https://www.pixiv.net/artworks/${pid}`
     OpenInBrowser(url)
-    window.open(url, '_blank')
 }
 
 /**

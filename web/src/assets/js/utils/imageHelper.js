@@ -3,7 +3,7 @@
  */
 
 import { form } from '../configuration.js'
-import noProfileImg from '../../images/NoR18.png'
+import noProfileImg from '../../../../public/NoR18.png'
 
 /**
  * 获取代理后的图片 URL
