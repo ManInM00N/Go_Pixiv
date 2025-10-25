@@ -34,7 +34,7 @@ func ServerInit() {
 	Api.GET("/getsetting", GetSetting)
 	Api.GET("/followpage", Followlist)
 	Api.GET("/rankpage", RankList)
-	Api.GET("/ws", UpdateProgress)
+	//Api.GET("/ws", UpdateProgress)
 	Api.GET("/preview", PreviewUrl)
 	Api.GET("/novel_rproxy", NovelContent)
 	Api.GET("/getugoira", GIFResource)

@@ -42,7 +42,8 @@ func (a *Ctl) RegisterService(app *application.App) {
 				//break
 			case <-t.C:
 				arr, worker := taskQueue.TaskPool.GetTaskStatistic()
-				a.App.Event.Emit("taskPoolInfos", arr, worker)
+				arr2, worker2 := taskQueue.P.GetTaskStatistic()
+				a.App.Event.Emit("taskPoolInfos", arr, worker, arr2, worker2)
 			}
 		}
 	end:
@@ -187,4 +188,14 @@ func (a *Ctl) OpenInBrowser(url string) {
 	if err != nil {
 		DebugLog.Println(url, err.Error())
 	}
+}
+
+func (a *Ctl) FetchRecentLog() {
+	res, err := ReadRecentLogs(LogPositon, 10)
+	if err != nil {
+		DebugLog.Println(res, err.Error())
+		return
+	}
+	a.App.Event.Emit("FetchLogs", res)
+	return
 }

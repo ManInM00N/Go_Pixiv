@@ -39,10 +39,12 @@ func Download_By_Author(text string, callEvent func(name string, data ...interfa
 			all, err := GetAuthorArtworks(statics.StringToInt64(text))
 			authorMsg, _ := GetAuthorInfo(statics.StringToInt64(text))
 			progressInfo.Name = fmt.Sprintf("%s(%s) artworks ", text, authorMsg["name"].String())
-			taskQueue.WaitingTasks--
+			utils.InfoLog.Println(authorMsg["name"], text, "'s artwork Start downloading")
+			callEvent("UpdateTerminal", fmt.Sprintln("Author ", authorMsg["name"], text, " start downloading"))
 			progressInfo.Status = "Running"
 			progressInfo.BeginTime = time.Now()
 			progressInfo.Total = uint64(len(all))
+
 			if err != nil {
 				utils.DebugLog.Println("Error getting author", err)
 				callEvent("UpdateTerminal", fmt.Sprintf("Error getting author %s %s\n", text, err.Error()))
@@ -50,7 +52,6 @@ func Download_By_Author(text string, callEvent func(name string, data ...interfa
 				return
 			}
 
-			utils.InfoLog.Println(text + "'s artworks Start download")
 			satisfy := 0
 			options := NewOption(WithMode(ByAuthor), WithR18(Setting.Agelimit), WithLikeLimit(Setting.LikeLimit))
 			var cnt int64
@@ -65,12 +66,7 @@ func Download_By_Author(text string, callEvent func(name string, data ...interfa
 					progressInfo.Current++
 					continue
 				}
-				taskQueue.P.AddTask(func() (interface{}, error) {
-					// time.Sleep(1 * time.Second)
-					if taskQueue.IsClosed {
-						return nil, nil
-					}
-
+				task, _ := taskQueue.P.NewTaskWithCost(func() {
 					temp := k
 					illust, err := work(statics.StringToInt64(temp), options)
 					defer func() {
@@ -80,32 +76,22 @@ func Download_By_Author(text string, callEvent func(name string, data ...interfa
 						if !ContainMyerror(err) {
 							c <- temp
 						}
-						return nil, nil
+						return
 					}
 					if !Download(illust, options) {
 						c <- temp
-						return nil, nil
+						return
 					}
 					satisfy++
-					return nil, nil
-				})
+					return
+				}, id, 1, 3)
+				taskQueue.P.Add(task)
 			}
 			taskQueue.P.Wait()
 			utils.DebugLog.Printf("%s ,failed %d , satisfied %d \n", progressInfo.Name, len(c), satisfy)
-			for len(c) > 0 {
-				if taskQueue.IsClosed {
-					return
-				}
-				ss := <-c
-				// log.Println(ss, " Download failed Now retrying")
-				taskQueue.P.AddTask(func() (interface{}, error) {
-					if a, b := JustDownload(ss, options, callEvent); b {
-						satisfy += a
-					}
-					return nil, nil
-				})
+			if len(c) > 0 {
+				fmt.Println("failed illust", len(c))
 			}
-			taskQueue.P.Wait()
 			utils.InfoLog.Println(text+"'s artworks -> Satisfied and Successfully downloaded illusts: ", satisfy, "in all: ", len(all))
 			close(c)
 			callEvent("UpdateTerminal", fmt.Sprintf("%s(%s)'s artworks -> Satisfied %d in %d", authorMsg["name"], text, satisfy, len(all)))

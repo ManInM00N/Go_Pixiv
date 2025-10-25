@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"bufio"
+	"io"
 	"os"
 	"regexp"
 	"strings"
@@ -34,4 +36,35 @@ func FileExists(path string) (bool, error) {
 		return false, nil
 	}
 	return true, err
+}
+
+// WriteToFile 写入文件
+func WriteToFile(filepath string, reader io.Reader) error {
+	f, err := os.OpenFile(filepath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0755)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	bufWriter := bufio.NewWriter(f)
+	if _, err := io.Copy(bufWriter, reader); err != nil {
+		return err
+	}
+
+	return bufWriter.Flush()
+}
+
+// 写入 GIF 文件
+func WriteBytesToFile(path string, data []byte) error {
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0755)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	bufWriter := bufio.NewWriter(f)
+	defer bufWriter.Flush()
+
+	_, err = bufWriter.Write(data)
+	return err
 }

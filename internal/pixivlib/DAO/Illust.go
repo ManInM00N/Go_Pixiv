@@ -82,6 +82,7 @@ type FollowData struct {
 	XRestrict       int      `json:"xRestrict"` // 1 R18 0 All
 
 	// illust
+	IllustType int `json:"illustType"`
 
 	// novel
 	Genre       string `json:"genre"`

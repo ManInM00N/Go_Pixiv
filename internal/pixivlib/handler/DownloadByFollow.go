@@ -54,14 +54,15 @@ func Download_By_FollowPage(page, Type string, callEvent func(name string, data 
 			return
 		}
 		op := NewOption(SufWithRankmode(Type), SufWithPage(page))
-		utils.InfoLog.Println("follow page", page, " "+Type+" pushed queue")
+		utils.InfoLog.Println("follow page", page, " "+Type+" start downloading")
+		callEvent("UpdateTerminal", fmt.Sprintln("follow page", page, " "+Type+" start downloading"))
 		progressInfo.Status = "Running"
 		c := make(chan string, 2000)
 		tmp, err := GetFollow(op)
 		all := tmp.Get("page").Get("ids").Array()
+		thumbs := tmp.Get("thumbnails").Get("illust").Array()
 		progressInfo.Total = uint64(len(all))
 		progressInfo.BeginTime = time.Now()
-		taskQueue.WaitingTasks--
 		if err != nil {
 			utils.DebugLog.Println("Error getting Follow", err)
 			callEvent("UpdateTerminal", fmt.Sprintln("follow page", page, Type, err))
@@ -71,48 +72,42 @@ func Download_By_FollowPage(page, Type string, callEvent func(name string, data 
 		utils.InfoLog.Println("follow page", page, " "+Type+" Start download")
 		options := NewOption(WithMode(ByPid), WithR18(Setting.Agelimit), WithLikeLimit(0), WithDiffAuthor(false), SufWithRankmode(Type))
 		var cnt int64
-		for _, key := range all {
-			k := key
+		for _, v := range thumbs {
+			k := v.Get("id").String()
 			if taskQueue.IsClosed {
 				return
 			}
 
-			if Db.Model(&Cache{}).Where("download_id = ?", k.String()).Count(&cnt); cnt == 1 {
+			if Db.Model(&Cache{}).Where("download_id = ?", k).Count(&cnt); cnt == 1 {
 				progressInfo.Current++
 				continue
 			}
-			taskQueue.P.AddTask(func() (interface{}, error) {
-				// time.Sleep(1 * time.Second)
+			weight := 1
+			if v.Get("illustType").Int() == UgoiraType {
+				weight = 3
+			}
+			task, _ := taskQueue.P.NewTaskWithCost(func() {
 				if taskQueue.IsClosed {
-					return nil, nil
+					return
 				}
-				temp := k
-				illust, err := work(statics.StringToInt64(temp.String()), options)
+				illust, err := work(statics.StringToInt64(k), options)
 				defer func() {
 					progressInfo.Current++
 				}()
 				if err != nil {
 					if !ContainMyerror(err) {
-						c <- temp.Str
+						c <- k
 					}
-					return nil, nil
+					return
 				}
 				Download(illust, options)
 				time.Sleep(time.Second * 3)
-				return nil, nil
-			})
-		}
-		taskQueue.P.Wait()
-		for len(c) > 0 {
-			if taskQueue.IsClosed {
 				return
+			}, k, 1, weight)
+			taskQueue.P.Add(task)
+			if len(c) > 0 {
+				fmt.Println("Illust Failed ", len(c))
 			}
-			ss := <-c
-			// log.Println(ss, " Download failed Now retrying")
-			taskQueue.P.AddTask(func() (interface{}, error) {
-				JustDownload(ss, options, callEvent)
-				return nil, nil
-			})
 		}
 		taskQueue.P.Wait()
 		utils.InfoLog.Println("follow page", page, " "+Type, "Successfully downloaded illusts: ", len(all))

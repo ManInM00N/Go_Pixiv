@@ -13,6 +13,8 @@ import (
 	"main/internal/pixivlib/DAO"
 	"main/internal/taskQueue"
 	"main/pkg/utils"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"time"
 )
@@ -48,24 +50,23 @@ func init() {
 	utils.DebugLog.Println("Check settings:"+Setting.Proxy, "PHPSESSID="+Setting.Cookie, "Download Position=", Setting.Downloadposition)
 	UpdateSettings()
 
-	taskQueue.RankPool = goruntine.NewGoPool(200, 1)
-	taskQueue.RankPool.Run()
-
 	taskQueue.TaskPool = goruntine.NewTaskPool(1, 1,
-		goruntine.WithLowestValueFirst(),
+		goruntine.WithLowestPriorityFirst(),
 		goruntine.WithTaskEqualityByInfoFunc(func(a, b any) bool {
 			return a.(DAO.TaskInfo).ID == b.(DAO.TaskInfo).ID
 		}),
 	)
 	taskQueue.TaskPool.Run()
 
-	taskQueue.FollowPool = goruntine.NewGoPool(200, 1)
-	taskQueue.FollowPool.Run()
-
-	taskQueue.FollowLoadPool = gopool.NewGoPool(2, gopool.WithTaskQueueSize(400))
-	taskQueue.RankloadPool = gopool.NewGoPool(2, gopool.WithTaskQueueSize(5000))
 	taskQueue.SinglePool = gopool.NewGoPool(1, gopool.WithTaskQueueSize(100))
-	taskQueue.P = gopool.NewGoPool(4, gopool.WithTaskQueueSize(5000))
+	taskQueue.P = goruntine.NewTaskPool(4, 10,
+		goruntine.WithFIFO())
+	taskQueue.P.Run()
+
+	go func() {
+		// 启动一个 goroutine, 不阻止正常代码运行
+		http.ListenAndServe("localhost:6060", nil) // 使用 pprof 监听端口
+	}()
 }
 
 func CacheInit() {
@@ -94,7 +95,6 @@ func Close() {
 	taskQueue.IsClosed = true
 	taskQueue.P.Wait()
 	defer func() {
-		taskQueue.P.Release()
 		taskQueue.TaskPool.Close()
 		taskQueue.SinglePool.Release()
 	}()

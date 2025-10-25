@@ -7,13 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ManInM00N/go-tool/statics"
-	"github.com/ManInM00N/nicogif"
 	"github.com/bmaupin/go-epub"
-	"github.com/klauspost/compress/zip"
 	"github.com/tidwall/gjson"
-	"image"
-	_ "image/jpeg"
-	_ "image/png"
 	"io"
 	. "main/configs"
 	"main/internal/cache/DAO"
@@ -24,6 +19,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"time"
@@ -47,196 +43,53 @@ const (
 	Base = "https://www.pixiv.net/"
 )
 
-// TODO: 作者全部作品下载OK
-// TODO: 基础下载 OK   目录管理下载 OK  主要图片全部下载OK    并发下载OK
-// TODO: 指针内存问题OK
-// TODO: 图片下载完整  OK
-func Download(i *Illust, op *Option) bool {
-	//if i.IllustType == UgoiraType {
-	//	return true
-	//}
+// 获取下载路径
+func getDownloadPath(i *Illust, op *Option, setting *Settings) string {
+	path := setting.Downloadposition
 
-	var err error
-	total := 0
-	// create Request
-	Request, err2 := http.NewRequest("GET", i.Source, nil)
-	if err2 != nil {
-		utils.DebugLog.Println("Error creating request", err2)
+	switch {
+	case op.Mode == ByRank:
+		path = filepath.Join(path, op.Rank+op.RankDate)
+	case i.IllustType == UgoiraType:
+		path = filepath.Join(path, "GIF")
+	case op.DiffAuthor || op.Mode == ByAuthor:
+		path = filepath.Join(path, statics.Int64ToString(i.UserID))
+	}
+
+	return path
+}
+
+func Download(i *Illust, op *Option) bool {
+
+	setting := NowSetting()
+	client := GetClient()
+
+	path := getDownloadPath(i, op, &setting)
+	typePath := filepath.Join(path, i.AgeLimit)
+	if err := os.MkdirAll(typePath, os.ModePerm); err != nil {
+		utils.DebugLog.Println("Failed to create directory:", err)
 		return false
 	}
-	setting := NowSetting()
-	Request.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36")
-	Request.Header.Set("referer", "https://www.pixiv.net")
-	Request.Header.Set("cookie", "PHPSESSID="+setting.Cookie)
-	var Response *http.Response
-	clientcopy := GetClient()
 
-	Path := setting.Downloadposition
-	if op.Mode == ByRank {
-		Path = filepath.Join(Path, op.Rank+op.RankDate)
-	} else if i.IllustType == UgoiraType {
-		Path = filepath.Join(Path, "GIF")
-	} else {
-		if op.DiffAuthor || op.Mode == ByAuthor {
-			Path = filepath.Join(Path, statics.Int64ToString(i.UserID))
-		}
+	Request, err := CreatePixivRequest(i.Source, &setting)
+	if err != nil {
+		utils.DebugLog.Println("Error creating request", err)
+		return false
 	}
 
-	Type := filepath.Join(Path, i.AgeLimit)
-	if has, _ := utils.FileExists(Type); !has {
-		os.MkdirAll(Type, os.ModePerm)
-	}
-
-	cache := DAO.Cache{
-		DownloadID: statics.Int64ToString(i.Pid),
-		Type:       "Illust",
-	}
-	failtimes := 0
+	// 根据类型下载
+	var success bool
 	if i.IllustType <= 1 {
-		for j := 0; j < i.Pages; j++ {
-			imagefilename := statics.GetFileName(i.ImageUrl[j])
-			imagefilepath := filepath.Join(Type, imagefilename)
-			img, err2 := os.Stat(imagefilepath)
-			if err2 == nil {
-				if op.Mode == ByPid {
-					os.Remove(imagefilepath)
-				} else if img.Size() != 0 {
-					time.Sleep(time.Millisecond * time.Duration(setting.Downloadinterval))
-					continue
-				}
-			}
-			Request.URL, _ = url2.Parse(i.ImageUrl[j])
-			ok := true
-			for k := 0; k < 10; k++ {
-				Response, err = clientcopy.Do(Request)
-				if k == 9 && err != nil {
-					utils.DebugLog.Println("Illust Resouce Request Error", err, Request.URL.String())
-					ok = false
-					j--
-					failtimes++
-					if failtimes > 2 {
-						j++
-					}
-					break
-				} else if err == nil {
-					break
-				}
-				time.Sleep(time.Millisecond * time.Duration(setting.Downloadinterval))
-			}
-			if !ok {
-				os.Remove(imagefilepath)
-				continue
-			}
-			failtimes = 0
-			f, err := os.OpenFile(imagefilepath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0755)
-			if err != nil {
-				utils.DebugLog.Println(i.Pid, "Download Failed", err, "retrying")
-				os.Remove(imagefilepath)
-				j--
-				if f != nil {
-					f.Close()
-				}
-				continue
-			}
-			bufWriter := bufio.NewWriter(f)
-
-			if _, err = io.Copy(bufWriter, Response.Body); err != nil {
-				utils.DebugLog.Println(i.Pid, " Write Failed", err)
-				return false
-			}
-			bufWriter.Flush()
-			Response.Body.Close()
-			f.Close()
-			total++
-			time.Sleep(time.Millisecond * time.Duration(setting.Downloadinterval))
-		}
+		success = downloadImages(i, op, typePath, Request, client, &setting)
 	} else {
-		for k := 0; k < 10; k++ {
-			Response, err = clientcopy.Do(Request)
-			if k == 9 && err != nil {
-				utils.DebugLog.Println("Illust Resouce Request Error", err, Request.URL.String())
-				return false
-			} else if err == nil {
-				break
-			}
-			time.Sleep(time.Millisecond * time.Duration(setting.Downloadinterval))
-		}
-		defer func() {
-			if Response != nil {
-				Response.Body.Close()
-			}
-		}()
-		body, err := io.ReadAll(Response.Body)
-		if err != nil {
-			utils.DebugLog.Println("Ugoira Response read failed", err.Error())
-			return false
-		}
-
-		reader := bytes.NewReader(body)
-		zipReader, err := zip.NewReader(reader, int64(len(body)))
-		if err != nil {
-			utils.DebugLog.Println("Zip reader failed", err.Error())
-			return false
-		}
-
-		opt := gifencoder.EncodeOptions{
-			Width:   int(i.Width),
-			Height:  int(i.Height),
-			Repeat:  0,
-			Quality: 10,
-			Dither:  gifencoder.DitherFloydSteinberg,
-		}
-		var Delay []int
-		for _, v := range i.Frames {
-			Delay = append(Delay, v.Delay)
-		}
-		opt.Delays = Delay
-		var frames []image.Image
-		for _, file := range zipReader.File {
-			rc, err := file.Open()
-			if err != nil {
-				fmt.Println(err.Error())
-				continue
-			}
-			img, _, err := image.Decode(rc)
-			rc.Close()
-			if err == nil {
-				frames = append(frames, img)
-				opt.Width = img.Bounds().Dx()
-				opt.Height = img.Bounds().Dy()
-			} else {
-				fmt.Println(err.Error())
-			}
-		}
-		body = nil      // ⭐ 添加
-		reader = nil    // ⭐ 添加
-		zipReader = nil // ⭐ 添加
-
-		data, err := gifencoder.EncodeGIFWithOptions(frames, opt)
-		frames = nil
-		if err != nil {
-			utils.DebugLog.Printf("GIF encode failed %s", err.Error())
-			return false
-		}
-		Path = filepath.Join(Path, statics.Int64ToString(i.Pid)+".gif")
-		f, err := os.OpenFile(Path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0755)
-		bufWriter := bufio.NewWriter(f)
-		defer func() {
-			bufWriter.Flush()
-			f.Close()
-		}()
-		_, err = bufWriter.Write(data)
-		data = nil
-		if err != nil {
-			utils.DebugLog.Printf("GIF write file failed %s", err.Error())
-			return false
-		}
-		runtime.GC()
-		cache.Type = "Ugoria"
+		success = downloadUgoira(i, path, Request, client, &setting)
 	}
-	cache.CreatedAt = time.Now()
-	DAO.Db.FirstOrCreate(&cache, DAO.Cache{DownloadID: cache.DownloadID})
-	return true
+
+	if success {
+		saveCache(i)
+	}
+
+	return success
 }
 
 // return url & referer
@@ -271,6 +124,147 @@ func GetUrlRefer(url, id string, num int) (string, string) {
 	default:
 		return Base + "ajax/user/extra", Base
 	}
+}
+
+// 下载普通图片
+func downloadImages(i *Illust, op *Option, typePath string, request *http.Request, client *http.Client, setting *Settings) bool {
+	failTimes := 0
+
+	for j := 0; j < i.Pages; j++ {
+		imageFilename := statics.GetFileName(i.ImageUrl[j])
+		imageFilepath := filepath.Join(typePath, imageFilename)
+
+		// 检查文件是否已存在
+		if shouldSkipDownload(imageFilepath, op) {
+			time.Sleep(time.Millisecond * time.Duration(setting.Downloadinterval))
+			continue
+		}
+
+		// 下载单个图片
+		if !downloadSingleImage(i.ImageUrl[j], imageFilepath, request, client, setting) {
+			failTimes++
+			if failTimes > 2 {
+				continue
+			}
+			j-- // 重试
+			continue
+		}
+
+		failTimes = 0
+		time.Sleep(time.Millisecond * time.Duration(setting.Downloadinterval))
+	}
+
+	return true
+}
+
+// 下载 Ugoira（GIF）
+func downloadUgoira(i *Illust, path string, request *http.Request, client *http.Client, setting *Settings) bool {
+	// 获取数据
+	var response *http.Response
+	var err error
+	for k := 0; k < 10; k++ {
+		response, err = client.Do(request)
+		if err == nil {
+			break
+		}
+		if response != nil && response.Body != nil {
+			response.Body.Close()
+		}
+		if k == 9 {
+			utils.DebugLog.Println("Ugoira request error:", err)
+			return false
+		}
+		time.Sleep(time.Millisecond * time.Duration(setting.Downloadinterval))
+	}
+
+	defer func() {
+		if response != nil && response.Body != nil {
+			response.Body.Close()
+		}
+	}()
+
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		utils.DebugLog.Println("Ugoira response read failed:", err)
+		return false
+	}
+
+	data, err := ExtractAndProcessFrames(body, i.Frames, int(i.Width), int(i.Height))
+
+	if err != nil {
+		utils.DebugLog.Println("GIF encode failed:", err)
+		return false
+	}
+
+	// 保存 GIF
+	gifPath := filepath.Join(path, statics.Int64ToString(i.Pid)+".gif")
+	if err := utils.WriteBytesToFile(gifPath, data); err != nil {
+		utils.DebugLog.Println("GIF write failed:", err)
+		return false
+	}
+
+	data = nil
+	runtime.GC()
+	debug.FreeOSMemory() // 归还内存给OS
+
+	return true
+}
+
+// 检查是否应该跳过下载
+func shouldSkipDownload(filepath string, op *Option) bool {
+	img, err := os.Stat(filepath)
+	if err != nil {
+		return false
+	}
+
+	if op.Mode == ByPid {
+		os.Remove(filepath)
+		return false
+	}
+
+	return img.Size() != 0
+}
+
+// 下载单个图片（修复内存泄漏）
+func downloadSingleImage(url, filepath string, request *http.Request, client *http.Client, setting *Settings) bool {
+	request.URL, _ = url2.Parse(url)
+
+	// 重试逻辑
+	var response *http.Response
+	var err error
+	for k := 0; k < 10; k++ {
+		response, err = client.Do(request)
+
+		// ⭐ 关键修复：确保每次请求的 Response.Body 都被关闭
+		if err != nil {
+			if response != nil && response.Body != nil {
+				response.Body.Close()
+			}
+			if k == 9 {
+				utils.DebugLog.Println("Image request error:", err, url)
+				return false
+			}
+			time.Sleep(time.Millisecond * time.Duration(setting.Downloadinterval))
+			continue
+		}
+		break
+	}
+
+	// ⭐ 使用 defer 确保 Body 被关闭
+	defer func() {
+		if response != nil && response.Body != nil {
+			response.Body.Close()
+		}
+	}()
+
+	// 写入文件
+	if err := utils.WriteToFile(filepath, response.Body); err != nil {
+		utils.DebugLog.Println("Write failed:", err)
+		os.Remove(filepath)
+		return false
+	}
+
+	return true
 }
 
 func DownloadNovel(id string) bool {
@@ -368,50 +362,55 @@ func DownloadNovel(id string) bool {
 
 func GetWebpageData(url, id string, num int) ([]byte, error) { // 请求得到作品json
 
-	var response *http.Response
-	var err error
-	ur, ref := GetUrlRefer(url, id, num)
-	// println(ur, ref)
-	Request, err := http.NewRequest("GET", ur, nil)
+	ur, _ := GetUrlRefer(url, id, num)
+	setting := NowSetting()
+
+	Request, err := CreatePixivRequest(ur, &setting)
 	if err != nil {
-		utils.DebugLog.Println("Error creating request", err)
+		utils.DebugLog.Println("Error creating request:", err)
 		return nil, err
 	}
-	Request.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0")
-	Request.Header.Set("referer", ref)
-	Request.Header.Set("Cookie", "PHPSESSID="+Setting.Cookie)
 
 	clientcopy := GetClient()
+	var response *http.Response
 	for i := 0; i < 10; i++ {
 		response, err = clientcopy.Do(Request)
 		if err == nil {
 			if response.StatusCode == 429 {
-				println("429")
-				time.Sleep(time.Duration(Setting.Retry429) * time.Millisecond)
-				// i--
+				if response.Body != nil {
+					response.Body.Close()
+				}
+				time.Sleep(time.Duration(setting.Retry429) * time.Millisecond)
 				continue
 			}
 			break
 		}
-		if i == 9 && err != nil {
-			utils.DebugLog.Println("Request failed ", err)
+
+		if response != nil && response.Body != nil {
+			response.Body.Close()
+		}
+
+		if i == 9 {
+			utils.DebugLog.Println("Request failed:", err)
 			return nil, err
 		}
-		time.Sleep(time.Duration(Setting.Retryinterval) * time.Millisecond)
 
+		time.Sleep(time.Duration(setting.Retryinterval) * time.Millisecond)
 	}
-	if response.Body != nil {
-		defer response.Body.Close()
-	}
-	// webpageBytes, err3 := ioutil.ReadAll(response.Body)
+	defer func() {
+		if response != nil && response.Body != nil {
+			response.Body.Close()
+		}
+	}()
+
 	var buffer bytes.Buffer
-	reader := bufio.NewReader(response.Body)
-	_, err3 := io.Copy(&buffer, reader)
-	if err3 != nil {
-		utils.DebugLog.Println("read failed", err3)
-		return nil, err3
+	if _, err := io.Copy(&buffer, response.Body); err != nil {
+		utils.DebugLog.Println("Read failed:", err)
+		return nil, err
 	}
+
 	webpageBytes := buffer.Bytes()
+
 	if response.StatusCode != http.StatusOK {
 		utils.DebugLog.Println("status code ", response.StatusCode, ur, string(webpageBytes))
 		if response.StatusCode == 429 {
@@ -421,9 +420,6 @@ func GetWebpageData(url, id string, num int) ([]byte, error) { // 请求得到�
 	}
 	return webpageBytes, nil
 }
-
-// TODO: 作品信息json请求   OK
-// TODO: 多页下载 OK
 
 func work(id int64, mode *Option) (i *Illust, err error) { // 按作品id查找
 	urltail := strconv.FormatInt(id, 10)
@@ -528,14 +524,6 @@ func JustDownload(pid string, mode *Option, callEvent func(name string, data ...
 	if illust == nil {
 		utils.DebugLog.Println(pid, " Download failed")
 		return 0, false
-	} else if illust.IllustType == UgoiraType {
-
-		//id, _ := shortid.Generate()
-		//identify := statics.Int64ToString(illust.Pid) + id
-		//UgoiraMap.Set(identify, false)
-		//callEvent("downloadugoira", illust.Pid, illust.Width, illust.Height, illust.Frames, illust.Source, identify)
-		//UgoiraDownloadWait(identify)
-		//return 1, true
 	}
 	if mode.ShowSingle {
 		utils.InfoLog.Println(pid + " Start download")
@@ -546,4 +534,17 @@ func JustDownload(pid string, mode *Option, callEvent func(name string, data ...
 		return 0, false
 	}
 	return 1, true
+}
+
+// 保存缓存
+func saveCache(i *Illust) {
+	cache := DAO.Cache{
+		DownloadID: statics.Int64ToString(i.Pid),
+		Type:       "Illust",
+		CreatedAt:  time.Now(),
+	}
+	if i.IllustType == UgoiraType {
+		cache.Type = "Ugoira"
+	}
+	DAO.Db.FirstOrCreate(&cache, DAO.Cache{DownloadID: cache.DownloadID})
 }

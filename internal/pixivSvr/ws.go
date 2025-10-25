@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"log"
 	"main/pkg/utils"
 	"net/http"
 )
@@ -58,7 +57,7 @@ func UpdateProgress(c *gin.Context) {
 func Transform(c *gin.Context) {
 	ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		log.Println(err)
+		utils.DebugLog.Println(err)
 		return
 	}
 	defer ws.Close()
@@ -66,7 +65,7 @@ func Transform(c *gin.Context) {
 	for {
 		_, msg, err := ws.ReadMessage()
 		if err != nil {
-			log.Println(err)
+			utils.DebugLog.Println(err)
 			break
 		}
 
@@ -74,7 +73,7 @@ func Transform(c *gin.Context) {
 
 		err = ws.WriteMessage(websocket.TextMessage, []byte(userInput+" txt"))
 		if err != nil {
-			log.Println("Write back", err)
+			utils.DebugLog.Println("Write back", err)
 			break
 		}
 	}

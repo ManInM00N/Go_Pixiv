@@ -81,9 +81,8 @@ func Download_By_Rank(text, Type string, callEvent func(name string, data ...int
 			utils.InfoLog.Println(op.RankDate+" page", page, " "+op.Rank+"Rank pushed queue")
 			c := make(chan string, 2000)
 			tmp, err := GetRank(op)
-			// DebugLog.Println(tmp.Get("#.illust_id"))
 			all := tmp.Get("#.illust_id").Array()
-
+			illusts := tmp.Array()
 			progressInfo.BeginTime = time.Now()
 			progressInfo.Total = uint64(len(all))
 			progressInfo.Status = "Running"
@@ -97,55 +96,49 @@ func Download_By_Rank(text, Type string, callEvent func(name string, data ...int
 			}
 
 			utils.InfoLog.Println(op.RankDate + " " + op.Rank + "'s artworks Start download")
+			callEvent("UpdateTerminal", fmt.Sprintln(op.RankDate+" "+op.Rank+"'s artworks Start download"))
 			satisfy := 0
 			options := NewOption(WithMode(ByRank), WithR18(Setting.Agelimit), WithLikeLimit(Setting.LikeLimit), WithDiffAuthor(false), SufWithDate(op.RankDate), SufWithRankmode(Type))
 
 			var cnt int64
-			for _, key := range all {
-				k := key
+			for _, v := range illusts {
+				k := v.Get("illust_id").String()
 				if taskQueue.IsClosed {
 					return
 				}
-				if Db.Model(&Cache{}).Where("download_id = ?", k.String()).Count(&cnt); cnt == 1 {
+				if Db.Model(&Cache{}).Where("download_id = ?", k).Count(&cnt); cnt == 1 {
 					satisfy++
 					progressInfo.Current++
 					continue
 				}
-				taskQueue.P.AddTask(func() (interface{}, error) {
-					// time.Sleep(1 * time.Second)
-					if taskQueue.IsClosed {
-						return nil, nil
-					}
-					temp := k
-					illust, err := work(statics.StringToInt64(temp.String()), options)
-					defer func() {
-						progressInfo.Current++
-					}()
-					if err != nil {
-						if !ContainMyerror(err) {
-							c <- temp.Str
+				weight := 1
+				if v.Get("illust_type").Int() == UgoiraType {
+					weight = 3
+				}
+				fmt.Println(v.Get("illust_type").Int(), weight)
+				task, _ := taskQueue.P.NewTaskWithCost(
+					func() {
+						if taskQueue.IsClosed {
+							return
 						}
-						return nil, nil
-					}
-					Download(illust, options)
-					satisfy++
-					return nil, nil
-				})
+						illust, err := work(statics.StringToInt64(k), options)
+						defer func() {
+							progressInfo.Current++
+						}()
+						if err != nil {
+							if !ContainMyerror(err) {
+								c <- k
+							}
+							return
+						}
+						Download(illust, options)
+						satisfy++
+						return
+					}, k, 1, weight)
+				taskQueue.P.Add(task)
 			}
 			taskQueue.P.Wait()
 			utils.DebugLog.Printf("%s ,failed %d , satisfied %d \n", progressInfo.Name, len(c), satisfy)
-			for len(c) > 0 {
-				if taskQueue.IsClosed {
-					return
-				}
-				ss := <-c
-				taskQueue.P.AddTask(func() (interface{}, error) {
-					if a, b := JustDownload(ss, options, callEvent); b {
-						satisfy += a
-					}
-					return nil, nil
-				})
-			}
 			taskQueue.P.Wait()
 			utils.InfoLog.Println(op.RankDate+" "+op.Rank+"'s artworks -> Satisfied and Successfully downloaded illusts: ", satisfy, "in all: ", len(all))
 			callEvent("UpdateTerminal", fmt.Sprintf("%s %s's artworks -> Satisfied %d in %d \n", op.RankDate, op.Rank, satisfy, len(all)))

@@ -3,13 +3,12 @@ module main
 go 1.24.5
 
 require (
-	github.com/ManInM00N/go-tool v0.0.0-20251019064123-c5d3eb22ec6c
-	github.com/ManInM00N/nicogif v1.0.0-beta
+	github.com/ManInM00N/go-tool v0.0.0-20251024111313-1b5b4738e1d8
+	github.com/ManInM00N/nicogif v1.0.1
 	github.com/bmaupin/go-epub v1.1.0
 	github.com/devchat-ai/gopool v0.6.2
 	github.com/gin-gonic/gin v1.11.0
 	github.com/gorilla/websocket v1.5.3
-	github.com/klauspost/compress v1.18.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/teris-io/shortid v0.0.0-20220617161101-71ec9f2aa569
 	github.com/tidwall/gjson v1.18.0
