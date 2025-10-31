@@ -17,6 +17,9 @@
 - [x] 优化下载线程池 :confused:
   - [ ] 中断任务
 - [ ] 以图搜图 :alien:
+  - [ ] sauceNao
+  - [ ] ascii2d 
+  - 其他引擎有空再说吧 >.>
 - [x] 托盘化 :zap:
   - [ ] 桌面通知 
 - [x] 小说下载功能 :monocle_face:

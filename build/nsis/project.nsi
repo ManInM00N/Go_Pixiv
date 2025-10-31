@@ -22,8 +22,8 @@ Unicode true
 ## !define INFO_PROJECTNAME    "GoPixiv" # Default "GoPixiv"
 ## !define INFO_COMPANYNAME    "ManInM00N" # Default "ManInM00N"
 ## !define INFO_PRODUCTNAME    "GoPixiv" # Default "GoPixiv"
-## !define INFO_PRODUCTVERSION "1.3.1"     # Default "1.3.1"
-## !define INFO_COPYRIGHT      "(c) Now, ManInM00N" # Default "漏 now, ManInM00N"
+## !define INFO_PRODUCTVERSION "1.3.2"     # Default "1.3.2"
+## !define INFO_COPYRIGHT      "(c) Now, ManInM00N" # Default "? now, ManInM00N"
 ###
 ## !define PRODUCT_EXECUTABLE  "Application.exe"      # Default "${INFO_PROJECTNAME}.exe"
 ## !define UNINST_KEY_NAME     "UninstKeyInRegistry"  # Default "${INFO_COMPANYNAME}${INFO_PRODUCTNAME}"
@@ -77,6 +77,30 @@ ShowInstDetails show # This will always show the installation details.
 
 Function .onInit
    !insertmacro wails.checkArchitecture
+
+   # Check if already installed and auto-fill the installation path
+   SetRegView 64
+   ReadRegStr $0 HKLM "${UNINST_KEY}" "UninstallString"
+   ${If} $0 != ""
+       # Remove quotes from uninstall string
+       # Format is usually: "C:\Program Files\GoPixiv\uninstall.exe"
+       StrCpy $1 $0 "" 1    # Remove first character (opening quote)
+       StrCpy $1 $1 -1      # Remove last character (closing quote)
+
+       # Extract installation directory from uninstall path
+       ${GetParent} $1 $2
+       StrCpy $INSTDIR $2
+
+       # Try to close the running program silently
+       # taskkill returns 0 if process was found and terminated, 128 if not found
+       nsExec::ExecToStack "taskkill /F /IM ${PRODUCT_EXECUTABLE}"
+       Pop $3
+       ${If} $3 == 0
+           # Process was running and has been closed
+           DetailPrint "Closed running instance of ${INFO_PRODUCTNAME}"
+           Sleep 1000
+       ${EndIf}
+   ${EndIf}
 FunctionEnd
 
 Section
@@ -98,11 +122,19 @@ SectionEnd
 
 Section "uninstall" 
     !insertmacro wails.setShellContext
+
+    # 关闭正在运行的程序
+    DetailPrint "正在关闭运行中的程序..."
     nsExec::ExecToStack "taskkill /F /IM ${PRODUCT_EXECUTABLE}"
     POP $0
+    Sleep 500
+
+
     RMDir /r "$AppData\${PRODUCT_EXECUTABLE}" # Remove the WebView2 DataPath
-    # 鍒犻櫎鍏ㄩ儴
+    # 删除全部
     RMDir /r $INSTDIR
+
+
     Delete "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk"
     Delete "$DESKTOP\${INFO_PRODUCTNAME}.lnk"
 

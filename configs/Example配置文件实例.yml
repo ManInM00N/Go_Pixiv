@@ -26,3 +26,30 @@ differauthor: false
 # 缓存超时时间(天)
 expiredtime: 7
 useproxy: true
+
+
+SearchEngine:
+  sauceNao:
+    api_key: 114514 # from https://saucenao.com/user.php?page=search-api
+    numbers: 10 # search result max counts
+
+
+prefix: "http://127.0.0.1:"
+proxy: "7897"
+useproxy: true
+
+pixivconf:
+  cookie: "26338360_I5rkMGJCO15zDyDuzGF8Uqb4u2cMN9zv"
+  agelimit: false
+  downloadposition: "Download"
+  likelimit: 200
+  retry429: 700
+  downloadinterval: 1000
+  retryinterval: 500
+  differauthor: false
+  expiredtime: 365
+
+searchengine:
+  saucenaoconf:
+    apikey: "aa6f9ef30259b819f9cb80f0673a2327f041494e"
+    numbers: 10
