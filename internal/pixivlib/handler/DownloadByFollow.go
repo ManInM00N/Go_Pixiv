@@ -68,9 +68,9 @@ func Download_By_FollowPage(page, Type string, callEvent func(name string, data 
 			callEvent("UpdateTerminal", fmt.Sprintln("follow page", page, Type, err))
 			return
 		}
-
+		setting := NowSetting()
 		utils.InfoLog.Println("follow page", page, " "+Type+" Start download")
-		options := NewOption(WithMode(ByPid), WithR18(Setting.Agelimit), WithLikeLimit(0), WithDiffAuthor(false), SufWithRankmode(Type))
+		options := NewOption(WithMode(ByPid), WithR18(setting.PixivConf.Agelimit), WithLikeLimit(0), WithDiffAuthor(false), SufWithRankmode(Type))
 		var cnt int64
 		for _, v := range thumbs {
 			k := v.Get("id").String()

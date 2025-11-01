@@ -36,19 +36,20 @@ func init() {
 	defer ymlfile.Close()
 
 	bytevalue, _ := ioutil.ReadAll(ymlfile)
-	Setting = &Settings{}
+	Setting := &Settings{}
 	yaml.Unmarshal(bytevalue, Setting)
 	Setting.Prefix = "http://127.0.0.1:"
-	Setting.LikeLimit = max(Setting.LikeLimit, 0)
-	_, err := os.Stat(Setting.Downloadposition)
+	Setting.PixivConf.LikeLimit = max(Setting.PixivConf.LikeLimit, 0)
+	_, err := os.Stat(Setting.PixivConf.Downloadposition)
 	if err != nil {
-		Setting.Downloadposition = "Download"
+		Setting.PixivConf.Downloadposition = "Download"
 	}
-	Setting.Retry429 = max(Setting.Retry429, 5000)
-	Setting.Retryinterval = max(Setting.Retryinterval, 1500)
-	Setting.Downloadinterval = max(Setting.Downloadinterval, 700)
-	utils.DebugLog.Println("Check settings:"+Setting.Proxy, "PHPSESSID="+Setting.Cookie, "Download Position=", Setting.Downloadposition)
-	UpdateSettings()
+	Setting.PixivConf.Retry429 = max(Setting.PixivConf.Retry429, 5000)
+	Setting.PixivConf.Retryinterval = max(Setting.PixivConf.Retryinterval, 1500)
+	Setting.PixivConf.Downloadinterval = max(Setting.PixivConf.Downloadinterval, 700)
+	UpdateSettings(*Setting)
+	utils.DebugLog.Println("Check settings:"+Setting.Proxy, "PHPSESSID="+Setting.PixivConf.Cookie, "Download Position=", Setting.PixivConf.Downloadposition)
+	SaveSettings()
 
 	taskQueue.TaskPool = goruntine.NewTaskPool(1, 1,
 		goruntine.WithLowestPriorityFirst(),
@@ -64,7 +65,6 @@ func init() {
 	taskQueue.P.Run()
 
 	go func() {
-		// 启动一个 goroutine, 不阻止正常代码运行
 		http.ListenAndServe("localhost:6060", nil) // 使用 pprof 监听端口
 	}()
 }
@@ -81,7 +81,7 @@ func CacheInit() {
 
 func Clean() {
 	tx := Db.Begin()
-	expireDuration := time.Duration(Setting.ExpiredTime) * 24 * time.Hour
+	expireDuration := time.Duration(NowSetting().PixivConf.ExpiredTime) * 24 * time.Hour
 	if err := tx.Where("created_at <= ?", time.Now().Add(-expireDuration)).Delete(&Cache{}).Error; err != nil {
 		tx.Rollback()
 		utils.DebugLog.Println(err)
@@ -93,9 +93,10 @@ func Clean() {
 
 func Close() {
 	taskQueue.IsClosed = true
+	taskQueue.P.Stop()
 	taskQueue.P.Wait()
 	defer func() {
-		taskQueue.TaskPool.Close()
+		taskQueue.TaskPool.Stop()
 		taskQueue.SinglePool.Release()
 	}()
 }

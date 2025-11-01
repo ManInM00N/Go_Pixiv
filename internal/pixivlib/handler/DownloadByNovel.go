@@ -14,7 +14,7 @@ func Download_By_NovelId(id string) {
 	Setting := configs.NowSetting()
 	taskQueue.SinglePool.AddTask(func() (any, error) {
 		DownloadNovel(id)
-		time.Sleep(time.Millisecond * time.Duration(Setting.Downloadinterval))
+		time.Sleep(time.Millisecond * time.Duration(Setting.PixivConf.Downloadinterval))
 		return nil, nil
 	})
 }
@@ -65,7 +65,7 @@ func Download_By_SeriesId(id string, callEvent func(name string, data ...interfa
 			for _, it := range novels {
 				DownloadNovel(it.ID)
 				progressInfo.Current++
-				time.Sleep(time.Duration(Setting.Downloadinterval) * time.Millisecond)
+				time.Sleep(time.Duration(Setting.PixivConf.Downloadinterval) * time.Millisecond)
 			}
 			callEvent("UpdateTerminal", fmt.Sprintf("%s %s finished download %d page total\n", id, title, len(novels)))
 

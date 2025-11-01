@@ -23,7 +23,7 @@ export function getProxiedImageUrl(pixivUrl) {
  * @returns {string} 处理后的 URL
  */
 export function getImageUrl(imageUrl, isR18 = 0) {
-    if (isR18 && !form.value.r_18) {
+    if (isR18 && !form.value.pixivConf.r_18) {
         return noProfileImg
     }
     return getProxiedImageUrl(imageUrl)

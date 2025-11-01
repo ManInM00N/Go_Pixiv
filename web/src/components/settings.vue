@@ -22,7 +22,7 @@
           <template #header>
             <div class="section-header">
               <el-icon><Connection /></el-icon>
-              <span>连接配置</span>
+              <span>代理配置</span>
             </div>
           </template>
 
@@ -58,195 +58,8 @@
               </el-form-item>
             </el-col>
 
-            <el-col :span="24">
-              <el-form-item label="Cookie 认证" prop="cookie">
-                <el-input
-                    v-model="form.cookie"
-                    type="textarea"
-                    :rows="3"
-                    placeholder="请输入从 Pixiv 网站获取的 Cookie"
-                    show-word-limit
-                    resize="none"
-                >
-                </el-input>
-                <el-popover placement="top" :width="600" trigger="hover" >
-                  <template #reference>
-                    <div class="form-help" style="cursor: pointer;">
-                      <el-icon><InfoFilled /></el-icon>
-                      不清楚在哪里？从浏览器开发者工具中复制 Pixiv 的完整 Cookie
-                    </div>
-                  </template>
-                  <img src="/cookieTip.png" alt="Cookie 获取帮助" style="width: 100%; display: block;" />
-                </el-popover>
-<!--                <div class="form-help">-->
-<!--                  <el-icon><InfoFilled /></el-icon>-->
-<!--                  从浏览器开发者工具中复制 Pixiv 的完整 Cookie-->
-<!--                </div>-->
-              </el-form-item>
-            </el-col>
           </el-row>
-        </el-card>
-
-        <!-- 下载设置 -->
-        <el-card class="settings-section" shadow="hover">
-          <template #header>
-            <div class="section-header">
-              <el-icon><Download /></el-icon>
-              <span>下载设置</span>
-            </div>
-          </template>
-
-          <el-row :gutter="20">
-            <el-col :xs="24" :sm="12">
-              <el-form-item label="下载目录" prop="downloadposition">
-                <el-input
-                    v-model="form.downloadposition"
-                    size="large"
-                    placeholder="下载文件保存路径"
-                >
-                  <template #prepend>
-                    <el-icon><Folder /></el-icon>
-                  </template>
-                </el-input>
-                <div class="form-help">文件将保存到此目录</div>
-              </el-form-item>
-            </el-col>
-
-            <el-col :xs="24" :sm="12">
-              <el-form-item label="作品收藏数限制" prop="likelimit">
-                <el-input-number
-                    v-model="form.likelimit"
-                    :min="0"
-                    :max="999999"
-                    size="large"
-                    controls-position="right"
-                    style="width: 100%"
-                />
-                <div class="form-help">只下载收藏数超过此值的作品 (0 = 无限制)</div>
-              </el-form-item>
-            </el-col>
-          </el-row>
-        </el-card>
-
-        <!-- 性能调优 -->
-        <el-card class="settings-section" shadow="hover">
-          <template #header>
-            <div class="section-header">
-              <el-icon><Stopwatch /></el-icon>
-              <span>性能调优</span>
-            </div>
-          </template>
-
-          <el-row :gutter="20">
-            <el-col :xs="24" :sm="8">
-              <el-form-item label="下载间隔 (毫秒)" prop="downloadinterval">
-                <el-input-number
-                    v-model="form.downloadinterval"
-                    :min="100"
-                    :max="10000"
-                    :step="100"
-                    size="large"
-                    controls-position="right"
-                    style="width: 100%"
-                />
-                <div class="form-help">两次下载之间的等待时间</div>
-              </el-form-item>
-            </el-col>
-
-            <el-col :xs="24" :sm="8">
-              <el-form-item label="请求限制等待 (毫秒)" prop="retry429">
-                <el-input-number
-                    v-model="form.retry429"
-                    :min="1000"
-                    :max="60000"
-                    :step="1000"
-                    size="large"
-                    controls-position="right"
-                    style="width: 100%"
-                />
-                <div class="form-help">遇到 429 错误时的等待时间</div>
-              </el-form-item>
-            </el-col>
-
-            <el-col :xs="24" :sm="8">
-              <el-form-item label="失败重试间隔 (毫秒)" prop="retryinterval">
-                <el-input-number
-                    v-model="form.retryinterval"
-                    :min="500"
-                    :max="10000"
-                    :step="500"
-                    size="large"
-                    controls-position="right"
-                    style="width: 100%"
-                />
-                <div class="form-help">下载失败后的重试等待时间</div>
-              </el-form-item>
-            </el-col>
-
-            <el-col :xs="24" :sm="8">
-              <el-form-item label="缓存过期时间 (天)" prop="expired_time">
-                <el-input-number
-                    v-model="form.expired_time"
-                    :min="1"
-                    :max="365"
-                    size="large"
-                    controls-position="right"
-                    style="width: 200px"
-                />
-                <div class="form-help">本地缓存数据的保存天数</div>
-              </el-form-item>
-            </el-col>
-          </el-row>
-        </el-card>
-
-        <!-- 功能开关 -->
-        <el-card class="settings-section" shadow="hover">
-          <template #header>
-            <div class="section-header">
-              <el-icon><Operation /></el-icon>
-              <span>功能开关</span>
-            </div>
-          </template>
-
           <div class="switch-grid">
-            <div class="switch-item">
-              <div class="switch-content">
-                <div class="switch-info">
-                  <div class="switch-title">
-                    <el-icon><Hide /></el-icon>
-                    R-18 内容
-                  </div>
-                  <div class="switch-description">
-                    允许下载和显示 R-18 分级的成人内容
-                  </div>
-                </div>
-                <el-switch
-                    v-model="form.r_18"
-                    size="large"
-                    active-color="#f56c6c"
-                    inactive-color="#dcdfe6"
-                />
-              </div>
-            </div>
-
-            <div class="switch-item">
-              <div class="switch-content">
-                <div class="switch-info">
-                  <div class="switch-title">
-                    <el-icon><User /></el-icon>
-                    按作者分类
-                  </div>
-                  <div class="switch-description">
-                    下载时按作者名称创建子文件夹
-                  </div>
-                </div>
-                <el-switch
-                    v-model="form.differauthor"
-                    size="large"
-                />
-              </div>
-            </div>
-
             <div class="switch-item">
               <div class="switch-content">
                 <div class="switch-info">
@@ -266,6 +79,244 @@
             </div>
           </div>
         </el-card>
+
+        <!-- 下载设置 -->
+        <el-card class="settings-section" shadow="hover">
+          <template #header>
+            <div class="section-header">
+              <el-icon><Download /></el-icon>
+              <span>Pixiv设置</span>
+            </div>
+          </template>
+
+          <el-row :gutter="20">
+            <el-col :xs="24" :sm="12">
+              <el-form-item label="下载目录" prop="downloadposition">
+                <el-input
+                    v-model="form.pixivConf.downloadposition"
+                    size="large"
+                    placeholder="下载文件保存路径"
+                >
+<!--                  <template #prepend>-->
+<!--                    <el-icon><Folder /></el-icon>-->
+<!--                  </template>-->
+                  <template #append>
+                    <el-icon color="#00ffaa" @click="ChooseFolder()" style="cursor: pointer;"><Folder /></el-icon>
+                  </template>
+                </el-input>
+                <div class="form-help">文件将保存到此目录</div>
+              </el-form-item>
+            </el-col>
+
+            <el-col :xs="24" :sm="12">
+              <el-form-item label="作品收藏数限制" prop="likelimit">
+                <el-input-number
+                    v-model="form.pixivConf.likelimit"
+                    :min="0"
+                    :max="999999"
+                    size="large"
+                    controls-position="right"
+                    style="width: 100%"
+                />
+                <div class="form-help">只下载收藏数超过此值的作品 (0 = 无限制)</div>
+              </el-form-item>
+            </el-col>
+
+            <el-col :span="24">
+              <el-form-item label="Cookie 认证" prop="cookie">
+                <el-input
+                    v-model="form.pixivConf.cookie"
+                    type="textarea"
+                    :rows="3"
+                    placeholder="请输入从 Pixiv 网站获取的 Cookie"
+                    show-word-limit
+                    resize="none"
+                >
+                </el-input>
+                <el-popover placement="top" :width="600" trigger="hover" >
+                  <template #reference>
+                    <div class="form-help" style="cursor: pointer;">
+                      <el-icon><InfoFilled /></el-icon>
+                      不清楚在哪里？从浏览器开发者工具中复制
+                      <a href="javascript:void(0);" @click="OpenInBrowser('https://www.pixiv.net/')">Pixiv</a>
+
+                      的完整 Cookie
+                    </div>
+                  </template>
+                  <img src="/cookieTip.png" alt="Cookie 获取帮助" style="width: 100%; display: block;" />
+                </el-popover>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row :gutter="20">
+            <el-col :xs="24" :sm="8">
+              <el-form-item label="下载间隔 (毫秒)" prop="downloadinterval">
+                <el-input-number
+                    v-model="form.pixivConf.downloadinterval"
+                    :min="100"
+                    :max="10000"
+                    :step="100"
+                    size="large"
+                    controls-position="right"
+                    style="width: 100%"
+                />
+                <div class="form-help">两次下载之间的等待时间</div>
+              </el-form-item>
+            </el-col>
+
+            <el-col :xs="24" :sm="8">
+              <el-form-item label="请求限制等待 (毫秒)" prop="retry429">
+                <el-input-number
+                    v-model="form.pixivConf.retry429"
+                    :min="1000"
+                    :max="60000"
+                    :step="1000"
+                    size="large"
+                    controls-position="right"
+                    style="width: 100%"
+                />
+                <div class="form-help">遇到 429 错误时的等待时间</div>
+              </el-form-item>
+            </el-col>
+
+            <el-col :xs="24" :sm="8">
+              <el-form-item label="失败重试间隔 (毫秒)" prop="retryinterval">
+                <el-input-number
+                    v-model="form.pixivConf.retryinterval"
+                    :min="500"
+                    :max="10000"
+                    :step="500"
+                    size="large"
+                    controls-position="right"
+                    style="width: 100%"
+                />
+                <div class="form-help">下载失败后的重试等待时间</div>
+              </el-form-item>
+            </el-col>
+
+            <el-col :xs="24" :sm="8">
+              <el-form-item label="缓存过期时间 (天)" prop="expired_time">
+                <el-input-number
+                    v-model="form.pixivConf.expired_time"
+                    :min="1"
+                    :max="365"
+                    size="large"
+                    controls-position="right"
+                    style="width: 200px"
+                />
+                <div class="form-help">本地缓存数据的保存天数</div>
+              </el-form-item>
+            </el-col>
+
+          </el-row>
+
+            <div class="switch-grid" style="grid-template-columns: repeat(2, 1fr);" >
+              <div class="switch-item">
+                <div class="switch-content">
+                  <div class="switch-info">
+                    <div class="switch-title">
+                      <el-icon><Hide /></el-icon>
+                      R-18 内容
+                    </div>
+                    <div class="switch-description">
+                      允许下载和显示 R-18 分级的成人内容
+                    </div>
+                  </div>
+                  <el-switch
+                      v-model="form.pixivConf.r_18"
+                      size="large"
+                      active-color="#f56c6c"
+                      inactive-color="#dcdfe6"
+                  />
+                </div>
+              </div>
+
+              <div class="switch-item">
+                <div class="switch-content">
+                  <div class="switch-info">
+                    <div class="switch-title">
+                      <el-icon><User /></el-icon>
+                      按作者分类
+                    </div>
+                    <div class="switch-description">
+                      下载时按作者名称创建子文件夹
+                    </div>
+                  </div>
+                  <el-switch
+                      v-model="form.pixivConf.differauthor"
+                      size="large"
+                  />
+                </div>
+              </div>
+
+
+            </div>
+        </el-card>
+
+        <!-- 搜图配置 -->
+        <el-card class="settings-section" shadow="hover">
+          <template #header>
+            <div class="section-header">
+              <el-icon><Stopwatch /></el-icon>
+              <span>搜图配置</span>
+            </div>
+          </template>
+          <el-row :gutter="20">
+            <el-col :xs="24" :sm="12">
+              <el-form-item label="搜索结果保留数" prop="likelimit">
+                <el-input-number
+                    v-model="form.imageEngine.sauceNaoConf.numbers"
+                    :min="8"
+                    :max="24"
+                    size="large"
+                    controls-position="right"
+                    style="width: 100%"
+                />
+                <div class="form-help">搜索返回最多(x)个</div>
+              </el-form-item>
+            </el-col>
+
+            <el-col :span="24">
+              <el-form-item label="Cookie 认证" prop="cookie">
+                <el-input
+                    v-model="form.imageEngine.sauceNaoConf.api_key"
+                    type="textarea"
+                    :rows="3"
+                    placeholder="请输入从 SauceNao 网站获取的 Api_Key"
+                    show-word-limit
+                    resize="none"
+                >
+                </el-input>
+                <el-popover placement="top" :width="600" trigger="hover" >
+                  <template #reference>
+                    <div class="form-help" style="cursor: pointer;right: auto">
+                      <el-icon><InfoFilled /></el-icon>
+                      不清楚在哪里？从浏览器开发者工具中复制
+                      <a href="javascript:void(0);" @click="OpenInBrowser('https://saucenao.com/user.php?page=search-api')">SauceNAO</a>
+                      的完整 ApiKey
+                    </div>
+                  </template>
+                  <img src="/apiKeyTip.png" alt="Cookie 获取帮助" style="width: 100%; display: block;" />
+                </el-popover>
+              </el-form-item>
+            </el-col>
+
+          </el-row>
+
+
+        </el-card>
+
+        <!-- 功能开关 -->
+<!--        <el-card class="settings-section" shadow="hover">-->
+<!--          <template #header>-->
+<!--            <div class="section-header">-->
+<!--              <el-icon><Operation /></el-icon>-->
+<!--              <span>功能开关</span>-->
+<!--            </div>-->
+<!--          </template>-->
+
+
+<!--        </el-card>-->
 
         <!-- 操作按钮 -->
         <div class="form-actions">
@@ -299,13 +350,13 @@
             <el-icon><Connection /></el-icon>
             测试连接
           </el-button>
-<!--          <el-button-->
-<!--            size="large"-->
-<!--            @click="GetWebView2Cookies('114')"-->
-<!--            class="test-btn"-->
-<!--          >-->
-<!--            功能测试-->
-<!--          </el-button>-->
+          <el-button
+            size="large"
+            @click="ChooseFolder()"
+            class="test-btn"
+          >
+            功能测试
+          </el-button>
         </div>
       </el-form>
     </div>
@@ -342,8 +393,8 @@ import {
   ArrowUp
 } from '@element-plus/icons-vue'
 import { ElMessage, ElNotification, ElMessageBox } from 'element-plus'
-import { form, updateSettings, defaultConf } from "../assets/js/configuration.js"
-import {CheckLogin, GetWebView2Cookies} from "../../bindings/main/internal/pixivlib/ctl.js"
+import {form, updateSettings, defaultConf, ChooseFolder} from "../assets/js/configuration.js"
+import {CheckLogin, OpenInBrowser} from "../../bindings/main/internal/pixivlib/ctl.js"
 
 // 响应式数据
 const formRef = ref(null)
@@ -356,7 +407,7 @@ const formRules = reactive({
     { required: true, message: '请输入 Cookie', trigger: 'blur' }
   ],
   downloadposition: [
-    { required: true, message: '请输入下载目录', trigger: 'blur' }
+    { required: true, message: '请输入下载目录', trigger: 'blur' },
   ],
   downloadinterval: [
     { type: 'number', min: 100, message: '下载间隔不能小于 100ms', trigger: 'change' }
@@ -371,13 +422,13 @@ const formRules = reactive({
 
 // 连接状态
 const connectionStatus = computed(() => {
-  if (form.value.logined) {
+  if (form.value.pixivConf.logined) {
     return {
       type: 'success',
       title: '连接正常',
       description: '已成功登录 Pixiv，可以正常使用所有功能'
     }
-  } else if (form.value.cookie) {
+  } else if (form.value.pixivConf.cookie) {
     return {
       type: 'warning',
       title: '未验证连接',
@@ -460,7 +511,6 @@ async function testConnection() {
     testing.value = true
     ElMessage.info('正在测试连接...')
     await CheckLogin()
-
   } catch (error) {
     console.error('连接测试失败:', error)
     ElMessage.error('连接测试失败')

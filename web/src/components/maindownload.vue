@@ -412,7 +412,7 @@ import {
 import axios from "axios";
 import { timeElement } from "../assets/js/Time.js"
 import { Events } from "@wailsio/runtime"
-import { ws, form } from "../assets/js/configuration.js";
+import { form } from "../assets/js/configuration.js";
 import {
   DownloadByPid,
   DownloadByRank,
@@ -452,8 +452,8 @@ onMounted(() => {
     let cnt = 0;
     Events.On("taskPoolInfos",function (msg){
       if (cnt%6===0){
-        // console.log(msg.data,msg.data[1])
-        console.log(msg.data[2],msg.data[3])
+        console.log(msg.data,msg.data[1])
+        // console.log(msg.data[2],msg.data[3])
       }
       cnt = (cnt+1)%6
       // msg.data[1]
@@ -472,7 +472,7 @@ onMounted(() => {
         }
       }
       for (let v of arr){
-        console.log(v)
+        // console.log(v)
         tt.push({value:v.info.Name,data:{task:v.info,status:v.status}})
       }
       queue.value = tt
@@ -512,8 +512,8 @@ const debouncedRemoveTask = debounce(
         ElMessage.warning('无法删除正在执行的任务')
         return
       }
-      // console.log(queue.value[index].data.info.ID)
-      RemoveTask(queue.value[index].data.info.ID)
+      // console.log(queue.value[index].data)
+      RemoveTask(queue.value[index].data.task.ID)
       ElNotification({
         type:"info",
         position:"bottom-right",

@@ -29,7 +29,7 @@
                 :key="item.id"
                 :index="item.id"
                 :route="item.index"
-                :disabled="!item.logined && !form.logined"
+                :disabled="!item.logined && !form.pixivConf.logined"
                 class="nav-item"
             >
               <div class="nav-item-content">
@@ -39,7 +39,7 @@
                   </el-icon>
                 </div>
                 <span class="nav-text">{{ item.key }}</span>
-                <div v-if="!item.logined && !form.logined" class="lock-indicator">
+                <div v-if="!item.logined && !form.pixivConf.logined" class="lock-indicator">
                   <el-icon :size="14"><Lock /></el-icon>
                 </div>
               </div>
@@ -49,10 +49,10 @@
 
         <!-- 用户状态指示 -->
         <div class="user-status">
-          <div class="status-indicator" :class="{ 'online': form.logined }">
+          <div class="status-indicator" :class="{ 'online': form.pixivConf.logined }">
             <div class="status-dot"></div>
             <span class="status-text">
-                {{ form.logined ? '已登录' : '未登录' }}
+                {{ form.pixivConf.logined ? '已登录' : '未登录' }}
             </span>
           </div>
         </div>
@@ -87,7 +87,7 @@
 
           <!-- 版本信息 -->
           <div class="version-info">
-            <a href="javascript:void(0);" @click="OpenInBrowser('https://github.com/ManInM00N/Go_Pixiv/releases')">v1.3.1</a>
+            <a href="javascript:void(0);" @click="OpenInBrowser('https://github.com/ManInM00N/Go_Pixiv/releases')">v1.3.2</a>
           </div>
         </div>
       </div>
@@ -146,7 +146,7 @@ import {
   ArrowUp
 } from "@element-plus/icons-vue";
 import { OpenInBrowser} from "../../bindings/main/internal/pixivlib/ctl.js";
-import { form, ws } from "../assets/js/configuration.js"
+import { form } from "../assets/js/configuration.js"
 import { useRoute, useRouter } from "vue-router";
 import { DownloadGIF } from "../assets/js/download.js";
 import axios from "axios";
@@ -185,7 +185,7 @@ Events.On("downloadugoira",function(msg){
 Events.On("login", function (msg) {
   console.log("登录事件:", msg.data)
   if (msg.data[0] === "True") {
-    form.value.logined = true
+    form.value.pixivConf.logined = true
     ElNotification({
       title: "登录成功",
       type: "success",
@@ -194,7 +194,7 @@ Events.On("login", function (msg) {
       duration: 3000,
     })
   } else {
-    form.value.logined = false
+    form.value.pixivConf.logined = false
     ElNotification({
       title: "登录失败",
       type: "warning",

@@ -21,6 +21,7 @@ import (
 
 func UpdateSetting(c *gin.Context) {
 	var set configs.Settings
+
 	utils.InfoLog.Println(c.Request.Body)
 	err := c.BindJSON(&set)
 	if err != nil {
@@ -29,16 +30,16 @@ func UpdateSetting(c *gin.Context) {
 		return
 	}
 	utils.DebugLog.Println(set.MsgDetail(), set)
-	configs.Setting.UpdateSettings(set)
-	configs.UpdateSettings()
+	configs.UpdateSettings(set)
+	configs.SaveSettings()
 	c.JSON(http.StatusOK, gin.H{
-		"setting": configs.Setting,
+		"setting": configs.NowSetting(),
 	})
 }
 
 func GetSetting(c *gin.Context) {
 	c.JSON(200, gin.H{
-		"setting": configs.Setting,
+		"setting": configs.NowSetting(),
 	})
 }
 
@@ -65,7 +66,7 @@ func PreviewUrl(c *gin.Context) {
 	set := configs.NowSetting()
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0")
 	req.Header.Set("Referer", "https://www.pixiv.net")
-	req.Header.Set("Cookie", "PHPSESSID="+set.Cookie)
+	req.Header.Set("Cookie", "PHPSESSID="+set.PixivConf.Cookie)
 	var resp *http.Response
 	ok = false
 	for i := 0; i < 5; i++ {
@@ -116,7 +117,7 @@ func GetIllustPage(c *gin.Context) {
 	set := configs.NowSetting()
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0")
 	req.Header.Set("Referer", "https://www.pixiv.net")
-	req.Header.Set("Cookie", "PHPSESSID="+set.Cookie)
+	req.Header.Set("Cookie", "PHPSESSID="+set.PixivConf.Cookie)
 	var resp *http.Response
 	ok = false
 	for i := 0; i < 5; i++ {
@@ -267,7 +268,7 @@ func FetchGIF(c *gin.Context) {
 	Pid := c.Query("id")
 	Identify := c.Query("identify")
 	handler.UgoiraMap.Set(Identify, true)
-	Path := configs.Setting.Downloadposition
+	Path := configs.NowSetting().PixivConf.Downloadposition
 	Path = filepath.Join(Path, "GIF")
 	file, _, err := c.Request.FormFile("file")
 	if err != nil {

@@ -77,7 +77,7 @@ func Download_By_Rank(text, Type string, callEvent func(name string, data ...int
 			}
 			page := temp
 			dd := date
-			op := NewOption(SufWithType(0), SufWithRankmode(Type), SufWithDate(dd), WithMode(ByRank), WithR18(true), WithLikeLimit(Setting.LikeLimit), SufWithPage(strconv.FormatInt(page, 10)))
+			op := NewOption(SufWithType(0), SufWithRankmode(Type), SufWithDate(dd), WithMode(ByRank), WithR18(true), WithLikeLimit(Setting.PixivConf.LikeLimit), SufWithPage(strconv.FormatInt(page, 10)))
 			utils.InfoLog.Println(op.RankDate+" page", page, " "+op.Rank+"Rank pushed queue")
 			c := make(chan string, 2000)
 			tmp, err := GetRank(op)
@@ -98,7 +98,7 @@ func Download_By_Rank(text, Type string, callEvent func(name string, data ...int
 			utils.InfoLog.Println(op.RankDate + " " + op.Rank + "'s artworks Start download")
 			callEvent("UpdateTerminal", fmt.Sprintln(op.RankDate+" "+op.Rank+"'s artworks Start download"))
 			satisfy := 0
-			options := NewOption(WithMode(ByRank), WithR18(Setting.Agelimit), WithLikeLimit(Setting.LikeLimit), WithDiffAuthor(false), SufWithDate(op.RankDate), SufWithRankmode(Type))
+			options := NewOption(WithMode(ByRank), WithR18(Setting.PixivConf.Agelimit), WithLikeLimit(Setting.PixivConf.LikeLimit), WithDiffAuthor(false), SufWithDate(op.RankDate), SufWithRankmode(Type))
 
 			var cnt int64
 			for _, v := range illusts {

@@ -45,7 +45,7 @@ const (
 
 // 获取下载路径
 func getDownloadPath(i *Illust, op *Option, setting *Settings) string {
-	path := setting.Downloadposition
+	path := setting.PixivConf.Downloadposition
 
 	switch {
 	case op.Mode == ByRank:
@@ -136,7 +136,7 @@ func downloadImages(i *Illust, op *Option, typePath string, request *http.Reques
 
 		// 检查文件是否已存在
 		if shouldSkipDownload(imageFilepath, op) {
-			time.Sleep(time.Millisecond * time.Duration(setting.Downloadinterval))
+			time.Sleep(time.Millisecond * time.Duration(setting.PixivConf.Downloadinterval))
 			continue
 		}
 
@@ -151,7 +151,7 @@ func downloadImages(i *Illust, op *Option, typePath string, request *http.Reques
 		}
 
 		failTimes = 0
-		time.Sleep(time.Millisecond * time.Duration(setting.Downloadinterval))
+		time.Sleep(time.Millisecond * time.Duration(setting.PixivConf.Downloadinterval))
 	}
 
 	return true
@@ -174,7 +174,7 @@ func downloadUgoira(i *Illust, path string, request *http.Request, client *http.
 			utils.DebugLog.Println("Ugoira request error:", err)
 			return false
 		}
-		time.Sleep(time.Millisecond * time.Duration(setting.Downloadinterval))
+		time.Sleep(time.Millisecond * time.Duration(setting.PixivConf.Downloadinterval))
 	}
 
 	defer func() {
@@ -244,7 +244,7 @@ func downloadSingleImage(url, filepath string, request *http.Request, client *ht
 				utils.DebugLog.Println("Image request error:", err, url)
 				return false
 			}
-			time.Sleep(time.Millisecond * time.Duration(setting.Downloadinterval))
+			time.Sleep(time.Millisecond * time.Duration(setting.PixivConf.Downloadinterval))
 			continue
 		}
 		break
@@ -268,6 +268,7 @@ func downloadSingleImage(url, filepath string, request *http.Request, client *ht
 }
 
 func DownloadNovel(id string) bool {
+	setting := NowSetting()
 	body, err := GetNovel(id)
 	if err != nil {
 		utils.DebugLog.Println("GetWebpageData error", err)
@@ -287,7 +288,7 @@ func DownloadNovel(id string) bool {
 		novel.Tags = append(novel.Tags, v.String())
 	}
 	novel.R18 = utils.HasR18(&novel.Tags)
-	Path := filepath.Join(Setting.Downloadposition, "novel")
+	Path := filepath.Join(setting.PixivConf.Downloadposition, "novel")
 	if novel.R18 {
 		Path = filepath.Join(Path, "r18")
 	} else {
@@ -313,7 +314,7 @@ func DownloadNovel(id string) bool {
 		return false
 	}
 	e := epub.NewEpub(title)
-	time.Sleep(time.Millisecond * time.Duration(Setting.Downloadinterval))
+	time.Sleep(time.Millisecond * time.Duration(setting.PixivConf.Downloadinterval))
 	client := GetClient()
 	Request, err := http.NewRequest("GET", novel.CoverUrl, nil)
 	if err != nil {
@@ -321,7 +322,7 @@ func DownloadNovel(id string) bool {
 		return false
 	}
 	Request.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0")
-	Request.Header.Set("Cookie", "PHPSESSID="+Setting.Cookie)
+	Request.Header.Set("Cookie", "PHPSESSID="+setting.PixivConf.Cookie)
 	Request.Header.Set("Referer", "https://www.pixiv.net/")
 	res, err := client.Do(Request)
 	if err != nil {
@@ -380,7 +381,7 @@ func GetWebpageData(url, id string, num int) ([]byte, error) { // 请求得到�
 				if response.Body != nil {
 					response.Body.Close()
 				}
-				time.Sleep(time.Duration(setting.Retry429) * time.Millisecond)
+				time.Sleep(time.Duration(setting.PixivConf.Retry429) * time.Millisecond)
 				continue
 			}
 			break
@@ -395,7 +396,7 @@ func GetWebpageData(url, id string, num int) ([]byte, error) { // 请求得到�
 			return nil, err
 		}
 
-		time.Sleep(time.Duration(setting.Retryinterval) * time.Millisecond)
+		time.Sleep(time.Duration(setting.PixivConf.Retryinterval) * time.Millisecond)
 	}
 	defer func() {
 		if response != nil && response.Body != nil {
@@ -414,7 +415,7 @@ func GetWebpageData(url, id string, num int) ([]byte, error) { // 请求得到�
 	if response.StatusCode != http.StatusOK {
 		utils.DebugLog.Println("status code ", response.StatusCode, ur, string(webpageBytes))
 		if response.StatusCode == 429 {
-			time.Sleep(time.Duration(Setting.Retry429) * time.Millisecond)
+			time.Sleep(time.Duration(setting.PixivConf.Retry429) * time.Millisecond)
 			return nil, &TooFastRequest{S: "TooMuchRequest in a short period", Err: errors.New("TooMuchRequest")}
 		}
 	}

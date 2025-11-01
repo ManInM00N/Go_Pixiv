@@ -1,21 +1,30 @@
 import axios from "axios";
 import { ref } from "vue"
-import { CheckLogin } from "../../../bindings/main/internal/pixivlib/ctl.js";
+import {CheckLogin, OpenFileFolder} from "../../../bindings/main/internal/pixivlib/ctl.js";
 import {ElNotification} from "element-plus";
 export const defaultConf = {
     prefix: 'http://127.0.0.1:7234',
     proxy: '',
-    cookie: '',
-    r_18: false,
-    downloadposition: 'Download',
-    likelimit: 0,
-    retry429: 2000,
-    downloadinterval: 500,
-    retryinterval: 1000,
-    differauthor: false,
-    expired_time: 7,
     useproxy: false,
-    logined: false,
+    imageEngine:{
+        sauceNaoConf:{
+            api_key: "",
+            numbers: 10,
+        }
+    },
+    pixivConf:{
+        cookie: '',
+        r_18: false,
+        downloadposition: 'Download',
+        likelimit: 0,
+        retry429: 2000,
+        downloadinterval: 500,
+        retryinterval: 1000,
+        differauthor: false,
+        expired_time: 7,
+        logined: false,
+    },
+
 }
 let prePost = {}
 export let form = ref(Object.assign({}, defaultConf))
@@ -24,17 +33,20 @@ axios.get("http://127.0.0.1:7234/api/getsetting").then(res => {
 
     form.value.prefix = res.data.setting.prefix
     form.value.proxy = res.data.setting.proxy
-    form.value.cookie = res.data.setting.cookie.toString()
-    form.value.r_18 = res.data.setting.r_18
-    form.value.downloadposition = res.data.setting.downloadposition
-    form.value.likelimit = Number(res.data.setting.likelimit)
-    form.value.retry429 = res.data.setting.retry429
-    form.value.downloadinterval = res.data.setting.downloadinterval
-    form.value.retryinterval = res.data.setting.retryinterval
-    form.value.differauthor = res.data.setting.differauthor
-    form.value.expired_time = res.data.setting.expired_time
     form.value.useproxy = res.data.setting.useproxy
+
+    form.value.pixivConf.cookie = res.data.setting.pixivConf.cookie.toString()
+    form.value.pixivConf.r_18 = res.data.setting.pixivConf.r_18
+    form.value.pixivConf.downloadposition = res.data.setting.pixivConf.downloadposition
+    form.value.pixivConf.likelimit = Number(res.data.setting.pixivConf.likelimit)
+    form.value.pixivConf.retry429 = res.data.setting.pixivConf.retry429
+    form.value.pixivConf.downloadinterval = res.data.setting.pixivConf.downloadinterval
+    form.value.pixivConf.retryinterval = res.data.setting.pixivConf.retryinterval
+    form.value.pixivConf.differauthor = res.data.setting.pixivConf.differauthor
+    form.value.pixivConf.expired_time = res.data.setting.pixivConf.expired_time
+
     prePost = Object.assign({}, form.value)
+    prePost.pixivConf = Object.assign({}, prePost.pixivConf)
     console.log(res.data)
     console.log(form.value)
     if (form.value.cookie != "") {
@@ -43,46 +55,39 @@ axios.get("http://127.0.0.1:7234/api/getsetting").then(res => {
 }).catch(error => {
     console.log(error)
 })
-export let ws = WebSocket;
-const startWebSocket = () => {
-    ws.value = new WebSocket("ws://127.0.0.1:7234/api/ws");
 
-    ws.value.onopen = () => {
-        console.log('WebSocket connected');
-    };
+const reconnectFields = ['prefix', 'proxy', 'pixivConf', 'useproxy']
 
-    ws.value.onmessage = (event) => {
-        // res.value = event.data;
-        handleMessage(JSON.parse(event.data));
-    };
-    ws.value.onclose = () => {
-        ElMessage.error("远程主机关闭")
-        console.log('WebSocket closed');
-    };
 
-    ws.value.onerror = (error) => {
-        console.error('WebSocket error:', error);
-    };
-};
-startWebSocket()
+export async function ChooseFolder(){
+    form.value.pixivConf.downloadposition =  await OpenFileFolder()
 
-const reconnectFields = ['prefix', 'proxy', 'cookie', 'useproxy']
+}
 
 export async function updateSettings(){
     let needRecon = false
     await axios.post("http://127.0.0.1:7234/api/update", {
         prefix: form.value.prefix,
         proxy: form.value.proxy,
-        cookie: form.value.cookie,
-        r_18: Boolean(form.value.r_18),
-        downloadposition: form.value.downloadposition,
-        likelimit: Number(form.value.likelimit),
-        retry429: Number(form.value.retry429),
-        downloadinterval: Number(form.value.downloadinterval),
-        retryinterval: Number(form.value.retryinterval),
-        differauthor: Boolean(form.value.differauthor),
-        expired_time: Number(form.value.expired_time),
         useproxy: Boolean(form.value.useproxy),
+        pixivConf:{
+            cookie: form.value.pixivConf.cookie,
+            r_18: Boolean(form.value.pixivConf.r_18),
+            downloadposition: form.value.pixivConf.downloadposition,
+            likelimit: Number(form.value.pixivConf.likelimit),
+            retry429: Number(form.value.pixivConf.retry429),
+            downloadinterval: Number(form.value.pixivConf.downloadinterval),
+            retryinterval: Number(form.value.pixivConf.retryinterval),
+            differauthor: Boolean(form.value.pixivConf.differauthor),
+            expired_time: Number(form.value.pixivConf.expired_time),
+        },
+        imageEngine:{
+            sauceNaoConf:{
+                api_key: form.value.imageEngine.sauceNaoConf.api_key,
+                numbers: form.value.imageEngine.sauceNaoConf.numbers,
+            }
+        },
+
     }, {
         headers: {
             'Content-Type': 'application/json'
@@ -90,29 +95,45 @@ export async function updateSettings(){
     }).then(res => {
         for (const field of reconnectFields) {
             let oldValue = prePost[field]
+            console.log(field)
             let newValue = res.data.setting[field]
-            if (field === 'cookie') {
-                oldValue = prePost.cookie
-                newValue = res.data.setting.cookie.toString()
+            if (field === 'pixivConf') {
+                oldValue = prePost.pixivConf.cookie
+                newValue = res.data.setting.pixivConf.cookie.toString()
+                console.log(oldValue,newValue)
             }
             if (oldValue !== newValue) {
                 needRecon = true
                 break
             }
         }
+        console.log(needRecon)
+
         form.value.prefix = res.data.setting.prefix
         form.value.proxy = res.data.setting.proxy
-        form.value.cookie = res.data.setting.cookie.toString()
-        form.value.r_18 = res.data.setting.r_18
-        form.value.downloadposition = res.data.setting.downloadposition
-        form.value.likelimit = Number(res.data.setting.likelimit)
-        form.value.retry429 = res.data.setting.retry429
-        form.value.downloadinterval = res.data.setting.downloadinterval
-        form.value.retryinterval = res.data.setting.retryinterval
-        form.value.differauthor = res.data.setting.differauthor
-        form.value.expired_time = res.data.setting.expired_time
         form.value.useproxy = res.data.setting.useproxy
+
+        form.value.pixivConf = {
+            cookie: res.data.setting.pixivConf.cookie.toString(),
+            r_18: res.data.setting.pixivConf.r_18,
+            downloadposition: res.data.setting.pixivConf.downloadposition,
+            likelimit: Number(res.data.setting.pixivConf.likelimit),
+            retry429: res.data.setting.pixivConf.retry429,
+            downloadinterval: res.data.setting.pixivConf.downloadinterval,
+            retryinterval: res.data.setting.pixivConf.retryinterval,
+            differauthor: res.data.setting.pixivConf.differauthor,
+            expired_time: res.data.setting.pixivConf.expired_time,
+        }
+
+        form.value.imageEngine = {
+            sauceNaoConf:{
+                api_key: res.data.setting.imageEngine.sauceNaoConf.api_key,
+                numbers: res.data.setting.imageEngine.sauceNaoConf.numbers,
+            }
+        }
+
         prePost = Object.assign({}, form.value)
+        prePost.pixivConf = Object.assign({}, prePost.pixivConf)
         console.log(res)
     }).catch(error => {
         console.log(error)

@@ -39,7 +39,7 @@ func CreatePixivRequest(url string, setting *configs.Settings) (*http.Request, e
 
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36")
 	req.Header.Set("referer", "https://www.pixiv.net")
-	req.Header.Set("cookie", "PHPSESSID="+setting.Cookie)
+	req.Header.Set("cookie", "PHPSESSID="+setting.PixivConf.Cookie)
 
 	return req, nil
 }

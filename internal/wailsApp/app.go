@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/events"
+	"os"
 )
 
 var (
@@ -90,6 +91,7 @@ func AppInit(fs *embed.FS) {
 	TrayShutDown := TrayMenu.Add("退出")
 	TrayShutDown.OnClick(func(*application.Context) {
 		App.Quit()
+		os.Exit(0)
 	})
 	Tray.OnClick(func() {
 		Window.Show()

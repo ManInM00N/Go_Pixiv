@@ -73,7 +73,7 @@ export function parseLogLine(logLine) {
     const pattern = /^\[(\w+)\]\s*-\s*(\d{2}:\d{2}:\d{2})\s+(.*)$/;
     const match = logLine.match(pattern);
 
-    if (!match) {
+    if (!match || match[1].toLowerCase() === "debug") {
         return null; // 格式不匹配
     }
 

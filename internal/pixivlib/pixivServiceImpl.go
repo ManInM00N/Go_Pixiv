@@ -114,7 +114,7 @@ func (a *Ctl) CheckLogin() bool {
 	client := DAO.GetClient()
 	Request.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0")
 	Request.Header.Set("referer", ref)
-	Request.Header.Set("Cookie", "PHPSESSID="+configs.NowSetting().Cookie)
+	Request.Header.Set("Cookie", "PHPSESSID="+configs.NowSetting().PixivConf.Cookie)
 	var res *http.Response
 	done := make(chan bool)
 	go func() {
@@ -198,4 +198,19 @@ func (a *Ctl) FetchRecentLog() {
 	}
 	a.App.Event.Emit("FetchLogs", res)
 	return
+}
+
+func (a *Ctl) OpenFileFolder() string {
+
+	tmp := &application.OpenFileDialogOptions{}
+	tmp.CanChooseFiles = true
+	tmp.CanChooseDirectories = true
+	tmp.Title = "选择一个目录 Choose a folder"
+	tmp.CanCreateDirectories = true
+	dia := a.App.Dialog.OpenFileWithOptions(tmp)
+	selection, err := dia.PromptForSingleSelection()
+	if err != nil {
+		return ""
+	}
+	return selection
 }

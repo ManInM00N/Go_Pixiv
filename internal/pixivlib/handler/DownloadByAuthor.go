@@ -53,7 +53,7 @@ func Download_By_Author(text string, callEvent func(name string, data ...interfa
 			}
 
 			satisfy := 0
-			options := NewOption(WithMode(ByAuthor), WithR18(Setting.Agelimit), WithLikeLimit(Setting.LikeLimit))
+			options := NewOption(WithMode(ByAuthor), WithR18(Setting.PixivConf.Agelimit), WithLikeLimit(Setting.PixivConf.LikeLimit))
 			var cnt int64
 			for key := range all {
 				k := key
