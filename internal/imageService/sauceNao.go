@@ -85,6 +85,27 @@ func NewSauceNAOService(apiKey string) *SauceNAOService {
 	}
 }
 
+func (s *SauceNAOService) GetHTTPClient() *http.Client {
+	setting := configs.NowSetting()
+	proxyURL, _ := url.Parse(setting.Prefix + setting.Proxy)
+	if !setting.UseProxy {
+		proxyURL = nil
+	}
+	return &http.Client{
+		Transport: &http.Transport{
+			Proxy:                 http.ProxyURL(proxyURL),
+			DisableKeepAlives:     false,            // ⭐ 启用 keep-alive 以重用连接
+			MaxIdleConns:          100,              // ⭐ 最大空闲连接数
+			MaxIdleConnsPerHost:   10,               // ⭐ 每个主机的最大空闲连接数
+			IdleConnTimeout:       90 * time.Second, // ⭐ 空闲连接超时
+			ResponseHeaderTimeout: 10 * time.Second, // ⭐ 增加超时时间
+			TLSHandshakeTimeout:   10 * time.Second,
+			ExpectContinueTimeout: 3 * time.Second,
+		},
+		Timeout: 30 * time.Second,
+	}
+}
+
 // SauceNAOResult SauceNAO 搜索结果
 type SauceNAOResult struct {
 	Header  ResultHeader `json:"header"`
@@ -151,7 +172,7 @@ func (s *SauceNAOService) SearchByURL(imageURL string) (*SauceNAOResult, error) 
 
 	apiURL := "https://saucenao.com/search.php?" + params.Encode()
 
-	resp, err := s.HTTPClient.Get(apiURL)
+	resp, err := s.GetHTTPClient().Get(apiURL)
 	if err != nil {
 		return nil, fmt.Errorf("请求失败: %v", err)
 	}
@@ -183,7 +204,6 @@ type SearchResult struct {
 	TwitterID  string   `json:"twitterId"`
 }
 
-// parseStringOrArray 解析字符串或数组，返回字符串
 // SauceNAO 的某些字段可能返回字符串或字符串数组
 func parseStringOrArray(raw json.RawMessage) string {
 	if len(raw) == 0 {
@@ -269,7 +289,7 @@ func (s *SauceNAOService) GetAPIQuota() (map[string]interface{}, error) {
 
 	apiURL := "https://saucenao.com/search.php?" + params.Encode()
 
-	resp, err := s.HTTPClient.Get(apiURL)
+	resp, err := s.GetHTTPClient().Get(apiURL)
 	if err != nil {
 		return nil, fmt.Errorf("请求失败: %v", err)
 	}
@@ -289,6 +309,11 @@ func (s *SauceNAOService) GetAPIQuota() (map[string]interface{}, error) {
 	}
 
 	return quota, nil
+}
+
+func (s *SauceNAOService) SetApiKey(key string) error {
+	s.APIKey = key
+	return nil
 }
 
 func init() {

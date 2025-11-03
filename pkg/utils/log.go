@@ -30,26 +30,31 @@ var (
 	ErrorLog   *Logger
 	WarnLog    *Logger
 	logf       *os.File
+	tracelogf  *os.File
 	mu         sync.Mutex
 	LogPositon = "errorlog"
 )
 
+func logTimeFormat() string {
+	T := time.Now()
+	return fmt.Sprintf("%04d-%02d-%02d.log", T.Year(), T.Month(), T.Day())
+}
+
 func Log_init() {
 	T := time.Now()
-	_, err := os.Stat("errorlog")
-	if err != nil {
-		os.Mkdir("errorlog", 0777)
-		os.Chmod("errorlog", 0777)
-	}
-
+	os.MkdirAll("errorlog", 0777)
+	os.Chmod("errorlog", 0777)
+	os.MkdirAll("tracelog", 0777)
+	os.Chmod("tracelog", 0777)
 	logfile := fmt.Sprintf("errorlog/%04d-%02d-%02d.log", T.Year(), T.Month(), T.Day())
-	//log.SetFlags(log.Ltime)
+	tracelogfile := fmt.Sprintf("tracelog/%04d-%02d-%02d.log", T.Year(), T.Month(), T.Day())
 	logf, _ = os.OpenFile(logfile, os.O_CREATE|os.O_APPEND|os.O_RDWR, os.ModePerm)
+	tracelogf, _ = os.OpenFile(tracelogfile, os.O_CREATE|os.O_APPEND|os.O_RDWR, os.ModePerm)
 	log.SetOutput(logf)
 	InfoLog = log.New(logf, "[Info] - ", log.Ltime)
 	DebugLog = log.New(logf, "[Debug] - ", log.Ltime)
-	ErrorLog = &Logger{logger: log.New(logf, "", 0), level: "ERROR"}
-	WarnLog = &Logger{logger: log.New(logf, "", 0), level: "WARN"}
+	ErrorLog = &Logger{logger: log.New(tracelogf, "", 0), level: "ERROR"}
+	WarnLog = &Logger{logger: log.New(tracelogf, "", 0), level: "WARN"}
 }
 
 // getGoroutineID 获取当前goroutine ID

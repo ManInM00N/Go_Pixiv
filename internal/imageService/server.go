@@ -1,4 +1,4 @@
-package pixivSvr
+package imageService
 
 import (
 	"context"
@@ -34,28 +34,15 @@ func ServerInit() {
 	//gin.SetMode(gin.DebugMode)
 	gin.SetMode(gin.ReleaseMode)
 
-	R = gin.Default()
+	R = gin.New()
 	R.Use(Cors())
 	Api := R.Group("/api")
-	Api.POST("/update", UpdateSetting)
-	Api.GET("/getsetting", GetSetting)
-	Api.GET("/followpage", Followlist)
-	Api.GET("/rankpage", RankList)
-	//Api.GET("/ws", UpdateProgress)
-	Api.GET("/preview", PreviewUrl)
-	Api.GET("/novel_rproxy", NovelContent)
-	Api.GET("/getugoira", GIFResource)
-	Api.POST("/saveugoira", FetchGIF)
-	Api.GET("/get_illust_page", GetIllustPage)
-	Api.GET("/get_novel", NovelContent)
-	Api.GET("/get_series_list", SeriesList)
-	Api.GET("/get_author", FetchAuthorInfo)
-	Ws := R.Group("/ws")
-	Ws.GET("/progress", UpdateProgress)
-	Ws.GET("/rank", Transform)
+	saucenao := Api.Group("/saucenao")
+	saucenao.POST("/search", SauceNaoSearch)
+	saucenao.GET("/quota", SauceNaoQuota)
 
 	server = &http.Server{
-		Addr:    ":7234",
+		Addr:    ":7235",
 		Handler: R,
 	}
 	go func() {
@@ -65,7 +52,6 @@ func ServerInit() {
 		}
 		//R.Run(":7234")
 	}()
-
 }
 
 func ServerDown() {

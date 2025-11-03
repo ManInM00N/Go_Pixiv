@@ -9,6 +9,7 @@ import (
 	"github.com/tidwall/gjson"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"io"
+	"main/internal/imageService"
 
 	"main/configs"
 	"main/internal/pixivlib/DAO"
@@ -213,4 +214,12 @@ func (a *Ctl) OpenFileFolder() string {
 		return ""
 	}
 	return selection
+}
+
+func (a *Ctl) GetSauceNAOQuota() map[string]interface{} {
+	res, err := imageService.SauceNaoService.GetAPIQuota()
+	if err != nil {
+		ErrorLog.Printf("%v", err)
+	}
+	return res
 }

@@ -48,7 +48,7 @@ func init() {
 	Setting.PixivConf.Retryinterval = max(Setting.PixivConf.Retryinterval, 1500)
 	Setting.PixivConf.Downloadinterval = max(Setting.PixivConf.Downloadinterval, 700)
 	UpdateSettings(*Setting)
-	utils.DebugLog.Println("Check settings:"+Setting.Proxy, "PHPSESSID="+Setting.PixivConf.Cookie, "Download Position=", Setting.PixivConf.Downloadposition)
+	utils.WarnLog.Printf("Check settings:"+Setting.Proxy, "PHPSESSID="+Setting.PixivConf.Cookie, "Download Position=", Setting.PixivConf.Downloadposition)
 	SaveSettings()
 
 	taskQueue.TaskPool = goruntine.NewTaskPool(1, 1,

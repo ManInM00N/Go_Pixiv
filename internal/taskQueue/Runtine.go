@@ -8,8 +8,7 @@ import (
 )
 
 var (
-	SinglePool gopool.GoPool
-	//P            gopool.GoPool
+	SinglePool   gopool.GoPool
 	TaskPool     *goruntine.TaskPool
 	P            *goruntine.TaskPool
 	Ctx          context.Context

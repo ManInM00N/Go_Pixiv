@@ -10,6 +10,10 @@ export const defaultConf = {
         sauceNaoConf:{
             api_key: "",
             numbers: 10,
+            testmode: false,  // 测试模式（不消耗配额）
+            db: 999,          // 搜索数据库：999=全部, 5=Pixiv, 9=Danbooru等
+            hide: 0,          // 隐藏成人内容：0=不隐藏, 1=隐藏, 2=部分隐藏
+            dedupe: 2,        // 去重级别：0=关闭, 1=同站, 2=全局
         }
     },
     pixivConf:{
@@ -44,6 +48,9 @@ axios.get("http://127.0.0.1:7234/api/getsetting").then(res => {
     form.value.pixivConf.retryinterval = res.data.setting.pixivConf.retryinterval
     form.value.pixivConf.differauthor = res.data.setting.pixivConf.differauthor
     form.value.pixivConf.expired_time = res.data.setting.pixivConf.expired_time
+
+    form.value.imageEngine.sauceNaoConf.numbers = res.data.setting.imageEngine.sauceNaoConf.numbers
+    form.value.imageEngine.sauceNaoConf.api_key = res.data.setting.imageEngine.sauceNaoConf.api_key
 
     prePost = Object.assign({}, form.value)
     prePost.pixivConf = Object.assign({}, prePost.pixivConf)
@@ -109,6 +116,8 @@ export async function updateSettings(){
         }
         console.log(needRecon)
 
+        let nxt = !needRecon && form.value.pixivConf.logined
+
         form.value.prefix = res.data.setting.prefix
         form.value.proxy = res.data.setting.proxy
         form.value.useproxy = res.data.setting.useproxy
@@ -123,7 +132,9 @@ export async function updateSettings(){
             retryinterval: res.data.setting.pixivConf.retryinterval,
             differauthor: res.data.setting.pixivConf.differauthor,
             expired_time: res.data.setting.pixivConf.expired_time,
+            logined: nxt,
         }
+
 
         form.value.imageEngine = {
             sauceNaoConf:{
@@ -133,6 +144,8 @@ export async function updateSettings(){
         }
 
         prePost = Object.assign({}, form.value)
+        prePost.imageEngine = Object.assign({}, prePost.imageEngine)
+        prePost.imageEngine.sauceNaoConf = Object.assign({}, prePost.imageEngine.sauceNaoConf)
         prePost.pixivConf = Object.assign({}, prePost.pixivConf)
         console.log(res)
     }).catch(error => {

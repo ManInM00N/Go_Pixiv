@@ -7,6 +7,7 @@ import (
 	"io"
 	"main/configs"
 	"main/internal/cache/DAO"
+	"main/internal/imageService"
 	. "main/internal/pixivlib/DAO"
 	"main/internal/pixivlib/handler"
 	"main/pkg/utils"
@@ -31,6 +32,8 @@ func UpdateSetting(c *gin.Context) {
 	}
 	utils.DebugLog.Println(set.MsgDetail(), set)
 	configs.UpdateSettings(set)
+	imageService.SauceNaoService.SetApiKey(set.SearchEngine.SauceNaoConf.ApiKey)
+
 	configs.SaveSettings()
 	c.JSON(http.StatusOK, gin.H{
 		"setting": configs.NowSetting(),

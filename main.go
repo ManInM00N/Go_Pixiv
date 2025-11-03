@@ -4,15 +4,14 @@
 package main
 
 import (
-	"context"
 	_ "embed"
 	"github.com/wailsapp/wails/v3/pkg/w32"
 	. "main/init"
-	. "main/internal/pixivSvr"
+	"main/internal/imageService"
+	"main/internal/pixivSvr"
 	"main/internal/pixivlib"
 	. "main/internal/wailsApp"
 	. "main/pkg/utils"
-	"net/http"
 	"time"
 )
 
@@ -30,18 +29,10 @@ func init() {
 	}
 }
 func main() {
-	ServerInit()
+	pixivSvr.ServerInit()
+	imageService.ServerInit()
 	CacheInit()
-	server := &http.Server{
-		Addr:    ":7234",
-		Handler: R,
-	}
-	go func() {
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			DebugLog.Fatalln(err)
-		}
-		//R.Run(":7234")
-	}()
+
 	AppInit(&Assets)
 	pixivlib.NewCtl().RegisterService(App)
 	go func() {
@@ -58,11 +49,9 @@ func main() {
 		DebugLog.Fatalln(err)
 		return
 	}
-	err = server.Shutdown(context.Background())
-	if err != nil {
-		DebugLog.Fatalln(err)
-		return
-	}
+	pixivSvr.ServerDown()
+	imageService.ServerDown()
+
 	Close()
 	// If an error occurred while running the application, log it and exit.
 	DebugLog.Println(err)
