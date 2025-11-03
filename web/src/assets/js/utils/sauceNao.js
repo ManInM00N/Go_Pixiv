@@ -88,7 +88,6 @@ export async function fetchSearch(file) {
     } catch (error) {
         console.error('SauceNAO 搜索失败:', error)
 
-        // 根据错误类型返回更友好的错误信息
         if (error.name === 'TypeError' && error.message.includes('fetch')) {
             throw new Error('无法连接到服务器，请检查后端是否运行')
         } else if (error.message.includes('NetworkError')) {
